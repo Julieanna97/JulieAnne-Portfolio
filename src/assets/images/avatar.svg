@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900" viewBox="0 0 900 900">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#efe6d8"/><stop offset="1" stop-color="#a686d6"/></linearGradient></defs>
+  <rect width="900" height="900" fill="url(#bg)"/>
+  <circle cx="450" cy="305" r="120" fill="#2b211d"/>
+  <circle cx="450" cy="330" r="95" fill="#d9a189"/>
+  <path d="M285 780c15-165 95-250 165-250s150 85 165 250" fill="#252323"/>
+  <text x="450" y="835" text-anchor="middle" font-family="Georgia" font-size="40" fill="#fff">Julie Anne</text>
+</svg>
