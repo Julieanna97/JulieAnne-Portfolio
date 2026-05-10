@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --page-bg: #f7efe6;
+  --page-surface: rgba(255, 251, 247, 0.74);
+  --page-surface-strong: rgba(255, 255, 255, 0.92);
+  --page-border: rgba(140, 114, 176, 0.18);
+  --page-text: #2c2336;
+  --page-text-soft: #625a73;
+}
+
+html[data-theme="twilight"] {
+  --page-bg: #221b2f;
+  --page-surface: rgba(41, 31, 57, 0.72);
+  --page-surface-strong: rgba(50, 38, 69, 0.92);
+  --page-border: rgba(211, 191, 255, 0.14);
+  --page-text: #f6efe5;
+  --page-text-soft: #d9ccf0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--page-bg);
+  color: var(--page-text);
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(205, 178, 255, 0.68);
+  color: #2c2336;
+}
+
+@layer components {
+  .glass-panel {
+    @apply border border-white/60 bg-[var(--page-surface)] backdrop-blur-xl;
+  }
+
+  .soft-card {
+    @apply rounded-[2rem] border border-white/60 bg-[var(--page-surface)] shadow-soft backdrop-blur-xl;
+  }
+
+  .soft-input {
+    @apply rounded-2xl border border-white/60 bg-white/75 px-4 py-3 text-[#2c2336] shadow-sm outline-none transition placeholder:text-[#8d7fa5] focus:border-[#c7b0eb] focus:bg-white;
+  }
+}
+
+.text-soft {
+  color: var(--page-text-soft);
+}
