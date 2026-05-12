@@ -19,6 +19,8 @@ export default function Preloader({
     if (opening) return;
     setOpening(true);
 
+    window.dispatchEvent(new CustomEvent("room:intro"));
+
     try {
       await playAmbientAudio(musicSrc, 0.4);
     } catch (err) {
@@ -26,7 +28,10 @@ export default function Preloader({
     }
 
     onEnter();
-    window.setTimeout(() => setHidden(true), 1700);
+
+    window.setTimeout(() => {
+      setHidden(true);
+    }, 1900);
   };
 
   if (hidden) return null;
@@ -41,7 +46,6 @@ export default function Preloader({
           "radial-gradient(circle at 20% 72%, rgba(255, 170, 190, 0.55), transparent 32%), radial-gradient(circle at 78% 68%, rgba(151, 207, 255, 0.5), transparent 34%), radial-gradient(circle at 50% 18%, rgba(255, 239, 204, 0.75), transparent 38%), linear-gradient(180deg, #fff7ec 0%, #f8dfe8 48%, #d8d5ff 100%)",
       }}
     >
-      {/* Top cloud band */}
       <div
         className={`pointer-events-none absolute inset-x-0 top-0 h-[55vh] ${
           opening ? "curtain-up" : ""
@@ -50,7 +54,6 @@ export default function Preloader({
         <div className="preloader-cloud cloud-top" />
       </div>
 
-      {/* Bottom cloud band */}
       <div
         className={`pointer-events-none absolute inset-x-0 bottom-0 h-[55vh] ${
           opening ? "curtain-down" : ""
@@ -59,7 +62,6 @@ export default function Preloader({
         <div className="preloader-cloud cloud-bottom" />
       </div>
 
-      {/* Center content */}
       <div
         className={`relative z-10 flex h-full w-full flex-col items-center justify-center px-6 ${
           opening ? "content-fade" : ""
@@ -133,33 +135,58 @@ export default function Preloader({
         }
 
         @keyframes curtainUp {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(-110vh); }
+          0% {
+            transform: translateY(0);
+          }
+          100% {
+            transform: translateY(-110vh);
+          }
         }
+
         @keyframes curtainDown {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(110vh); }
+          0% {
+            transform: translateY(0);
+          }
+          100% {
+            transform: translateY(110vh);
+          }
         }
+
         @keyframes contentFade {
-          0% { opacity: 1; transform: scale(1); }
-          100% { opacity: 0; transform: scale(0.92); }
+          0% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          100% {
+            opacity: 0;
+            transform: scale(0.92);
+          }
         }
+
         @keyframes preloaderFadeOut {
-          0%, 60% { opacity: 1; }
-          100% { opacity: 0; }
+          0%,
+          65% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+          }
         }
 
         .curtain-up {
-          animation: curtainUp 1.6s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+          animation: curtainUp 1.8s cubic-bezier(0.65, 0, 0.35, 1) forwards;
         }
+
         .curtain-down {
-          animation: curtainDown 1.6s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+          animation: curtainDown 1.8s cubic-bezier(0.65, 0, 0.35, 1) forwards;
         }
+
         .content-fade {
-          animation: contentFade 0.5s ease forwards;
+          animation: contentFade 0.55s ease forwards;
         }
+
         .preloader-fade-out {
-          animation: preloaderFadeOut 1.7s ease forwards;
+          animation: preloaderFadeOut 1.9s ease forwards;
         }
       `}</style>
     </div>

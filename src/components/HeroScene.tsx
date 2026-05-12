@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Canvas, useThree } from "@react-three/fiber";
-import { ContactShadows, Html, OrbitControls } from "@react-three/drei";
+import { ContactShadows, OrbitControls } from "@react-three/drei";
 import { NoToneMapping, SRGBColorSpace } from "three";
 import gsap from "gsap";
 import Loader from "../components/Loader";
@@ -13,6 +13,12 @@ type SectionName = "home";
 
 const HOME_CAMERA: [number, number, number] = [18, 16, 20];
 const HOME_TARGET: [number, number, number] = [0, 5.5, 0];
+
+const INTRO_CAMERA: [number, number, number] = [-28, 24, 30];
+const INTRO_TARGET: [number, number, number] = [0, 7.5, 0];
+
+const INTRO_MID_CAMERA: [number, number, number] = [10, 26, 26];
+const INTRO_MID_TARGET: [number, number, number] = [0, 8.5, 0];
 
 const LAPTOP_CAMERA: [number, number, number] = [-4.05, 11.56, -3.37];
 const LAPTOP_TARGET: [number, number, number] = [-5.56, 11.26, -4.95];
@@ -103,53 +109,6 @@ function SoftGroundGlow() {
   );
 }
 
-function InfoCard({ section }: { section: SectionName }) {
-  if (section === "home") return null;
-
-  const content = {
-    projects: {
-      title: "Projects",
-      text: "A collection of websites, apps, and interactive experiences I’ve built.",
-      tags: ["Web Apps", "UI/UX", "Creative Coding"],
-    },
-    skills: {
-      title: "Skills",
-      text: "Frontend, backend, databases, design systems, and interactive 3D interfaces.",
-      tags: ["React", "Next.js", "TypeScript"],
-    },
-    contact: {
-      title: "Contact",
-      text: "Let’s connect for collaborations, internships, freelance work, or creative projects.",
-      tags: ["Email", "LinkedIn", "GitHub"],
-    },
-  }[section];
-
-  return (
-    <Html position={[0, 5.7, 0]} center>
-      <div className="w-80 rounded-3xl border border-white/70 bg-white/85 p-6 text-center text-[#2c2336] shadow-2xl backdrop-blur-xl">
-        <p className="text-xs font-black uppercase tracking-[0.24em] text-[#8d67cf]">
-          {content.title}
-        </p>
-
-        <p className="mt-3 text-sm font-medium leading-relaxed text-[#625a73]">
-          {content.text}
-        </p>
-
-        <div className="mt-4 flex flex-wrap justify-center gap-2">
-          {content.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full bg-[#f7d7e3] px-3 py-1 text-xs font-bold text-[#7a4d77]"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      </div>
-    </Html>
-  );
-}
-
 function SceneContent({
   shouldZoomOutFromLaptop,
   shouldZoomOutFromWindow,
@@ -170,7 +129,8 @@ function SceneContent({
     position: [number, number, number],
     target: [number, number, number],
     section: SectionName,
-    onCompleteCallback?: () => void
+    onCompleteCallback?: () => void,
+    duration = 1.45
   ) => {
     setIsMoving(true);
     setActiveSection(section);
@@ -194,7 +154,7 @@ function SceneContent({
         x: position[0],
         y: position[1],
         z: position[2],
-        duration: 1.45,
+        duration,
         ease: "power3.inOut",
       },
       0
@@ -207,7 +167,7 @@ function SceneContent({
           x: target[0],
           y: target[1],
           z: target[2],
-          duration: 1.45,
+          duration,
           ease: "power3.inOut",
         },
         0
@@ -215,8 +175,17 @@ function SceneContent({
     }
   };
 
-  const goHome = () => {
-    moveCamera(HOME_CAMERA, HOME_TARGET, "home");
+  const playIntroAnimation = () => {
+    if (!controlsRef.current) return;
+
+    gsap.killTweensOf(camera.position);
+    gsap.killTweensOf(controlsRef.current.target);
+
+    camera.position.set(...INTRO_CAMERA);
+    controlsRef.current.target.set(...INTRO_TARGET);
+    controlsRef.current.update();
+
+    moveCamera(HOME_CAMERA, HOME_TARGET, "home", undefined, 2.15);
   };
 
   const goAbout = () => {
@@ -256,6 +225,18 @@ function SceneContent({
 
     return () => window.clearTimeout(timer);
   }, [camera, router, shouldZoomOutFromLaptop, shouldZoomOutFromWindow]);
+
+  useEffect(() => {
+    const handleIntro = () => {
+      playIntroAnimation();
+    };
+
+    window.addEventListener("room:intro", handleIntro);
+
+    return () => {
+      window.removeEventListener("room:intro", handleIntro);
+    };
+  }, []);
 
   useEffect(() => {
     const handleRoomNavigation = (event: Event) => {
@@ -313,7 +294,6 @@ function SceneContent({
         <IsometricRoom />
       </group>
 
-      {/* ABOUT: laptop screen hotspot */}
       <group position={[-5.56, 11.26, -4.95]} rotation={[-0.85, -0.55, -0.2]}>
         <mesh
           onClick={(event) => {
@@ -335,7 +315,6 @@ function SceneContent({
         </mesh>
       </group>
 
-      {/* PROJECTS: big blue window hotspot */}
       <group position={[7.1, 12.0, -4.5]} rotation={[0, -0.72, 0]}>
         <mesh
           onClick={(event) => {
