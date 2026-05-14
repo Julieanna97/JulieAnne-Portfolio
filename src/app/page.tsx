@@ -2,22 +2,14 @@
 
 import dynamic from "next/dynamic";
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
 import Preloader from "@/components/Preloader";
 
 const HeroScene = dynamic(() => import("@/components/HeroScene"), {
   ssr: false,
-  loading: () => (
-    <div className="flex min-h-screen items-center justify-center bg-[#03030a] text-white">
-      <div className="flex flex-col items-center gap-3 text-center">
-        <Sparkles className="h-6 w-6 animate-pulse text-cyan-300" />
-        <p className="text-sm font-medium">Loading 3D scene...</p>
-      </div>
-    </div>
-  ),
+  loading: () => null,
 });
 
-type RoomNavigationTarget = "about" | "projects";
+type RoomNavigationTarget = "about" | "projects" | "credits";
 
 function CloudShape({
   className = "",
@@ -58,6 +50,8 @@ function CloudShape({
 }
 
 export default function HomePage() {
+  const [sceneReady, setSceneReady] = useState(false);
+
   const [hasEntered, setHasEntered] = useState(() => {
     if (typeof window === "undefined") return false;
     return sessionStorage.getItem("preloaderShown") === "true";
@@ -71,20 +65,18 @@ export default function HomePage() {
   return (
     <>
       {!hasEntered && (
-        <Preloader
-          onEnter={handleEntered}
-          musicSrc="/music/ambient.mp3"
-        />
+        <Preloader onEnter={handleEntered} musicSrc="/music/ambient.mp3" />
       )}
 
       <main
-        className="relative h-screen w-screen overflow-hidden"
+        className={`relative h-screen w-screen overflow-hidden transition-opacity duration-500 ${
+          sceneReady ? "opacity-100" : "opacity-0"
+        }`}
         style={{
           background:
             "radial-gradient(circle at 20% 72%, rgba(255, 170, 190, 0.55), transparent 32%), radial-gradient(circle at 78% 68%, rgba(151, 207, 255, 0.5), transparent 34%), radial-gradient(circle at 50% 18%, rgba(255, 239, 204, 0.75), transparent 38%), linear-gradient(180deg, #fff7ec 0%, #f8dfe8 48%, #d8d5ff 100%)",
         }}
       >
-        {/* Background cloud layer */}
         <div className="pointer-events-none absolute inset-0 z-0">
           <CloudShape
             className="absolute left-[-6%] top-[8%] h-24 w-[260px] cloud-drift-slow"
@@ -107,7 +99,6 @@ export default function HomePage() {
           />
         </div>
 
-        {/* Moving clouds behind the 3D model */}
         <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">
           <div className="cloud-lane cloud-lane-one">
             <CloudShape className="h-28 w-[320px]" opacity={0.42} />
@@ -128,7 +119,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Clouds under and around the 3D room */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[36vh]">
           <CloudShape
             className="absolute bottom-[12%] left-[20%] h-32 w-[370px] cloud-bob"
@@ -147,10 +137,9 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-[2] h-full w-full">
-          <HeroScene />
+          <HeroScene onSceneReady={() => setSceneReady(true)} />
         </div>
 
-        {/* Foreground lower clouds so room feels like it floats */}
         <div className="pointer-events-none absolute inset-x-0 bottom-[-8vh] z-[4] h-[40vh] overflow-hidden">
           <CloudShape
             className="absolute bottom-[-4%] left-[-10%] h-44 w-[500px] cloud-drift-slow"
@@ -175,7 +164,6 @@ export default function HomePage() {
           <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-white/45 to-transparent blur-xl" />
         </div>
 
-        {/* Foreground UI */}
         <div className="pointer-events-none absolute inset-0 z-10">
           <div className="absolute left-4 top-10 w-[420px] md:left-12 md:top-16 md:w-[500px]">
             <div className="relative">
@@ -208,7 +196,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <nav className="pointer-events-auto absolute bottom-10 left-1/2 z-20 flex -translate-x-1/2 items-end gap-6">
+          <nav className="pointer-events-auto absolute bottom-10 left-1/2 z-20 flex -translate-x-1/2 items-end gap-5">
             <CloudButton target="about" label="About" tint="#ffe2ee" delay="0s" />
 
             <CloudButton
@@ -216,6 +204,13 @@ export default function HomePage() {
               label="Projects"
               tint="#ffd9e7"
               delay="0.6s"
+            />
+
+            <CloudButton
+              target="credits"
+              label="Credits"
+              tint="#e0effd"
+              delay="1.2s"
             />
           </nav>
 
@@ -343,17 +338,12 @@ function CloudButton({
   label,
   tint,
   delay,
-  big = false,
 }: {
   target: RoomNavigationTarget;
   label: string;
   tint: string;
   delay: string;
-  big?: boolean;
 }) {
-  const size = big ? "h-20 w-44" : "h-16 w-36";
-  const fontSize = big ? "text-sm" : "text-xs";
-
   const handleClick = () => {
     window.dispatchEvent(
       new CustomEvent("room:navigate", {
@@ -368,7 +358,7 @@ function CloudButton({
     <button
       type="button"
       onClick={handleClick}
-      className={`group relative flex items-center justify-center ${size} cloud-nav transition-transform duration-300 hover:scale-110`}
+      className="cloud-nav group relative flex h-16 w-36 items-center justify-center transition-transform duration-300 hover:scale-110"
       style={{ animationDelay: delay }}
     >
       <svg
@@ -395,7 +385,7 @@ function CloudButton({
       </svg>
 
       <span
-        className={`relative z-10 ${fontSize} font-black uppercase tracking-[0.18em] text-[#5a3a6e]`}
+        className="relative z-10 text-xs font-black uppercase tracking-[0.18em] text-[#5a3a6e]"
         style={{ textShadow: "0 1px 2px rgba(255,255,255,0.9)" }}
       >
         {label}

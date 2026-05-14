@@ -17,14 +17,14 @@ const HOME_TARGET: [number, number, number] = [0, 5.5, 0];
 const INTRO_CAMERA: [number, number, number] = [-28, 24, 30];
 const INTRO_TARGET: [number, number, number] = [0, 7.5, 0];
 
-const INTRO_MID_CAMERA: [number, number, number] = [10, 26, 26];
-const INTRO_MID_TARGET: [number, number, number] = [0, 8.5, 0];
-
 const LAPTOP_CAMERA: [number, number, number] = [-4.05, 11.56, -3.37];
 const LAPTOP_TARGET: [number, number, number] = [-5.56, 11.26, -4.95];
 
 const WINDOW_CAMERA: [number, number, number] = [-2.5, 11.3, 8.5];
 const WINDOW_TARGET: [number, number, number] = [7.1, 10, -4.67];
+
+const CREDITS_CAMERA: [number, number, number] = [3.5, 6.2, 6.2];
+const CREDITS_TARGET: [number, number, number] = [4.8, 4.3, -1.6];
 
 function SoftWebsiteGlow() {
   return (
@@ -112,15 +112,19 @@ function SoftGroundGlow() {
 function SceneContent({
   shouldZoomOutFromLaptop,
   shouldZoomOutFromWindow,
+  shouldZoomOutFromCredits,
+  onSceneReady,
 }: {
   shouldZoomOutFromLaptop: boolean;
   shouldZoomOutFromWindow: boolean;
+  shouldZoomOutFromCredits: boolean;
+  onSceneReady?: () => void;
 }) {
   const router = useRouter();
   const controlsRef = useRef<any>(null);
   const hasPlayedReturnAnimation = useRef(false);
+  const hasCalledSceneReady = useRef(false);
 
-  const [activeSection, setActiveSection] = useState<SectionName>("home");
   const [isMoving, setIsMoving] = useState(false);
 
   const { camera } = useThree();
@@ -128,12 +132,11 @@ function SceneContent({
   const moveCamera = (
     position: [number, number, number],
     target: [number, number, number],
-    section: SectionName,
+    _section: SectionName,
     onCompleteCallback?: () => void,
     duration = 1.45
   ) => {
     setIsMoving(true);
-    setActiveSection(section);
 
     const timeline = gsap.timeline({
       onUpdate: () => {
@@ -200,16 +203,51 @@ function SceneContent({
     });
   };
 
+  const goCredits = () => {
+    moveCamera(CREDITS_CAMERA, CREDITS_TARGET, "home", () => {
+      router.push("/credits");
+    });
+  };
+
   useEffect(() => {
-    const shouldReturn = shouldZoomOutFromLaptop || shouldZoomOutFromWindow;
+    if (hasCalledSceneReady.current) return;
+    if (!controlsRef.current) return;
+
+    hasCalledSceneReady.current = true;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        onSceneReady?.();
+      });
+    });
+  }, [onSceneReady]);
+
+  useEffect(() => {
+    const shouldReturn =
+      shouldZoomOutFromLaptop ||
+      shouldZoomOutFromWindow ||
+      shouldZoomOutFromCredits;
 
     if (!shouldReturn || hasPlayedReturnAnimation.current) return;
     if (!controlsRef.current) return;
 
     hasPlayedReturnAnimation.current = true;
 
-    const startCamera = shouldZoomOutFromLaptop ? LAPTOP_CAMERA : WINDOW_CAMERA;
-    const startTarget = shouldZoomOutFromLaptop ? LAPTOP_TARGET : WINDOW_TARGET;
+    let startCamera = LAPTOP_CAMERA;
+    let startTarget = LAPTOP_TARGET;
+
+    if (shouldZoomOutFromWindow) {
+      startCamera = WINDOW_CAMERA;
+      startTarget = WINDOW_TARGET;
+    }
+
+    if (shouldZoomOutFromCredits) {
+      startCamera = CREDITS_CAMERA;
+      startTarget = CREDITS_TARGET;
+    }
+
+    gsap.killTweensOf(camera.position);
+    gsap.killTweensOf(controlsRef.current.target);
 
     camera.position.set(...startCamera);
     controlsRef.current.target.set(...startTarget);
@@ -221,10 +259,16 @@ function SceneContent({
       moveCamera(HOME_CAMERA, HOME_TARGET, "home", () => {
         router.replace("/", { scroll: false });
       });
-    }, 350);
+    }, 450);
 
     return () => window.clearTimeout(timer);
-  }, [camera, router, shouldZoomOutFromLaptop, shouldZoomOutFromWindow]);
+  }, [
+    camera,
+    router,
+    shouldZoomOutFromLaptop,
+    shouldZoomOutFromWindow,
+    shouldZoomOutFromCredits,
+  ]);
 
   useEffect(() => {
     const handleIntro = () => {
@@ -251,6 +295,10 @@ function SceneContent({
 
       if (target === "projects") {
         goProjects();
+      }
+
+      if (target === "credits") {
+        goCredits();
       }
     };
 
@@ -294,6 +342,7 @@ function SceneContent({
         <IsometricRoom />
       </group>
 
+      {/* ABOUT: laptop screen hotspot */}
       <group position={[-5.56, 11.26, -4.95]} rotation={[-0.85, -0.55, -0.2]}>
         <mesh
           onClick={(event) => {
@@ -315,6 +364,7 @@ function SceneContent({
         </mesh>
       </group>
 
+      {/* PROJECTS: big blue window hotspot */}
       <group position={[7.1, 12.0, -4.5]} rotation={[0, -0.72, 0]}>
         <mesh
           onClick={(event) => {
@@ -336,6 +386,28 @@ function SceneContent({
         </mesh>
       </group>
 
+      {/* CREDITS: kitchen hotspot */}
+      <group position={[5.1, 4.1, -1.0]} rotation={[0, -0.72, 0]}>
+        <mesh
+          onClick={(event) => {
+            event.stopPropagation();
+
+            if (!isMoving) {
+              goCredits();
+            }
+          }}
+          onPointerOver={() => {
+            document.body.style.cursor = "pointer";
+          }}
+          onPointerOut={() => {
+            document.body.style.cursor = "default";
+          }}
+        >
+          <boxGeometry args={[5.4, 4.6, 5.4]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+      </group>
+
       <ContactShadows
         position={[0, -1.15, 0]}
         opacity={0.12}
@@ -353,7 +425,9 @@ function SceneContent({
             ? LAPTOP_TARGET
             : shouldZoomOutFromWindow
               ? WINDOW_TARGET
-              : HOME_TARGET
+              : shouldZoomOutFromCredits
+                ? CREDITS_TARGET
+                : HOME_TARGET
         }
         enablePan={false}
         enableZoom
@@ -370,12 +444,13 @@ function SceneContent({
   );
 }
 
-const HeroScene = () => {
+const HeroScene = ({ onSceneReady }: { onSceneReady?: () => void }) => {
   const searchParams = useSearchParams();
   const returnFrom = searchParams.get("from");
 
   const shouldZoomOutFromLaptop = returnFrom === "about";
   const shouldZoomOutFromWindow = returnFrom === "projects";
+  const shouldZoomOutFromCredits = returnFrom === "credits";
 
   return (
     <section className="pointer-events-auto relative h-screen w-full overflow-hidden">
@@ -387,7 +462,9 @@ const HeroScene = () => {
             ? LAPTOP_CAMERA
             : shouldZoomOutFromWindow
               ? WINDOW_CAMERA
-              : HOME_CAMERA,
+              : shouldZoomOutFromCredits
+                ? CREDITS_CAMERA
+                : HOME_CAMERA,
           fov: 35,
           near: 0.1,
           far: 1000,
@@ -410,6 +487,8 @@ const HeroScene = () => {
           <SceneContent
             shouldZoomOutFromLaptop={shouldZoomOutFromLaptop}
             shouldZoomOutFromWindow={shouldZoomOutFromWindow}
+            shouldZoomOutFromCredits={shouldZoomOutFromCredits}
+            onSceneReady={onSceneReady}
           />
         </Suspense>
       </Canvas>

@@ -22,7 +22,7 @@ export default function Preloader({
     window.dispatchEvent(new CustomEvent("room:intro"));
 
     try {
-      await playAmbientAudio(musicSrc, 0.4);
+      await playAmbientAudio(musicSrc, 0.1);
     } catch (err) {
       console.error("Audio play failed:", err);
     }

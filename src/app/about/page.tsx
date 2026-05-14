@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 export default function AboutPage() {
-return (
+  return (
     <main
       className="min-h-screen w-full"
       style={{
@@ -25,9 +25,7 @@ return (
           "radial-gradient(circle at 20% 72%, rgba(255, 170, 190, 0.55), transparent 32%), radial-gradient(circle at 78% 68%, rgba(151, 207, 255, 0.5), transparent 34%), radial-gradient(circle at 50% 18%, rgba(255, 239, 204, 0.75), transparent 38%), linear-gradient(180deg, #fff7ec 0%, #f8dfe8 48%, #d8d5ff 100%)",
       }}
     >
-      {/* === LAPTOP FRAME (full-bleed) === */}
       <div className="w-full">
-        {/* Outer pink laptop body */}
         <div
           className="relative p-3 shadow-2xl md:p-5"
           style={{
@@ -37,7 +35,6 @@ return (
               "0 30px 80px rgba(216, 138, 163, 0.4), 0 10px 30px rgba(0,0,0,0.15), inset 0 1px 2px rgba(255,255,255,0.6)",
           }}
         >
-          {/* Camera notch on top bezel */}
           <div className="mb-2 flex items-center justify-center gap-2">
             <div className="h-1.5 w-1.5 rounded-full bg-pink-900/30" />
             <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-pink-900/40">
@@ -46,7 +43,6 @@ return (
             <div className="h-1.5 w-1.5 rounded-full bg-pink-900/30" />
           </div>
 
-          {/* Black inner screen border */}
           <div
             className="relative overflow-hidden p-2 md:p-3"
             style={{
@@ -54,7 +50,6 @@ return (
               boxShadow: "inset 0 0 30px rgba(0,0,0,0.5)",
             }}
           >
-            {/* The actual screen content area */}
             <div
               className="relative overflow-hidden"
               style={{
@@ -62,7 +57,6 @@ return (
                   "linear-gradient(180deg, #fff7ec 0%, #fde4ee 50%, #ede0ff 100%)",
               }}
             >
-              {/* Screen glare overlay */}
               <div
                 className="pointer-events-none absolute inset-0 z-10"
                 style={{
@@ -71,9 +65,7 @@ return (
                 }}
               />
 
-              {/* === SCREEN CONTENT === */}
               <div className="relative z-20 px-6 py-10 md:px-12 md:py-14">
-                {/* Top "browser bar" feel */}
                 <div className="mb-8 flex items-center gap-2">
                   <div className="flex gap-1.5">
                     <div className="h-3 w-3 rounded-full bg-[#ff5f57]" />
@@ -85,126 +77,139 @@ return (
                   </div>
                 </div>
 
-                {/* Hero */}
                 <div className="text-center">
                   <p className="text-xs font-black uppercase tracking-[0.35em] text-[#8d67cf] md:text-sm">
                     About Me
                   </p>
+
                   <h1 className="mt-4 font-display text-4xl font-bold text-[#3b2a45] md:text-6xl">
                     Hi, I&apos;m Julie Anne ✨
                   </h1>
+
                   <p className="mt-2 text-sm font-semibold text-[#7a4d77] md:text-base">
                     Software Developer · Fullstack · Embedded · AI
                   </p>
 
                   <p className="mx-auto mt-6 max-w-2xl text-sm font-medium leading-relaxed text-[#625a73] md:text-base">
-                    I&apos;m a software developer with experience in fullstack
-                    development, embedded systems, and AI-related projects. I
-                    build user-friendly applications that combine clean design
-                    with practical technical solutions — reliable,
-                    well-structured software that&apos;s both functional and a
-                    joy to use.
+                    I&apos;m a software developer who enjoys building things
+                    that are useful, easy to use, and nice to look at. I&apos;ve
+                    worked with fullstack apps, embedded systems, and AI-related
+                    projects, and I like mixing clean code with small design
+                    details that make an app feel more personal.
                   </p>
                 </div>
 
-                {/* Quick categories */}
                 <div className="mx-auto mt-10 grid max-w-4xl gap-4 md:grid-cols-3">
                   <CategoryCard
                     icon={<Code2 className="h-5 w-5" />}
                     title="Frontend"
-                    text="React, Next.js, TypeScript, Tailwind CSS, and thoughtful UI details that feel polished and alive."
+                    text="I build interfaces with React, Next.js, TypeScript, and Tailwind. I like making pages feel clean, smooth, and easy to use."
                   />
+
                   <CategoryCard
                     icon={<Server className="h-5 w-5" />}
                     title="Backend"
-                    text="Node.js, Express, FastAPI, Flask. APIs, auth flows, SQL/NoSQL databases, and clean app structure."
+                    text="I work with Node.js, Express, FastAPI, and Flask. I enjoy building APIs, connecting databases, and keeping things organized behind the scenes."
                   />
+
                   <CategoryCard
                     icon={<Sparkles className="h-5 w-5" />}
                     title="Creative & Embedded"
-                    text="3D web (Three.js), animations, plus embedded systems with C/C++, ESP32, LoRa, and Arduino."
+                    text="I also enjoy 3D web, animations, and embedded projects with C/C++ and Python. I like adding small creative touches and working on a variety of projects."
                   />
                 </div>
 
-                {/* === EXPERIENCE === */}
                 <SectionHeader icon={<Briefcase />} title="Work Experience" />
 
                 <div className="mx-auto mt-6 max-w-4xl space-y-4">
                   <ExperienceCard
                     role="Fullstack Developer"
                     company="PodManager.ai"
-                    blurb="AI-driven SaaS platform for podcast and audio editing."
+                    blurb="Worked on an AI-powered platform for podcast and audio editing."
                     period="Sep 2025 — Apr 2026"
                     points={[
-                      "Built browser-based audio/video editing tools with React + TypeScript",
-                      "Implemented interactive waveform and video track strip UI",
-                      "Contributed to Node.js APIs managing projects, clips, and effects",
+                      "Built audio and video editing features in the browser using React and TypeScript",
+                      "Worked on waveform and video timeline UI so editing felt smoother",
+                      "Helped with Node.js APIs for projects, clips, and editing effects",
                     ]}
                   />
+
                   <ExperienceCard
                     role="Quality Assurance Analyst"
                     company="Oneforma.com"
-                    blurb="Freelance AI-related work, data annotation and QA."
+                    blurb="Freelance QA work for AI and data-related projects."
                     period="May 2026 — Ongoing"
                     points={[
-                      "Reviewed and improved multilingual training data quality",
-                      "Applied strict QA guidelines while keeping a natural tone",
+                      "Reviewed multilingual data and checked that it followed project guidelines",
+                      "Focused on making the final results feel accurate, clear, and natural",
                     ]}
                   />
+
                   <ExperienceCard
                     role="AI Data Specialist"
                     company="Appen.com"
-                    blurb="AI training and evaluation projects."
+                    blurb="Worked on AI training and evaluation tasks."
                     period="Jan 2026 — Ongoing"
                     points={[
-                      "Worked across text, audio, and multilingual data",
-                      "Transcription review, labeling, and content evaluation",
+                      "Worked with text, audio, and multilingual data",
+                      "Reviewed transcriptions, labels, and content quality for AI projects",
                     ]}
                   />
+
                   <ExperienceCard
                     role="AI Trainer (Coder)"
                     company="Outlier"
-                    blurb="Advanced AI solutions, ML, and AI-driven tools."
+                    blurb="Worked on coding-related AI training tasks."
                     period="Sep 2024 — Jun 2025"
                     points={[
-                      "Developed, reviewed, and optimized AI models",
-                      "Collaborated cross-functionally for high-quality training data",
+                      "Reviewed and improved coding responses for AI models",
+                      "Checked code quality, explanations, and problem-solving steps",
                     ]}
                   />
+
                   <ExperienceCard
                     role="Embedded Software Developer Intern"
                     company="Nodehill AB"
-                    blurb="Embedded systems and wireless comms."
+                    blurb="Worked with embedded systems and wireless communication."
                     period="Jan 2024 — Apr 2024"
                     points={[
-                      "Implemented LoRa comms with two ESP32 microcontrollers",
-                      "Long-range wireless communication module",
+                      "Built LoRa communication between two ESP32 microcontrollers",
+                      "Worked on a long-range wireless communication setup",
                     ]}
                   />
+
                   <ExperienceCard
                     role="Embedded Software Developer Intern"
                     company="Sigma Industry Evolution"
-                    blurb="Engineering solutions for industrial sectors."
+                    blurb="Worked on an embedded project in an engineering environment."
                     period="Sep 2023 — Oct 2023"
                     points={[
-                      "Built a self-driving RC car with Arduino + sensors",
-                      "C/C++ and Python control logic",
+                      "Built a self-driving RC car using Arduino and sensors",
+                      "Worked with C/C++ and Python for the car's control logic",
                     ]}
                   />
                 </div>
 
-                {/* === SKILLS === */}
                 <SectionHeader icon={<Wrench />} title="Skills" />
 
                 <div className="mx-auto mt-6 max-w-4xl">
                   <SkillGroup
                     title="Languages"
-                    skills={["JavaScript", "TypeScript", "Python", "C/C++", "HTML", "CSS"]}
+                    skills={[
+                      "JavaScript",
+                      "TypeScript",
+                      "Python",
+                      "C/C++",
+                      "HTML",
+                      "CSS",
+                    ]}
                   />
+
                   <SkillGroup
                     title="Frontend"
                     skills={["React", "Next.js", "Tailwind CSS", "Bootstrap"]}
                   />
+
                   <SkillGroup
                     title="Backend"
                     skills={[
@@ -217,18 +222,30 @@ return (
                       "Mailchimp",
                     ]}
                   />
+
                   <SkillGroup
                     title="Databases"
                     skills={["SQL", "MongoDB", "phpMyAdmin", "NoSQL"]}
                   />
+
                   <SkillGroup
                     title="Tools & Platforms"
-                    skills={["Git", "Jira", "VSCode", "Docker", "Azure", "WordPress", "Linux/Ubuntu"]}
+                    skills={[
+                      "Git",
+                      "Jira",
+                      "VSCode",
+                      "Docker",
+                      "Azure",
+                      "WordPress",
+                      "Linux/Ubuntu",
+                    ]}
                   />
+
                   <SkillGroup
                     title="Design"
                     skills={["Figma", "Canva", "Web/Graphic Design"]}
                   />
+
                   <SkillGroup
                     title="Embedded & Other"
                     skills={[
@@ -239,13 +256,13 @@ return (
                       "CMake",
                     ]}
                   />
+
                   <SkillGroup
                     title="Soft Skills"
                     skills={["Problem Solving", "Team Communication"]}
                   />
                 </div>
 
-                {/* === EDUCATION === */}
                 <SectionHeader icon={<GraduationCap />} title="Education" />
 
                 <div className="mx-auto mt-6 grid max-w-4xl gap-4 md:grid-cols-2">
@@ -254,24 +271,23 @@ return (
                     program="Fullstack Developer"
                     year="2026"
                     highlights={[
-                      "Frontend & system development",
-                      "Database technology",
-                      "Agile project development",
-                      "E-commerce platforms",
+                      "Worked with frontend, backend, databases, and system development",
+                      "Built projects using agile methods",
+                      "Learned e-commerce platforms and fullstack app structure",
                     ]}
                   />
+
                   <EducationCard
                     school="Movant University of Applied Science"
                     program="Embedded Software Development"
                     year="2024"
                     highlights={[
-                      "High academic performance",
-                      "Led autonomous car collaborative project",
+                      "Studied embedded programming, hardware communication, and real-time systems",
+                      "Led a group project where we built an autonomous car",
                     ]}
                   />
                 </div>
 
-                {/* === CONTACT === */}
                 <SectionHeader icon={<Mail />} title="Let's Connect" />
 
                 <div className="mx-auto mt-6 max-w-4xl">
@@ -281,29 +297,32 @@ return (
                       label="kisamae1997@gmail.com"
                       href="mailto:kisamae1997@gmail.com"
                     />
+
                     <ContactLink
                       icon={<Phone className="h-4 w-4" />}
                       label="+46 760 393 202"
                       href="tel:+46760393202"
                     />
+
                     <ContactLink
                       icon={<Linkedin className="h-4 w-4" />}
                       label="LinkedIn"
-                      href="#"
+                      href="https://www.linkedin.com/in/julie-anne-cantillep-4ba4ab250/"
                     />
+
                     <ContactLink
                       icon={<Github className="h-4 w-4" />}
                       label="GitHub"
-                      href="#"
+                      href="https://github.com/Julieanna97"
                     />
                   </div>
+
                   <div className="mt-4 flex items-center justify-center gap-2 text-xs text-[#7a4d77]">
                     <MapPin className="h-3.5 w-3.5" />
                     <span>Malmö, Sweden</span>
                   </div>
                 </div>
 
-                {/* Back button */}
                 <div className="mt-12 flex justify-center">
                   <Link
                     href="/?from=about"
@@ -317,30 +336,34 @@ return (
             </div>
           </div>
 
-          {/* Laptop "base" hinge - subtle bar below screen */}
           <div className="mt-3 flex justify-center">
             <div className="h-1 w-32 rounded-full bg-pink-900/15" />
           </div>
         </div>
 
-        {/* Laptop base (the trackpad/keyboard part — implied shadow only) */}
         <div className="mx-auto mt-1 h-3 max-w-6xl rounded-b-3xl bg-gradient-to-b from-pink-900/10 to-transparent" />
       </div>
     </main>
   );
 }
 
-/* ============ Subcomponents ============ */
-
-function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
+function SectionHeader({
+  icon,
+  title,
+}: {
+  icon: React.ReactNode;
+  title: string;
+}) {
   return (
     <div className="mx-auto mt-14 flex max-w-4xl items-center gap-3">
       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-pink-200 to-purple-200 text-[#8d67cf] shadow-sm">
         {icon}
       </div>
+
       <h2 className="font-display text-2xl font-bold text-[#3b2a45] md:text-3xl">
         {title}
       </h2>
+
       <div className="ml-2 h-px flex-1 bg-gradient-to-r from-[#8d67cf]/30 to-transparent" />
     </div>
   );
@@ -359,8 +382,11 @@ function CategoryCard({
     <div className="rounded-3xl border border-white/70 bg-white/65 p-5 text-left shadow-lg backdrop-blur-xl transition hover:scale-[1.02] hover:shadow-xl">
       <div className="flex items-center gap-2 text-[#8d67cf]">
         {icon}
-        <p className="text-xs font-black uppercase tracking-[0.2em]">{title}</p>
+        <p className="text-xs font-black uppercase tracking-[0.2em]">
+          {title}
+        </p>
       </div>
+
       <p className="mt-3 text-sm font-medium leading-relaxed text-[#625a73]">
         {text}
       </p>
@@ -388,21 +414,25 @@ function ExperienceCard({
           <h3 className="font-display text-lg font-bold text-[#3b2a45]">
             {role}
           </h3>
+
           <p className="text-sm font-semibold text-[#8d67cf]">{company}</p>
+
           <p className="mt-0.5 text-xs italic text-[#9b8aab]">{blurb}</p>
         </div>
+
         <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-bold text-[#7a4d77]">
           {period}
         </span>
       </div>
+
       <ul className="mt-3 space-y-1.5">
-        {points.map((p) => (
+        {points.map((point) => (
           <li
-            key={p}
+            key={point}
             className="flex gap-2 text-sm leading-relaxed text-[#625a73]"
           >
             <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#d88aa3]" />
-            <span>{p}</span>
+            <span>{point}</span>
           </li>
         ))}
       </ul>
@@ -416,12 +446,13 @@ function SkillGroup({ title, skills }: { title: string; skills: string[] }) {
       <span className="text-xs font-black uppercase tracking-[0.2em] text-[#8d67cf]">
         {title}:
       </span>
-      {skills.map((s) => (
+
+      {skills.map((skill) => (
         <span
-          key={s}
+          key={skill}
           className="rounded-full bg-white/75 px-3 py-1 text-xs font-bold text-[#7a4d77] shadow-sm"
         >
-          {s}
+          {skill}
         </span>
       ))}
     </div>
@@ -446,20 +477,23 @@ function EducationCard({
           <h3 className="font-display text-base font-bold text-[#3b2a45]">
             {program}
           </h3>
+
           <p className="text-sm font-medium text-[#8d67cf]">{school}</p>
         </div>
+
         <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-bold text-[#7a4d77]">
           {year}
         </span>
       </div>
+
       <ul className="mt-3 space-y-1">
-        {highlights.map((h) => (
+        {highlights.map((highlight) => (
           <li
-            key={h}
+            key={highlight}
             className="flex gap-2 text-sm leading-relaxed text-[#625a73]"
           >
             <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#d88aa3]" />
-            <span>{h}</span>
+            <span>{highlight}</span>
           </li>
         ))}
       </ul>
@@ -476,14 +510,19 @@ function ContactLink({
   label: string;
   href: string;
 }) {
+  const isExternal = href.startsWith("http");
+
   return (
     <a
       href={href}
+      target={isExternal ? "_blank" : undefined}
+      rel={isExternal ? "noopener noreferrer" : undefined}
       className="flex items-center gap-3 rounded-2xl border border-white/70 bg-white/65 px-4 py-3 text-sm font-semibold text-[#7a4d77] shadow-sm backdrop-blur-xl transition hover:scale-[1.02] hover:bg-white"
     >
       <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-pink-200 to-purple-200 text-[#8d67cf]">
         {icon}
       </span>
+
       <span>{label}</span>
     </a>
   );
