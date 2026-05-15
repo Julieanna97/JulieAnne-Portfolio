@@ -19,33 +19,11 @@ function CloudShape({
   opacity?: number;
 }) {
   return (
-    <svg
-      viewBox="0 0 200 100"
-      className={className}
+    <div
+      className={`dream-cloud ${className}`}
       style={{ opacity }}
-      preserveAspectRatio="none"
-    >
-      <defs>
-        <radialGradient id="cloudGrad" cx="50%" cy="40%" r="60%">
-          <stop offset="0%" stopColor="rgba(255,255,255,1)" />
-          <stop offset="70%" stopColor="rgba(255,255,255,0.95)" />
-          <stop offset="100%" stopColor="rgba(255,245,250,0.85)" />
-        </radialGradient>
-
-        <filter id="cloudSoft" x="-10%" y="-10%" width="120%" height="120%">
-          <feGaussianBlur stdDeviation="0.4" />
-        </filter>
-      </defs>
-
-      <g filter="url(#cloudSoft)" fill="url(#cloudGrad)">
-        <ellipse cx="100" cy="62" rx="78" ry="26" />
-        <circle cx="58" cy="52" r="22" />
-        <circle cx="92" cy="38" r="28" />
-        <circle cx="128" cy="44" r="24" />
-        <circle cx="155" cy="56" r="18" />
-        <circle cx="38" cy="60" r="16" />
-      </g>
-    </svg>
+      aria-hidden="true"
+    />
   );
 }
 
@@ -101,21 +79,21 @@ export default function HomePage() {
 
         <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">
           <div className="cloud-lane cloud-lane-one">
-            <CloudShape className="h-28 w-[320px]" opacity={0.42} />
-            <CloudShape className="h-20 w-[230px]" opacity={0.28} />
-            <CloudShape className="h-24 w-[280px]" opacity={0.36} />
+            <CloudShape className="relative h-28 w-[320px]" opacity={0.42} />
+            <CloudShape className="relative h-20 w-[230px]" opacity={0.28} />
+            <CloudShape className="relative h-24 w-[280px]" opacity={0.36} />
           </div>
 
           <div className="cloud-lane cloud-lane-two">
-            <CloudShape className="h-24 w-[290px]" opacity={0.34} />
-            <CloudShape className="h-32 w-[370px]" opacity={0.38} />
-            <CloudShape className="h-20 w-[220px]" opacity={0.26} />
+            <CloudShape className="relative h-24 w-[290px]" opacity={0.34} />
+            <CloudShape className="relative h-32 w-[370px]" opacity={0.38} />
+            <CloudShape className="relative h-20 w-[220px]" opacity={0.26} />
           </div>
 
           <div className="cloud-lane cloud-lane-three">
-            <CloudShape className="h-28 w-[340px]" opacity={0.3} />
-            <CloudShape className="h-24 w-[270px]" opacity={0.26} />
-            <CloudShape className="h-32 w-[390px]" opacity={0.32} />
+            <CloudShape className="relative h-28 w-[340px]" opacity={0.3} />
+            <CloudShape className="relative h-24 w-[270px]" opacity={0.26} />
+            <CloudShape className="relative h-32 w-[390px]" opacity={0.32} />
           </div>
         </div>
 
@@ -161,12 +139,12 @@ export default function HomePage() {
             opacity={0.82}
           />
 
-          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-white/45 to-transparent blur-xl" />
+          <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-white/65 via-white/35 to-transparent blur-2xl" />
         </div>
 
         <div className="pointer-events-none absolute inset-0 z-10">
           <div className="absolute left-4 top-10 w-[420px] md:left-12 md:top-16 md:w-[500px]">
-            <div className="relative">
+            <div className="relative min-h-[245px]">
               <CloudShape
                 className="absolute inset-0 h-full w-full cloud-bob"
                 opacity={0.92}
@@ -197,7 +175,12 @@ export default function HomePage() {
           </div>
 
           <nav className="pointer-events-auto absolute bottom-10 left-1/2 z-20 flex -translate-x-1/2 items-end gap-5">
-            <CloudButton target="about" label="About" tint="#ffe2ee" delay="0s" />
+            <CloudButton
+              target="about"
+              label="About"
+              tint="#ffe2ee"
+              delay="0s"
+            />
 
             <CloudButton
               target="projects"
@@ -222,6 +205,39 @@ export default function HomePage() {
         </div>
 
         <style jsx global>{`
+          .dream-cloud {
+            background:
+              radial-gradient(ellipse 26% 42% at 8% 67%, rgba(255, 235, 255, 0.95) 0%, rgba(255, 235, 255, 0.88) 48%, transparent 72%),
+              radial-gradient(ellipse 30% 50% at 23% 56%, rgba(255, 245, 255, 0.98) 0%, rgba(255, 245, 255, 0.9) 50%, transparent 74%),
+              radial-gradient(ellipse 28% 48% at 41% 66%, rgba(255, 235, 255, 0.93) 0%, rgba(255, 235, 255, 0.86) 52%, transparent 75%),
+              radial-gradient(ellipse 34% 56% at 61% 53%, rgba(255, 245, 255, 0.98) 0%, rgba(255, 245, 255, 0.9) 50%, transparent 74%),
+              radial-gradient(ellipse 29% 48% at 80% 65%, rgba(248, 238, 255, 0.94) 0%, rgba(248, 238, 255, 0.86) 52%, transparent 75%),
+              radial-gradient(ellipse 25% 42% at 96% 58%, rgba(245, 250, 255, 0.95) 0%, rgba(245, 250, 255, 0.86) 50%, transparent 72%),
+              linear-gradient(
+                to bottom,
+                transparent 0%,
+                rgba(255, 238, 255, 0.38) 54%,
+                rgba(255, 232, 255, 0.72) 100%
+              );
+            filter: blur(7px);
+            border-radius: 999px;
+            transform-origin: center;
+            will-change: transform;
+          }
+
+          .dream-cloud::after {
+            content: "";
+            position: absolute;
+            inset: 18% 6% 8%;
+            border-radius: 999px;
+            background: linear-gradient(
+              180deg,
+              rgba(255, 255, 255, 0.18),
+              rgba(255, 220, 250, 0.16)
+            );
+            filter: blur(12px);
+          }
+
           @keyframes cloudBob {
             0%,
             100% {
@@ -361,28 +377,10 @@ function CloudButton({
       className="cloud-nav group relative flex h-16 w-36 items-center justify-center transition-transform duration-300 hover:scale-110"
       style={{ animationDelay: delay }}
     >
-      <svg
-        viewBox="0 0 200 100"
-        className="absolute inset-0 h-full w-full drop-shadow-lg transition-all group-hover:drop-shadow-xl"
-        preserveAspectRatio="none"
-      >
-        <defs>
-          <radialGradient id={`grad-${label}`} cx="50%" cy="35%" r="65%">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="70%" stopColor="#ffffff" />
-            <stop offset="100%" stopColor={tint} />
-          </radialGradient>
-        </defs>
-
-        <g fill={`url(#grad-${label})`}>
-          <ellipse cx="100" cy="62" rx="78" ry="26" />
-          <circle cx="58" cy="52" r="22" />
-          <circle cx="92" cy="38" r="28" />
-          <circle cx="128" cy="44" r="24" />
-          <circle cx="155" cy="56" r="18" />
-          <circle cx="38" cy="60" r="16" />
-        </g>
-      </svg>
+      <div
+        className="dream-cloud absolute inset-0 h-full w-full drop-shadow-lg transition-all group-hover:drop-shadow-xl"
+        style={{ opacity: 0.98 }}
+      />
 
       <span
         className="relative z-10 text-xs font-black uppercase tracking-[0.18em] text-[#5a3a6e]"
