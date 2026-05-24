@@ -27,11 +27,21 @@ const WINDOW_TARGET: [number, number, number] = [7.1, 10, -4.67];
 const CREDITS_CAMERA: [number, number, number] = [3.5, 6.2, 6.2];
 const CREDITS_TARGET: [number, number, number] = [4.8, 4.3, -1.6];
 
-const toMobileRoomPosition = (position: [number, number, number]) => [
-  position[0] * 0.78,
-  position[1] * 0.78 - 0.84,
-  position[2] * 0.78,
-] as [number, number, number];
+const getRoomPositionForViewport = (
+  position: [number, number, number],
+  viewportWidth: number
+) => {
+  const isCompactViewport = viewportWidth < 768;
+  const isTabletViewport = viewportWidth >= 768 && viewportWidth < 1280;
+  const scale = isCompactViewport ? 0.78 : isTabletViewport ? 0.9 : 1;
+  const yOffset = isCompactViewport ? -0.84 : isTabletViewport ? -0.58 : -0.45;
+
+  return [
+    position[0] * scale,
+    position[1] * scale + yOffset,
+    position[2] * scale,
+  ] as [number, number, number];
+};
 
 function SoftWebsiteGlow() {
   return (
@@ -150,21 +160,12 @@ function SceneContent({
       ? [0.15, 5.6, 0]
       : HOME_TARGET;
   const homeFov = isCompactViewport ? 42 : isTabletViewport ? 38 : 35;
-  const toMobileRoomPosition = (position: [number, number, number]) => [
-    position[0] * 0.78,
-    position[1] * 0.78 - 0.84,
-    position[2] * 0.78,
-  ] as [number, number, number];
 
   const initialOrbitTarget = useRef<[number, number, number]>(
     shouldZoomOutFromLaptop
-      ? isCompactViewport
-        ? toMobileRoomPosition(LAPTOP_TARGET)
-        : LAPTOP_TARGET
+      ? getRoomPositionForViewport(LAPTOP_TARGET, viewportWidth)
       : shouldZoomOutFromWindow
-        ? isCompactViewport
-          ? toMobileRoomPosition(WINDOW_TARGET)
-          : WINDOW_TARGET
+        ? getRoomPositionForViewport(WINDOW_TARGET, viewportWidth)
         : shouldZoomOutFromCredits
           ? CREDITS_TARGET
           : HOME_TARGET
@@ -241,12 +242,11 @@ function SceneContent({
   };
 
   const goAbout = () => {
-    const cameraTarget = isCompactViewport
-      ? toMobileRoomPosition(LAPTOP_CAMERA)
-      : LAPTOP_CAMERA;
-    const focusTarget = isCompactViewport
-      ? toMobileRoomPosition(LAPTOP_TARGET)
-      : LAPTOP_TARGET;
+    const cameraTarget = getRoomPositionForViewport(
+      LAPTOP_CAMERA,
+      viewportWidth
+    );
+    const focusTarget = getRoomPositionForViewport(LAPTOP_TARGET, viewportWidth);
 
     moveCamera(cameraTarget, focusTarget, "home", () => {
       router.push("/about");
@@ -254,12 +254,11 @@ function SceneContent({
   };
 
   const goProjects = () => {
-    const cameraTarget = isCompactViewport
-      ? toMobileRoomPosition(WINDOW_CAMERA)
-      : WINDOW_CAMERA;
-    const focusTarget = isCompactViewport
-      ? toMobileRoomPosition(WINDOW_TARGET)
-      : WINDOW_TARGET;
+    const cameraTarget = getRoomPositionForViewport(
+      WINDOW_CAMERA,
+      viewportWidth
+    );
+    const focusTarget = getRoomPositionForViewport(WINDOW_TARGET, viewportWidth);
 
     moveCamera(cameraTarget, focusTarget, "home", () => {
       router.push("/projects");
@@ -296,20 +295,12 @@ function SceneContent({
 
     hasPlayedReturnAnimation.current = true;
 
-    let startCamera = isCompactViewport
-      ? toMobileRoomPosition(LAPTOP_CAMERA)
-      : LAPTOP_CAMERA;
-    let startTarget = isCompactViewport
-      ? toMobileRoomPosition(LAPTOP_TARGET)
-      : LAPTOP_TARGET;
+    let startCamera = getRoomPositionForViewport(LAPTOP_CAMERA, viewportWidth);
+    let startTarget = getRoomPositionForViewport(LAPTOP_TARGET, viewportWidth);
 
     if (shouldZoomOutFromWindow) {
-      startCamera = isCompactViewport
-        ? toMobileRoomPosition(WINDOW_CAMERA)
-        : WINDOW_CAMERA;
-      startTarget = isCompactViewport
-        ? toMobileRoomPosition(WINDOW_TARGET)
-        : WINDOW_TARGET;
+      startCamera = getRoomPositionForViewport(WINDOW_CAMERA, viewportWidth);
+      startTarget = getRoomPositionForViewport(WINDOW_TARGET, viewportWidth);
     }
 
     if (shouldZoomOutFromCredits) {
@@ -420,9 +411,7 @@ function SceneContent({
       {/* ABOUT: laptop screen hotspot */}
       <group
         position={
-          isCompactViewport
-            ? toMobileRoomPosition(LAPTOP_TARGET)
-            : LAPTOP_TARGET
+          getRoomPositionForViewport(LAPTOP_TARGET, viewportWidth)
         }
         rotation={[-0.85, -0.55, -0.2]}
       >
@@ -449,9 +438,7 @@ function SceneContent({
       {/* PROJECTS: big blue window hotspot */}
       <group
         position={
-          isCompactViewport
-            ? toMobileRoomPosition([7.1, 12.0, -4.5])
-            : [7.1, 12.0, -4.5]
+          getRoomPositionForViewport([7.1, 12.0, -4.5], viewportWidth)
         }
         rotation={[0, -0.72, 0]}
       >
@@ -559,13 +546,9 @@ const HeroScene = ({ onSceneReady }: { onSceneReady?: () => void }) => {
         dpr={viewportWidth < 768 ? [1, 1.25] : [1, 1.7]}
         camera={{
           position: shouldZoomOutFromLaptop
-            ? isCompactViewport
-              ? toMobileRoomPosition(LAPTOP_CAMERA)
-              : LAPTOP_CAMERA
+            ? getRoomPositionForViewport(LAPTOP_CAMERA, viewportWidth)
             : shouldZoomOutFromWindow
-              ? isCompactViewport
-                ? toMobileRoomPosition(WINDOW_CAMERA)
-                : WINDOW_CAMERA
+              ? getRoomPositionForViewport(WINDOW_CAMERA, viewportWidth)
               : shouldZoomOutFromCredits
                 ? CREDITS_CAMERA
                 : homeCameraVar,
