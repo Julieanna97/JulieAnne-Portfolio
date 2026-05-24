@@ -27,6 +27,12 @@ const WINDOW_TARGET: [number, number, number] = [7.1, 10, -4.67];
 const CREDITS_CAMERA: [number, number, number] = [3.5, 6.2, 6.2];
 const CREDITS_TARGET: [number, number, number] = [4.8, 4.3, -1.6];
 
+const toMobileRoomPosition = (position: [number, number, number]) => [
+  position[0] * 0.78,
+  position[1] * 0.78 - 0.84,
+  position[2] * 0.78,
+] as [number, number, number];
+
 function SoftWebsiteGlow() {
   return (
     <group>
@@ -144,6 +150,25 @@ function SceneContent({
       ? [0.15, 5.6, 0]
       : HOME_TARGET;
   const homeFov = isCompactViewport ? 42 : isTabletViewport ? 38 : 35;
+  const toMobileRoomPosition = (position: [number, number, number]) => [
+    position[0] * 0.78,
+    position[1] * 0.78 - 0.84,
+    position[2] * 0.78,
+  ] as [number, number, number];
+
+  const initialOrbitTarget = useRef<[number, number, number]>(
+    shouldZoomOutFromLaptop
+      ? isCompactViewport
+        ? toMobileRoomPosition(LAPTOP_TARGET)
+        : LAPTOP_TARGET
+      : shouldZoomOutFromWindow
+        ? isCompactViewport
+          ? toMobileRoomPosition(WINDOW_TARGET)
+          : WINDOW_TARGET
+        : shouldZoomOutFromCredits
+          ? CREDITS_TARGET
+          : HOME_TARGET
+  );
 
   // viewportWidth is passed from the parent HeroScene to avoid duplicate listeners
 
@@ -216,13 +241,27 @@ function SceneContent({
   };
 
   const goAbout = () => {
-    moveCamera(LAPTOP_CAMERA, LAPTOP_TARGET, "home", () => {
+    const cameraTarget = isCompactViewport
+      ? toMobileRoomPosition(LAPTOP_CAMERA)
+      : LAPTOP_CAMERA;
+    const focusTarget = isCompactViewport
+      ? toMobileRoomPosition(LAPTOP_TARGET)
+      : LAPTOP_TARGET;
+
+    moveCamera(cameraTarget, focusTarget, "home", () => {
       router.push("/about");
     });
   };
 
   const goProjects = () => {
-    moveCamera(WINDOW_CAMERA, WINDOW_TARGET, "home", () => {
+    const cameraTarget = isCompactViewport
+      ? toMobileRoomPosition(WINDOW_CAMERA)
+      : WINDOW_CAMERA;
+    const focusTarget = isCompactViewport
+      ? toMobileRoomPosition(WINDOW_TARGET)
+      : WINDOW_TARGET;
+
+    moveCamera(cameraTarget, focusTarget, "home", () => {
       router.push("/projects");
     });
   };
@@ -257,12 +296,20 @@ function SceneContent({
 
     hasPlayedReturnAnimation.current = true;
 
-    let startCamera = LAPTOP_CAMERA;
-    let startTarget = LAPTOP_TARGET;
+    let startCamera = isCompactViewport
+      ? toMobileRoomPosition(LAPTOP_CAMERA)
+      : LAPTOP_CAMERA;
+    let startTarget = isCompactViewport
+      ? toMobileRoomPosition(LAPTOP_TARGET)
+      : LAPTOP_TARGET;
 
     if (shouldZoomOutFromWindow) {
-      startCamera = WINDOW_CAMERA;
-      startTarget = WINDOW_TARGET;
+      startCamera = isCompactViewport
+        ? toMobileRoomPosition(WINDOW_CAMERA)
+        : WINDOW_CAMERA;
+      startTarget = isCompactViewport
+        ? toMobileRoomPosition(WINDOW_TARGET)
+        : WINDOW_TARGET;
     }
 
     if (shouldZoomOutFromCredits) {
@@ -371,7 +418,14 @@ function SceneContent({
       </group>
 
       {/* ABOUT: laptop screen hotspot */}
-      <group position={[-5.56, 11.26, -4.95]} rotation={[-0.85, -0.55, -0.2]}>
+      <group
+        position={
+          isCompactViewport
+            ? toMobileRoomPosition(LAPTOP_TARGET)
+            : LAPTOP_TARGET
+        }
+        rotation={[-0.85, -0.55, -0.2]}
+      >
         <mesh
           onClick={(event) => {
             event.stopPropagation();
@@ -387,13 +441,20 @@ function SceneContent({
             document.body.style.cursor = "default";
           }}
         >
-          <planeGeometry args={[2.1, 1.35]} />
+          <planeGeometry args={isCompactViewport ? [2.8, 1.8] : [2.1, 1.35]} />
           <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
       </group>
 
       {/* PROJECTS: big blue window hotspot */}
-      <group position={[7.1, 12.0, -4.5]} rotation={[0, -0.72, 0]}>
+      <group
+        position={
+          isCompactViewport
+            ? toMobileRoomPosition([7.1, 12.0, -4.5])
+            : [7.1, 12.0, -4.5]
+        }
+        rotation={[0, -0.72, 0]}
+      >
         <mesh
           onClick={(event) => {
             event.stopPropagation();
@@ -409,7 +470,7 @@ function SceneContent({
             document.body.style.cursor = "default";
           }}
         >
-          <planeGeometry args={[8.4, 5.1]} />
+          <planeGeometry args={isCompactViewport ? [9.4, 5.7] : [8.4, 5.1]} />
           <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
       </group>
@@ -448,15 +509,7 @@ function SceneContent({
       <OrbitControls
         ref={controlsRef}
         makeDefault
-        target={
-          shouldZoomOutFromLaptop
-            ? LAPTOP_TARGET
-            : shouldZoomOutFromWindow
-              ? WINDOW_TARGET
-              : shouldZoomOutFromCredits
-                ? CREDITS_TARGET
-                : HOME_TARGET
-        }
+        target={initialOrbitTarget.current}
         enablePan={false}
         enableZoom={!isCompactViewport}
         zoomSpeed={isCompactViewport ? 0.09 : 0.15}
@@ -506,9 +559,13 @@ const HeroScene = ({ onSceneReady }: { onSceneReady?: () => void }) => {
         dpr={viewportWidth < 768 ? [1, 1.25] : [1, 1.7]}
         camera={{
           position: shouldZoomOutFromLaptop
-            ? LAPTOP_CAMERA
+            ? isCompactViewport
+              ? toMobileRoomPosition(LAPTOP_CAMERA)
+              : LAPTOP_CAMERA
             : shouldZoomOutFromWindow
-              ? WINDOW_CAMERA
+              ? isCompactViewport
+                ? toMobileRoomPosition(WINDOW_CAMERA)
+                : WINDOW_CAMERA
               : shouldZoomOutFromCredits
                 ? CREDITS_CAMERA
                 : homeCameraVar,
