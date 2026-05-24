@@ -721,19 +721,19 @@ function LowerCabinets() {
       <LowerCabinet
         icon={<Box className="h-3.5 w-3.5" />}
         title="3D Model"
-        items={["Isometric Room", "room.glb", "Creator credit"]}
+        items={["Isometric Room", "room.glb", "Sketchfab"]}
         tape="#fff5b8"
       />
       <LowerCabinet
         icon={<Music className="h-3.5 w-3.5" />}
         title="Music"
-        items={["ambient.mp3", "Artist credit", "License info"]}
+        items={["Motivational Ambient Corporate", "AlexGrohl", "NoncopyrightSounds"]}
         tape="#d8f5d0"
       />
       <LowerCabinet
         icon={<Heart className="h-3.5 w-3.5" />}
-        title="Thanks"
-        items={["Mentors", "Friends", "Community"]}
+        title="Behind the Scenes"
+        items={["UI iteration", "Accessibility pass", "Performance polish"]}
         tape="#ffd6e8"
       />
     </div>
@@ -947,15 +947,15 @@ function FridgeInterior({ open }: { open: boolean }) {
       >
         <div className="flex items-center justify-center gap-1.5 text-[#7a3a55]">
           <Heart className="h-3.5 w-3.5 fill-[#ff8aaf]" />
-          <p className="text-sm font-bold">Special Thanks</p>
+          <p className="text-sm font-bold">What Shaped This</p>
         </div>
 
         <div className="mt-2 space-y-1 text-sm font-semibold leading-snug text-[#5a3a55]">
-          <p>♡ My mentor</p>
-          <p>♡ Friends</p>
-          <p>♡ Community</p>
-          <p>♡ You! 💜</p>
+          <p>· Cozy interiors</p>
+          <p>· Soft color stories</p>
+          <p>· Playful interactions</p>
         </div>
+
       </FridgeNote>
     </div>
   );
