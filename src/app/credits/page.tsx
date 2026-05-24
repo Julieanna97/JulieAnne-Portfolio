@@ -18,31 +18,28 @@ const OUTLINE_THIN = "rgba(58, 46, 63, 0.85)";
 export default function CreditsPage() {
   return (
     <main
-      className="relative min-h-screen w-full overflow-hidden"
+      className="relative min-h-screen w-full overflow-x-hidden overflow-y-auto"
       style={{
         background:
           "radial-gradient(circle at 20% 72%, rgba(255, 170, 190, 0.4), transparent 32%), radial-gradient(circle at 78% 68%, rgba(151, 207, 255, 0.35), transparent 34%), radial-gradient(circle at 50% 18%, rgba(255, 239, 204, 0.6), transparent 38%), linear-gradient(180deg, #fff7ec 0%, #f8dfe8 48%, #d8d5ff 100%)",
       }}
     >
-      {/* Soft ambient blobs */}
       <div className="pointer-events-none absolute -left-20 top-20 h-72 w-72 rounded-full bg-pink-300/25 blur-3xl" />
       <div className="pointer-events-none absolute right-0 top-1/3 h-80 w-80 rounded-full bg-blue-300/25 blur-3xl" />
       <div className="pointer-events-none absolute bottom-1/4 left-1/3 h-72 w-72 rounded-full bg-yellow-200/20 blur-3xl" />
 
       <Wall />
 
-      {/* Back button only */}
       <Link
         href="/?from=credits"
-        className="fixed left-6 bottom-6 z-50 inline-flex w-fit items-center gap-2 rounded-full border border-white/70 bg-white/90 px-5 py-3 text-sm font-semibold text-[#7a4d77] shadow-lg backdrop-blur-xl transition hover:scale-105 hover:bg-white"
+        className="fixed bottom-5 left-4 z-50 inline-flex w-fit items-center gap-2 rounded-full border border-white/70 bg-white/90 px-4 py-3 text-sm font-semibold text-[#7a4d77] shadow-lg backdrop-blur-xl transition hover:scale-105 hover:bg-white sm:left-6 sm:px-5"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to room
       </Link>
 
-      {/* Kitchen scene */}
-      <div className="relative z-10 flex w-full items-end justify-center px-3 pb-24 pt-4 md:px-6 md:pt-6">
-        <div className="relative flex w-full max-w-[2000px] items-end justify-center gap-3">
+      <div className="relative z-10 flex w-full justify-center overflow-x-hidden px-3 pb-28 pt-16 sm:pt-20 md:px-6 md:pt-24 lg:pb-24 lg:pt-10 xl:pt-8">
+        <div className="relative flex w-full max-w-[2000px] flex-col items-center justify-start gap-6 lg:flex-row lg:items-end lg:justify-center lg:gap-3">
           <Ladder />
           <Door />
           <KitchenWall />
@@ -56,16 +53,10 @@ export default function CreditsPage() {
   );
 }
 
-/* ============================================================
-   WALL
-   ============================================================ */
 function Wall() {
   return <div className="pointer-events-none absolute inset-x-0 top-0 h-[55%] w-full" />;
 }
 
-/* ============================================================
-   FLOOR
-   ============================================================ */
 function Floor() {
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40">
@@ -81,12 +72,9 @@ function Floor() {
   );
 }
 
-/* ============================================================
-   LADDER
-   ============================================================ */
 function Ladder() {
   return (
-    <div className="relative hidden h-[760px] w-[140px] shrink-0 lg:block">
+    <div className="relative hidden h-[760px] w-[140px] shrink-0 2xl:block">
       <div
         className="absolute left-4 top-0 h-full w-5"
         style={{
@@ -126,13 +114,10 @@ function Ladder() {
   );
 }
 
-/* ============================================================
-   DOOR
-   ============================================================ */
 function Door() {
   return (
     <div
-      className="relative hidden h-[760px] w-[240px] shrink-0 md:block"
+      className="relative hidden h-[760px] w-[240px] shrink-0 xl:block"
       style={{
         border: `3px solid ${OUTLINE}`,
         borderRadius: "6px 6px 0 0",
@@ -174,20 +159,15 @@ function Door() {
   );
 }
 
-/* ============================================================
-   KITCHEN WALL
-   ============================================================ */
 function KitchenWall() {
   return (
-    <div className="relative flex h-[760px] w-full max-w-[1200px] flex-1 flex-col">
+    <div className="relative flex h-[640px] w-full max-w-[720px] flex-col sm:h-[700px] md:max-w-[900px] lg:h-[760px] lg:max-w-[1200px] lg:flex-1">
       <WallClock />
       <WallPlant />
       <CreditsBoard />
-
       <SubwayTiles />
 
-      {/* Upper cabinets */}
-      <div className="relative z-10 mb-1.5 flex h-56 gap-2 px-1">
+      <div className="relative z-10 mb-1.5 grid h-72 grid-cols-2 gap-2 px-1 sm:flex sm:h-52 lg:h-56">
         <UpperCabinet
           icon={<Code2 className="h-4 w-4" />}
           title="Frontend"
@@ -219,9 +199,8 @@ function KitchenWall() {
         }}
       />
 
-      {/* Countertop */}
       <div
-        className="relative z-10 flex h-44 items-end gap-4 px-4 pb-2"
+        className="relative z-10 flex h-32 items-end gap-2 px-2 pb-2 sm:h-40 sm:gap-3 sm:px-4 lg:h-44 lg:gap-4"
         style={{ background: "#f4ecd9" }}
       >
         <Stove />
@@ -237,8 +216,7 @@ function KitchenWall() {
         }}
       />
 
-      {/* Lower cabinets */}
-      <div className="relative z-10 flex h-[290px] gap-2 px-1 pt-1.5">
+      <div className="relative z-10 flex h-[230px] gap-2 px-1 pt-1.5 sm:h-[260px] lg:h-[290px]">
         <MiniSideShelf />
         <Dishwasher />
         <LowerCabinets />
@@ -247,13 +225,10 @@ function KitchenWall() {
   );
 }
 
-/* ============================================================
-   WALL DECORATIONS
-   ============================================================ */
 function WallClock() {
   return (
     <div
-      className="absolute left-8 top-2 z-20 flex h-20 w-20 items-center justify-center rounded-full"
+      className="absolute left-4 top-2 z-20 hidden h-16 w-16 items-center justify-center rounded-full sm:flex lg:left-8 lg:h-20 lg:w-20"
       style={{
         background: "#fdfbf3",
         border: `3px solid ${OUTLINE}`,
@@ -264,20 +239,20 @@ function WallClock() {
         {[0, 90, 180, 270].map((angle) => (
           <div
             key={angle}
-            className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#3a2e3f]"
+            className="absolute left-1/2 top-1/2 h-1.5 w-1.5 rounded-full bg-[#3a2e3f]"
             style={{
-              transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-28px)`,
+              transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-24px)`,
             }}
           />
         ))}
 
         <div
-          className="absolute left-1/2 top-1/2 h-6 w-1 -translate-x-1/2 origin-bottom rounded-full bg-[#3a2e3f]"
+          className="absolute left-1/2 top-1/2 h-5 w-1 origin-bottom rounded-full bg-[#3a2e3f]"
           style={{ transform: "translate(-50%, -100%) rotate(45deg)" }}
         />
 
         <div
-          className="absolute left-1/2 top-1/2 h-8 w-0.5 -translate-x-1/2 origin-bottom rounded-full bg-[#3a2e3f]"
+          className="absolute left-1/2 top-1/2 h-6 w-0.5 origin-bottom rounded-full bg-[#3a2e3f]"
           style={{ transform: "translate(-50%, -100%) rotate(135deg)" }}
         />
 
@@ -289,24 +264,24 @@ function WallClock() {
 
 function WallPlant() {
   return (
-    <div className="absolute right-6 top-0 z-20 flex flex-col items-center">
-      <div className="relative h-16 w-20">
+    <div className="absolute right-3 top-0 z-20 hidden flex-col items-center sm:flex lg:right-6">
+      <div className="relative h-12 w-16 lg:h-16 lg:w-20">
         <div
-          className="absolute left-1/2 top-0 h-12 w-3 -translate-x-1/2 -rotate-12 rounded-full"
+          className="absolute left-1/2 top-0 h-10 w-3 -translate-x-1/2 -rotate-12 rounded-full lg:h-12"
           style={{ background: "#7da06a", border: `2px solid ${OUTLINE}` }}
         />
         <div
-          className="absolute left-1/2 top-1 h-14 w-3 -translate-x-1/2 rounded-full"
+          className="absolute left-1/2 top-1 h-12 w-3 -translate-x-1/2 rounded-full lg:h-14"
           style={{ background: "#95b58a", border: `2px solid ${OUTLINE}` }}
         />
         <div
-          className="absolute left-1/2 top-0 h-12 w-3 -translate-x-1/2 rotate-12 rounded-full"
+          className="absolute left-1/2 top-0 h-10 w-3 -translate-x-1/2 rotate-12 rounded-full lg:h-12"
           style={{ background: "#7da06a", border: `2px solid ${OUTLINE}` }}
         />
       </div>
 
       <div
-        className="-mt-2 h-8 w-12 rounded-b-md"
+        className="-mt-2 h-7 w-10 rounded-b-md lg:h-8 lg:w-12"
         style={{
           background: "linear-gradient(180deg, #d4a8a8 0%, #b88888 100%)",
           border: `2.5px solid ${OUTLINE}`,
@@ -325,7 +300,7 @@ function CreditsBoard() {
       />
 
       <div
-        className="rounded-sm bg-[#fdfbf3] px-10 py-4 text-center"
+        className="rounded-sm bg-[#fdfbf3] px-7 py-3 text-center sm:px-10 sm:py-4"
         style={{
           border: `3px solid ${OUTLINE}`,
           boxShadow: "4px 5px 0 rgba(58,46,63,0.12)",
@@ -334,7 +309,7 @@ function CreditsBoard() {
         }}
       >
         <p
-          className="font-display text-2xl font-bold text-[#8d67cf]"
+          className="font-display text-xl font-bold text-[#8d67cf] sm:text-2xl"
           style={{ letterSpacing: "0.05em" }}
         >
           Credits
@@ -350,13 +325,10 @@ function CreditsBoard() {
   );
 }
 
-/* ============================================================
-   SUBWAY TILES
-   ============================================================ */
 function SubwayTiles() {
   return (
     <div
-      className="relative z-0 h-28"
+      className="relative z-0 h-20 sm:h-24 lg:h-28"
       style={{
         backgroundImage: `
           repeating-linear-gradient(
@@ -381,9 +353,6 @@ function SubwayTiles() {
   );
 }
 
-/* ============================================================
-   UPPER CABINET
-   ============================================================ */
 function UpperCabinet({
   icon,
   title,
@@ -404,27 +373,25 @@ function UpperCabinet({
         perspective: "900px",
       }}
     >
-      {/* Content inside */}
       <div
-        className={`absolute inset-x-4 top-10 bottom-3 z-10 transition-all duration-700 ${
+        className={`absolute inset-x-3 bottom-3 top-9 z-10 transition-all duration-700 sm:inset-x-4 sm:top-10 ${
           open ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
         }`}
       >
         <div className="flex items-center gap-1.5 text-[#8d67cf]">
           {icon}
-          <p className="text-xs font-black uppercase tracking-[0.18em]">
+          <p className="text-[10px] font-black uppercase tracking-[0.15em] sm:text-xs sm:tracking-[0.18em]">
             {title}
           </p>
         </div>
 
-        <div className="mt-2 space-y-1 text-sm font-semibold leading-tight text-[#5a3a6e]">
+        <div className="mt-2 space-y-1 text-xs font-semibold leading-tight text-[#5a3a6e] sm:text-sm">
           {items.map((item) => (
             <p key={item}>♡ {item}</p>
           ))}
         </div>
       </div>
 
-      {/* Door */}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -440,18 +407,18 @@ function UpperCabinet({
         }}
       >
         <div
-          className={`absolute left-1/2 top-6 flex -translate-x-1/2 flex-col items-center gap-1.5 text-[#5a3a6e] transition-opacity duration-300 ${
+          className={`absolute left-1/2 top-5 flex -translate-x-1/2 flex-col items-center gap-1.5 text-[#5a3a6e] transition-opacity duration-300 sm:top-6 ${
             open ? "opacity-0" : "opacity-100"
           }`}
         >
           {icon}
-          <p className="text-xs font-black uppercase tracking-[0.18em]">
+          <p className="text-[10px] font-black uppercase tracking-[0.15em] sm:text-xs sm:tracking-[0.18em]">
             {title}
           </p>
         </div>
 
         <div
-          className="absolute bottom-4 left-1/2 h-2 w-16 -translate-x-1/2 rounded-full"
+          className="absolute bottom-4 left-1/2 h-2 w-12 -translate-x-1/2 rounded-full sm:w-16"
           style={{
             background: "#8a6e4a",
             border: `1.5px solid ${OUTLINE}`,
@@ -459,7 +426,7 @@ function UpperCabinet({
         />
 
         {!open && (
-          <span className="absolute bottom-9 left-1/2 -translate-x-1/2 text-[10px] font-black uppercase tracking-[0.3em] text-[#8a7259]/55">
+          <span className="absolute bottom-9 left-1/2 -translate-x-1/2 text-[8px] font-black uppercase tracking-[0.22em] text-[#8a7259]/55 sm:text-[10px] sm:tracking-[0.3em]">
             click to open
           </span>
         )}
@@ -468,13 +435,10 @@ function UpperCabinet({
   );
 }
 
-/* ============================================================
-   STOVE
-   ============================================================ */
 function Stove() {
   return (
     <div
-      className="relative h-20 w-52 shrink-0 rounded-sm"
+      className="relative h-16 w-28 shrink-0 rounded-sm sm:h-20 sm:w-44 lg:w-52"
       style={{
         background: "#2c2730",
         border: `2.5px solid ${OUTLINE}`,
@@ -497,16 +461,13 @@ function Stove() {
   );
 }
 
-/* ============================================================
-   JAR SET
-   ============================================================ */
 function JarSet() {
   return (
-    <div className="flex h-32 shrink-0 items-end gap-2">
+    <div className="hidden h-28 shrink-0 items-end gap-2 sm:flex lg:h-32">
       {[0, 1, 2, 3].map((i) => (
         <div key={i} className="relative flex flex-col items-center">
           <div
-            className="h-3 w-10"
+            className="h-3 w-8 lg:w-10"
             style={{
               background: "#b89878",
               border: `2px solid ${OUTLINE}`,
@@ -514,7 +475,7 @@ function JarSet() {
             }}
           />
           <div
-            className="h-20 w-10 rounded-b-sm"
+            className="h-16 w-8 rounded-b-sm lg:h-20 lg:w-10"
             style={{
               background: "#fdfbf3",
               border: `2px solid ${OUTLINE}`,
@@ -527,29 +488,26 @@ function JarSet() {
   );
 }
 
-/* ============================================================
-   SINK
-   ============================================================ */
 function Sink() {
   return (
-    <div className="relative h-32 flex-1 shrink-0">
+    <div className="relative h-28 flex-1 shrink-0 sm:h-32">
       <div className="absolute left-1/2 top-0 -translate-x-1/2">
         <div
-          className="mx-auto h-14 w-2 rounded"
+          className="mx-auto h-12 w-2 rounded sm:h-14"
           style={{
             background: "linear-gradient(180deg, #d0d0d0 0%, #888 100%)",
             border: `1.5px solid ${OUTLINE_THIN}`,
           }}
         />
         <div
-          className="-mt-1 h-2.5 w-16 -translate-x-[28px] rounded"
+          className="-mt-1 h-2.5 w-14 -translate-x-[24px] rounded sm:w-16 sm:-translate-x-[28px]"
           style={{
             background: "linear-gradient(180deg, #d0d0d0 0%, #888 100%)",
             border: `1.5px solid ${OUTLINE_THIN}`,
           }}
         />
         <div
-          className="ml-[-28px] h-4 w-2.5"
+          className="ml-[-24px] h-4 w-2.5 sm:ml-[-28px]"
           style={{
             background: "#888",
             border: `1.5px solid ${OUTLINE_THIN}`,
@@ -558,7 +516,7 @@ function Sink() {
       </div>
 
       <div
-        className="absolute inset-x-0 bottom-0 h-20 rounded-sm"
+        className="absolute inset-x-0 bottom-0 h-16 rounded-sm sm:h-20"
         style={{
           background: "#c0c4cc",
           border: `2.5px solid ${OUTLINE}`,
@@ -569,11 +527,11 @@ function Sink() {
           style={{ background: "#5a5246", border: `1.5px solid ${OUTLINE}` }}
         />
         <div
-          className="absolute left-3 bottom-1.5 h-7 w-4 rounded-sm"
+          className="absolute bottom-1.5 left-3 h-7 w-4 rounded-sm"
           style={{ background: "#c4a8d4", border: `2px solid ${OUTLINE}` }}
         />
         <div
-          className="absolute left-9 bottom-1.5 h-6 w-4 rounded-sm"
+          className="absolute bottom-1.5 left-9 h-6 w-4 rounded-sm"
           style={{ background: "#d4a8a8", border: `2px solid ${OUTLINE}` }}
         />
       </div>
@@ -581,13 +539,10 @@ function Sink() {
   );
 }
 
-/* ============================================================
-   MINI SIDE SHELF
-   ============================================================ */
 function MiniSideShelf() {
   return (
     <div
-      className="relative w-[88px] shrink-0 rounded-sm"
+      className="relative hidden w-[72px] shrink-0 rounded-sm sm:block lg:w-[88px]"
       style={{
         background: "#d4b896",
         border: `2.5px solid ${OUTLINE}`,
@@ -598,18 +553,13 @@ function MiniSideShelf() {
           className="flex items-end justify-center gap-0.5 rounded-sm"
           style={{ background: "#c9a98d" }}
         >
-          <div
-            className="h-10 w-3 rounded-sm"
-            style={{ background: "#fdfbf3", border: `1.5px solid ${OUTLINE}` }}
-          />
-          <div
-            className="h-11 w-3 rounded-sm"
-            style={{ background: "#fdfbf3", border: `1.5px solid ${OUTLINE}` }}
-          />
-          <div
-            className="h-10 w-3 rounded-sm"
-            style={{ background: "#fdfbf3", border: `1.5px solid ${OUTLINE}` }}
-          />
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="h-8 w-2 rounded-sm lg:h-10 lg:w-3"
+              style={{ background: "#fdfbf3", border: `1.5px solid ${OUTLINE}` }}
+            />
+          ))}
         </div>
 
         <div
@@ -638,14 +588,11 @@ function MiniSideShelf() {
   );
 }
 
-/* ============================================================
-   DISHWASHER
-   ============================================================ */
 function Dishwasher() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="relative w-56 shrink-0" style={{ perspective: 1000 }}>
+    <div className="relative w-32 shrink-0 sm:w-44 lg:w-56" style={{ perspective: 1000 }}>
       <div
         className="clickable-ware relative h-full overflow-hidden rounded-sm"
         style={{
@@ -654,7 +601,7 @@ function Dishwasher() {
         }}
       >
         <div
-          className={`absolute left-3 right-3 top-3 z-0 transition-all duration-700 ${
+          className={`absolute left-2 right-2 top-3 z-0 transition-all duration-700 sm:left-3 sm:right-3 ${
             open ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
           }`}
         >
@@ -696,12 +643,12 @@ function Dishwasher() {
 
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-[#5a3a6e]">
             <Code2 className="h-5 w-5 opacity-60" />
-            <p className="text-xs font-black uppercase tracking-[0.25em]">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] sm:text-xs sm:tracking-[0.25em]">
               Dishwasher
             </p>
 
             {!open && (
-              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#5a3a6e]/55">
+              <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-[#5a3a6e]/55 sm:text-[10px] sm:tracking-[0.3em]">
                 click to open
               </span>
             )}
@@ -712,12 +659,9 @@ function Dishwasher() {
   );
 }
 
-/* ============================================================
-   LOWER CABINETS
-   ============================================================ */
 function LowerCabinets() {
   return (
-    <div className="relative flex flex-1 gap-2">
+    <div className="relative grid flex-1 grid-cols-1 gap-2 sm:flex">
       <LowerCabinet
         icon={<Box className="h-3.5 w-3.5" />}
         title="3D Model"
@@ -763,17 +707,11 @@ function LowerCabinet({
       }}
     >
       <div
-        className={`absolute left-3 right-3 top-3 z-0 transition-all duration-700 ${
+        className={`absolute left-2 right-2 top-3 z-0 transition-all duration-700 sm:left-3 sm:right-3 ${
           open ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
         }`}
       >
-        <CreditPanel
-          tape={tape}
-          rotate={1}
-          icon={icon}
-          title={title}
-          items={items}
-        />
+        <CreditPanel tape={tape} rotate={1} icon={icon} title={title} items={items} />
       </div>
 
       <button
@@ -788,20 +726,20 @@ function LowerCabinet({
           transitionTimingFunction: "cubic-bezier(0.22, 0.61, 0.36, 1)",
         }}
       >
-        <div className="absolute left-1/2 top-8 flex -translate-x-1/2 flex-col items-center gap-2 text-white/85">
+        <div className="absolute left-1/2 top-6 flex -translate-x-1/2 flex-col items-center gap-2 text-white/85 sm:top-8">
           {icon}
-          <p className="text-xs font-black uppercase tracking-[0.18em]">
+          <p className="text-[10px] font-black uppercase tracking-[0.14em] sm:text-xs sm:tracking-[0.18em]">
             {title}
           </p>
         </div>
 
         <div
-          className="absolute right-3 top-1/2 h-16 w-2 -translate-y-1/2 rounded-full"
+          className="absolute right-3 top-1/2 hidden h-16 w-2 -translate-y-1/2 rounded-full sm:block"
           style={{ background: "#5a3a1a", border: `1.5px solid ${OUTLINE}` }}
         />
 
         {!open && (
-          <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-black uppercase tracking-[0.3em] text-white/55">
+          <span className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[8px] font-black uppercase tracking-[0.2em] text-white/55 sm:bottom-6 sm:text-[10px] sm:tracking-[0.3em]">
             click to open
           </span>
         )}
@@ -810,15 +748,12 @@ function LowerCabinet({
   );
 }
 
-/* ============================================================
-   FRIDGE
-   ============================================================ */
 function Fridge() {
   const [open, setOpen] = useState(false);
 
   return (
     <div
-      className="relative ml-1 h-[760px] w-[360px] shrink-0 md:w-[420px]"
+      className="relative h-[520px] w-[92vw] max-w-[360px] shrink-0 sm:h-[620px] sm:max-w-[420px] lg:ml-1 lg:h-[760px] lg:w-[420px]"
       style={{ perspective: 1400 }}
     >
       <div
@@ -829,7 +764,7 @@ function Fridge() {
         }}
       >
         <div
-          className={`absolute inset-5 rounded-md transition-all duration-700 ${
+          className={`absolute inset-4 rounded-md transition-all duration-700 sm:inset-5 ${
             open ? "opacity-100" : "opacity-0"
           }`}
           style={{
@@ -865,7 +800,7 @@ function Fridge() {
             }}
           />
 
-          <div className="absolute left-6 top-[36%] flex flex-col gap-2.5">
+          <div className="absolute left-5 top-[36%] flex flex-col gap-2.5 sm:left-6">
             <Magnet color="#ff8aaf" />
             <Magnet color="#a8d4e8" />
             <Magnet color="#fff5b8" />
@@ -873,16 +808,16 @@ function Fridge() {
           </div>
 
           <div
-            className="absolute left-1/2 top-1/2 w-44 -translate-x-1/2 -translate-y-1/2 rotate-[-3deg] rounded-sm p-4 text-center"
+            className="absolute left-1/2 top-1/2 w-36 -translate-x-1/2 -translate-y-1/2 rotate-[-3deg] rounded-sm p-3 text-center sm:w-44 sm:p-4"
             style={{
               background: "#fff5b8",
               border: `2.5px solid ${OUTLINE}`,
             }}
           >
-            <p className="font-display text-xl font-bold text-[#5a3a6e]">
+            <p className="font-display text-lg font-bold text-[#5a3a6e] sm:text-xl">
               Open me ✨
             </p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.15em] text-[#7a4d77]">
+            <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-[#7a4d77] sm:text-xs">
               Credits inside ♡
             </p>
           </div>
@@ -896,9 +831,9 @@ function Fridge() {
 
 function FridgeInterior({ open }: { open: boolean }) {
   return (
-    <div className="relative h-full w-full p-4">
+    <div className="relative h-full w-full p-3 sm:p-4">
       <FridgeNote
-        className="absolute left-3 top-3 w-[260px]"
+        className="absolute left-3 top-3 w-[220px] sm:w-[260px]"
         rotate={2}
         tape="#c4a8d4"
         open={open}
@@ -920,7 +855,7 @@ function FridgeInterior({ open }: { open: boolean }) {
       </FridgeNote>
 
       <FridgeNote
-        className="absolute left-4 top-[240px] w-[200px]"
+        className="absolute left-4 top-[190px] w-[180px] sm:top-[240px] sm:w-[200px]"
         rotate={-3}
         tape="#fff5b8"
         open={open}
@@ -931,7 +866,7 @@ function FridgeInterior({ open }: { open: boolean }) {
           <p className="text-sm font-bold">Inspiration</p>
         </div>
 
-        <div className="mt-2 space-y-1 text-sm font-semibold leading-snug text-[#5a3a6e]">
+        <div className="mt-2 space-y-1 text-xs font-semibold leading-snug text-[#5a3a6e] sm:text-sm">
           <p>· Cozy spaces</p>
           <p>· Pastel dreams</p>
           <p>· Tiny details</p>
@@ -939,7 +874,7 @@ function FridgeInterior({ open }: { open: boolean }) {
       </FridgeNote>
 
       <FridgeNote
-        className="absolute right-3 bottom-3 w-[220px]"
+        className="absolute bottom-3 right-3 w-[190px] sm:w-[220px]"
         rotate={-2}
         tape="#ff8aaf"
         open={open}
@@ -950,20 +885,16 @@ function FridgeInterior({ open }: { open: boolean }) {
           <p className="text-sm font-bold">What Shaped This</p>
         </div>
 
-        <div className="mt-2 space-y-1 text-sm font-semibold leading-snug text-[#5a3a55]">
+        <div className="mt-2 space-y-1 text-xs font-semibold leading-snug text-[#5a3a55] sm:text-sm">
           <p>· Cozy interiors</p>
           <p>· Soft color stories</p>
           <p>· Playful interactions</p>
         </div>
-
       </FridgeNote>
     </div>
   );
 }
 
-/* ============================================================
-   PANELS
-   ============================================================ */
 function CreditPanel({
   icon,
   title,
@@ -979,7 +910,7 @@ function CreditPanel({
 }) {
   return (
     <div
-      className="relative w-full rounded-sm p-3"
+      className="relative w-full rounded-sm p-2 sm:p-3"
       style={{
         transform: `rotate(${rotate}deg)`,
         background: "#fdfbf3",
@@ -993,12 +924,12 @@ function CreditPanel({
 
       <div className="flex items-center gap-1.5 text-[#8d67cf]">
         {icon}
-        <p className="text-xs font-black uppercase tracking-[0.18em]">
+        <p className="text-[10px] font-black uppercase tracking-[0.14em] sm:text-xs sm:tracking-[0.18em]">
           {title}
         </p>
       </div>
 
-      <div className="mt-1.5 space-y-0.5 text-sm font-semibold leading-tight text-[#5a3a6e]">
+      <div className="mt-1.5 space-y-0.5 text-[10px] font-semibold leading-tight text-[#5a3a6e] sm:text-sm">
         {items.map((item) => (
           <p key={item}>· {item}</p>
         ))}
@@ -1022,7 +953,7 @@ function CompactPanel({
 }) {
   return (
     <div
-      className="relative w-full rounded-sm px-3 py-2.5"
+      className="relative w-full rounded-sm px-2 py-2 sm:px-3 sm:py-2.5"
       style={{
         transform: `rotate(${rotate}deg)`,
         background: "#fdfbf3",
@@ -1036,12 +967,12 @@ function CompactPanel({
 
       <div className="flex items-center gap-1.5 text-[#8d67cf]">
         {icon}
-        <p className="text-xs font-black uppercase tracking-[0.18em]">
+        <p className="text-[10px] font-black uppercase tracking-[0.14em] sm:text-xs sm:tracking-[0.18em]">
           {title}
         </p>
       </div>
 
-      <div className="mt-1.5 space-y-0.5 text-sm font-semibold leading-tight text-[#5a3a6e]">
+      <div className="mt-1.5 space-y-0.5 text-[10px] font-semibold leading-tight text-[#5a3a6e] sm:text-sm">
         {items.map((item) => (
           <p key={item}>· {item}</p>
         ))}
@@ -1094,7 +1025,7 @@ function Pill({
 }) {
   return (
     <div
-      className="rounded-sm px-1.5 py-1 text-center text-xs font-bold text-[#5a3a6e]"
+      className="rounded-sm px-1.5 py-1 text-center text-[10px] font-bold text-[#5a3a6e] sm:text-xs"
       style={{
         background: color,
         border: `1.5px solid ${OUTLINE_THIN}`,
@@ -1117,9 +1048,6 @@ function Magnet({ color }: { color: string }) {
   );
 }
 
-/* ============================================================
-   GLOBAL STYLES
-   ============================================================ */
 function SceneStyles() {
   return (
     <style jsx global>{`
