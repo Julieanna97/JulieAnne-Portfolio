@@ -47,7 +47,7 @@ export default function HomePage() {
       )}
 
       <main
-        className={`relative h-screen w-screen overflow-hidden transition-opacity duration-500 ${
+        className={`relative min-h-[100dvh] w-full overflow-hidden transition-opacity duration-500 ${
           sceneReady ? "opacity-100" : "opacity-0"
         }`}
         style={{
@@ -77,7 +77,7 @@ export default function HomePage() {
           />
         </div>
 
-        <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 z-[1] hidden overflow-hidden md:block">
           <div className="cloud-lane cloud-lane-one">
             <CloudShape className="relative h-28 w-[320px]" opacity={0.42} />
             <CloudShape className="relative h-20 w-[230px]" opacity={0.28} />
@@ -97,7 +97,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[36vh]">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] hidden h-[36vh] sm:block">
           <CloudShape
             className="absolute bottom-[12%] left-[20%] h-32 w-[370px] cloud-bob"
             opacity={0.45}
@@ -118,7 +118,7 @@ export default function HomePage() {
           <HeroScene onSceneReady={() => setSceneReady(true)} />
         </div>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-[-8vh] z-[4] h-[40vh] overflow-hidden">
+        <div className="pointer-events-none absolute inset-x-0 bottom-[-8vh] z-[4] hidden h-[40vh] overflow-hidden sm:block">
           <CloudShape
             className="absolute bottom-[-4%] left-[-10%] h-44 w-[500px] cloud-drift-slow"
             opacity={0.82}
@@ -143,20 +143,20 @@ export default function HomePage() {
         </div>
 
         <div className="pointer-events-none absolute inset-0 z-10">
-          <div className="absolute left-4 top-10 w-[420px] md:left-12 md:top-16 md:w-[500px]">
-            <div className="relative min-h-[245px]">
+          <div className="absolute left-1/2 top-6 w-[min(92vw,420px)] -translate-x-1/2 sm:left-6 sm:top-8 sm:w-[min(86vw,420px)] sm:translate-x-0 md:left-12 md:top-16 md:w-[500px]">
+            <div className="relative min-h-[210px] sm:min-h-[245px]">
               <CloudShape
                 className="absolute inset-0 h-full w-full cloud-bob"
                 opacity={0.92}
               />
 
-              <div className="relative px-12 py-10 md:px-14 md:py-12">
-                <p className="text-[11px] font-black uppercase tracking-[0.32em] text-[#a875d8]">
+              <div className="relative px-8 py-8 sm:px-12 sm:py-10 md:px-14 md:py-12">
+                <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#a875d8] sm:text-[11px] sm:tracking-[0.32em]">
                   ✨ Portfolio Room
                 </p>
 
                 <h1
-                  className="mt-3 font-display text-[2.5rem] font-bold leading-[1.05] text-[#3b2a45] md:text-[3.25rem]"
+                  className="mt-2 font-display text-[clamp(2.2rem,10vw,3.25rem)] font-bold leading-[1.05] text-[#3b2a45] sm:mt-3 md:text-[3.25rem]"
                   style={{
                     textShadow: "0 2px 12px rgba(255,255,255,0.8)",
                   }}
@@ -166,7 +166,7 @@ export default function HomePage() {
                   Julie Anne
                 </h1>
 
-                <p className="mt-3 max-w-[280px] text-sm font-semibold leading-relaxed text-[#7a4d77] md:text-[15px]">
+                <p className="mt-2 max-w-[220px] text-[13px] font-semibold leading-relaxed text-[#7a4d77] sm:mt-3 sm:max-w-[280px] sm:text-sm md:text-[15px]">
                   Fullstack developer crafting cozy, creative, and interactive
                   web experiences.
                 </p>
@@ -174,7 +174,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <nav className="pointer-events-auto absolute bottom-10 left-1/2 z-20 flex -translate-x-1/2 items-end gap-5">
+          <nav className="pointer-events-auto absolute bottom-4 left-1/2 z-20 flex w-[min(92vw,30rem)] -translate-x-1/2 flex-wrap justify-center gap-3 px-4 sm:bottom-10 sm:w-auto sm:items-end sm:gap-5 sm:px-0">
             <CloudButton
               target="about"
               label="About"
@@ -374,7 +374,7 @@ function CloudButton({
     <button
       type="button"
       onClick={handleClick}
-      className="cloud-nav group relative flex h-16 w-36 items-center justify-center transition-transform duration-300 hover:scale-110"
+      className="cloud-nav group relative flex h-12 w-28 items-center justify-center transition-transform duration-300 hover:scale-110 sm:h-16 sm:w-36"
       style={{ animationDelay: delay }}
     >
       <div
@@ -383,7 +383,7 @@ function CloudButton({
       />
 
       <span
-        className="relative z-10 text-xs font-black uppercase tracking-[0.18em] text-[#5a3a6e]"
+        className="relative z-10 text-[10px] font-black uppercase tracking-[0.16em] text-[#5a3a6e] sm:text-xs sm:tracking-[0.18em]"
         style={{ textShadow: "0 1px 2px rgba(255,255,255,0.9)" }}
       >
         {label}

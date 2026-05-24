@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Canvas, useThree } from "@react-three/fiber";
+import type { PerspectiveCamera } from "three";
 import { ContactShadows, OrbitControls } from "@react-three/drei";
 import { NoToneMapping, SRGBColorSpace } from "three";
 import gsap from "gsap";
@@ -114,20 +115,43 @@ function SceneContent({
   shouldZoomOutFromWindow,
   shouldZoomOutFromCredits,
   onSceneReady,
+  viewportWidth,
 }: {
   shouldZoomOutFromLaptop: boolean;
   shouldZoomOutFromWindow: boolean;
   shouldZoomOutFromCredits: boolean;
   onSceneReady?: () => void;
+  viewportWidth: number;
 }) {
   const router = useRouter();
   const controlsRef = useRef<any>(null);
   const hasPlayedReturnAnimation = useRef(false);
   const hasCalledSceneReady = useRef(false);
-
   const [isMoving, setIsMoving] = useState(false);
 
   const { camera } = useThree();
+
+  const isCompactViewport = viewportWidth < 768;
+  const isTabletViewport = viewportWidth >= 768 && viewportWidth < 1280;
+  const homeCamera: [number, number, number] = isCompactViewport
+    ? [20, 18, 24]
+    : isTabletViewport
+      ? [18.8, 16.8, 22]
+      : HOME_CAMERA;
+  const homeTarget: [number, number, number] = isCompactViewport
+    ? [0.4, 5.8, 0]
+    : isTabletViewport
+      ? [0.15, 5.6, 0]
+      : HOME_TARGET;
+  const homeFov = isCompactViewport ? 42 : isTabletViewport ? 38 : 35;
+
+  // viewportWidth is passed from the parent HeroScene to avoid duplicate listeners
+
+  useEffect(() => {
+    // camera may be typed as a generic Camera; cast to PerspectiveCamera to update fov safely
+    (camera as PerspectiveCamera).fov = homeFov;
+    (camera as PerspectiveCamera).updateProjectionMatrix();
+  }, [camera, homeFov]);
 
   const moveCamera = (
     position: [number, number, number],
@@ -188,7 +212,7 @@ function SceneContent({
     controlsRef.current.target.set(...INTRO_TARGET);
     controlsRef.current.update();
 
-    moveCamera(HOME_CAMERA, HOME_TARGET, "home", undefined, 2.15);
+    moveCamera(homeCamera, homeTarget, "home", undefined, 2.15);
   };
 
   const goAbout = () => {
@@ -256,7 +280,7 @@ function SceneContent({
     setIsMoving(true);
 
     const timer = window.setTimeout(() => {
-      moveCamera(HOME_CAMERA, HOME_TARGET, "home", () => {
+      moveCamera(homeCamera, homeTarget, "home", () => {
         router.replace("/", { scroll: false });
       });
     }, 450);
@@ -338,7 +362,11 @@ function SceneContent({
       <SoftWebsiteGlow />
       <SoftGroundGlow />
 
-      <group position={[0, -0.45, 0]} rotation={[0, -0.72, 0]} scale={1}>
+      <group
+        position={[0, isCompactViewport ? -0.84 : isTabletViewport ? -0.58 : -0.45, 0]}
+        rotation={[0, -0.72, 0]}
+        scale={isCompactViewport ? 0.78 : isTabletViewport ? 0.9 : 1}
+      >
         <IsometricRoom />
       </group>
 
@@ -409,10 +437,10 @@ function SceneContent({
       </group>
 
       <ContactShadows
-        position={[0, -1.15, 0]}
+        position={[0, isCompactViewport ? -1.2 : -1.15, 0]}
         opacity={0.12}
-        scale={10}
-        blur={2.8}
+        scale={isCompactViewport ? 8.8 : 10}
+        blur={isCompactViewport ? 2.3 : 2.8}
         far={4}
         color="#9e938f"
       />
@@ -430,11 +458,11 @@ function SceneContent({
                 : HOME_TARGET
         }
         enablePan={false}
-        enableZoom
-        zoomSpeed={0.15}
-        rotateSpeed={0.35}
-        minDistance={2.8}
-        maxDistance={30}
+        enableZoom={!isCompactViewport}
+        zoomSpeed={isCompactViewport ? 0.09 : 0.15}
+        rotateSpeed={isCompactViewport ? 0.24 : 0.35}
+        minDistance={isCompactViewport ? 4.2 : 2.8}
+        maxDistance={isCompactViewport ? 24 : 30}
         minPolarAngle={Math.PI / 6}
         maxPolarAngle={Math.PI / 2.4}
         enableDamping
@@ -446,6 +474,25 @@ function SceneContent({
 
 const HeroScene = ({ onSceneReady }: { onSceneReady?: () => void }) => {
   const searchParams = useSearchParams();
+  const [viewportWidth, setViewportWidth] = useState(() => {
+    if (typeof window === "undefined") return 1440;
+    return window.innerWidth;
+  });
+
+  useEffect(() => {
+    const handleResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isCompactViewport = viewportWidth < 768;
+  const isTabletViewport = viewportWidth >= 768 && viewportWidth < 1280;
+  const homeCameraVar: [number, number, number] = isCompactViewport
+    ? [20, 18, 24]
+    : isTabletViewport
+      ? [18.8, 16.8, 22]
+      : HOME_CAMERA;
+  const homeFovVar = isCompactViewport ? 42 : isTabletViewport ? 38 : 35;
   const returnFrom = searchParams.get("from");
 
   const shouldZoomOutFromLaptop = returnFrom === "about";
@@ -453,10 +500,10 @@ const HeroScene = ({ onSceneReady }: { onSceneReady?: () => void }) => {
   const shouldZoomOutFromCredits = returnFrom === "credits";
 
   return (
-    <section className="pointer-events-auto relative h-screen w-full overflow-hidden">
+    <section className="pointer-events-auto relative h-[100dvh] w-full overflow-hidden">
       <Canvas
         shadows
-        dpr={[1, 1.7]}
+        dpr={viewportWidth < 768 ? [1, 1.25] : [1, 1.7]}
         camera={{
           position: shouldZoomOutFromLaptop
             ? LAPTOP_CAMERA
@@ -464,8 +511,8 @@ const HeroScene = ({ onSceneReady }: { onSceneReady?: () => void }) => {
               ? WINDOW_CAMERA
               : shouldZoomOutFromCredits
                 ? CREDITS_CAMERA
-                : HOME_CAMERA,
-          fov: 35,
+                : homeCameraVar,
+          fov: homeFovVar,
           near: 0.1,
           far: 1000,
         }}
@@ -489,6 +536,7 @@ const HeroScene = ({ onSceneReady }: { onSceneReady?: () => void }) => {
             shouldZoomOutFromWindow={shouldZoomOutFromWindow}
             shouldZoomOutFromCredits={shouldZoomOutFromCredits}
             onSceneReady={onSceneReady}
+            viewportWidth={viewportWidth}
           />
         </Suspense>
       </Canvas>
