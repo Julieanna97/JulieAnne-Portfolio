@@ -18,7 +18,7 @@ const projects = [
     title: "PodManager.ai",
     slug: "podmanager",
     type: "Production Internship",
-    image: "/projects/podmanager/cover.jpg",
+    image: "/projects/podmanager/cover.png",
     description:
       "A production internship where I worked in a real Next.js and FastAPI codebase, contributing to recording, editing, AI workflows, and marketplace features.",
     tags: ["Next.js", "TypeScript", "FastAPI", "AI"],
