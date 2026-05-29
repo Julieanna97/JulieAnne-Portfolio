@@ -174,7 +174,24 @@ export default function HomePage() {
             </div>
           </div>
 
-          <nav className="pointer-events-auto absolute bottom-4 left-1/2 z-20 flex w-[min(92vw,30rem)] -translate-x-1/2 flex-wrap justify-center gap-3 px-4 sm:bottom-10 sm:w-auto sm:items-end sm:gap-5 sm:px-0">
+          <div className="nav-cloud-bank absolute inset-x-0 bottom-[-3.2rem] z-[18] h-36 overflow-visible sm:bottom-[-4rem] sm:h-44">
+            <div className="absolute bottom-0 left-1/2 h-28 w-[min(96vw,760px)] -translate-x-1/2 sm:h-32 sm:w-[820px]">
+              <CloudShape className="absolute bottom-0 left-0 h-full w-[36%]" opacity={0.62} />
+              <CloudShape className="absolute bottom-1 left-[18%] h-full w-[36%]" opacity={0.66} />
+              <CloudShape className="absolute bottom-0 left-[36%] h-full w-[36%]" opacity={0.68} />
+              <CloudShape className="absolute bottom-1 left-[54%] h-full w-[36%]" opacity={0.66} />
+              <CloudShape className="absolute bottom-0 right-0 h-full w-[36%]" opacity={0.62} />
+            </div>
+
+            <div className="absolute bottom-[-1.8rem] left-1/2 h-24 w-[min(115vw,980px)] -translate-x-1/2 sm:h-28">
+              <CloudShape className="absolute bottom-0 left-0 h-full w-[34%]" opacity={0.46} />
+              <CloudShape className="absolute bottom-1 left-[22%] h-full w-[34%]" opacity={0.5} />
+              <CloudShape className="absolute bottom-0 left-[44%] h-full w-[34%]" opacity={0.5} />
+              <CloudShape className="absolute bottom-1 right-0 h-full w-[34%]" opacity={0.46} />
+            </div>
+          </div>
+
+          <nav className="pointer-events-auto absolute bottom-8 left-1/2 z-20 flex w-[min(92vw,30rem)] -translate-x-1/2 flex-wrap justify-center gap-3 px-4 sm:bottom-10 sm:w-auto sm:items-end sm:gap-5 sm:px-0">
             <CloudButton
               target="about"
               label="About"
@@ -207,12 +224,42 @@ export default function HomePage() {
         <style jsx global>{`
           .dream-cloud {
             background:
-              radial-gradient(ellipse 26% 42% at 8% 67%, rgba(255, 235, 255, 0.95) 0%, rgba(255, 235, 255, 0.88) 48%, transparent 72%),
-              radial-gradient(ellipse 30% 50% at 23% 56%, rgba(255, 245, 255, 0.98) 0%, rgba(255, 245, 255, 0.9) 50%, transparent 74%),
-              radial-gradient(ellipse 28% 48% at 41% 66%, rgba(255, 235, 255, 0.93) 0%, rgba(255, 235, 255, 0.86) 52%, transparent 75%),
-              radial-gradient(ellipse 34% 56% at 61% 53%, rgba(255, 245, 255, 0.98) 0%, rgba(255, 245, 255, 0.9) 50%, transparent 74%),
-              radial-gradient(ellipse 29% 48% at 80% 65%, rgba(248, 238, 255, 0.94) 0%, rgba(248, 238, 255, 0.86) 52%, transparent 75%),
-              radial-gradient(ellipse 25% 42% at 96% 58%, rgba(245, 250, 255, 0.95) 0%, rgba(245, 250, 255, 0.86) 50%, transparent 72%),
+              radial-gradient(
+                ellipse 26% 42% at 8% 67%,
+                rgba(255, 235, 255, 0.95) 0%,
+                rgba(255, 235, 255, 0.88) 48%,
+                transparent 72%
+              ),
+              radial-gradient(
+                ellipse 30% 50% at 23% 56%,
+                rgba(255, 245, 255, 0.98) 0%,
+                rgba(255, 245, 255, 0.9) 50%,
+                transparent 74%
+              ),
+              radial-gradient(
+                ellipse 28% 48% at 41% 66%,
+                rgba(255, 235, 255, 0.93) 0%,
+                rgba(255, 235, 255, 0.86) 52%,
+                transparent 75%
+              ),
+              radial-gradient(
+                ellipse 34% 56% at 61% 53%,
+                rgba(255, 245, 255, 0.98) 0%,
+                rgba(255, 245, 255, 0.9) 50%,
+                transparent 74%
+              ),
+              radial-gradient(
+                ellipse 29% 48% at 80% 65%,
+                rgba(248, 238, 255, 0.94) 0%,
+                rgba(248, 238, 255, 0.86) 52%,
+                transparent 75%
+              ),
+              radial-gradient(
+                ellipse 25% 42% at 96% 58%,
+                rgba(245, 250, 255, 0.95) 0%,
+                rgba(245, 250, 255, 0.86) 50%,
+                transparent 72%
+              ),
               linear-gradient(
                 to bottom,
                 transparent 0%,
@@ -374,12 +421,15 @@ function CloudButton({
     <button
       type="button"
       onClick={handleClick}
-      className="cloud-nav group relative flex h-12 w-28 items-center justify-center transition-transform duration-300 hover:scale-110 sm:h-16 sm:w-36"
+      className="cloud-nav group relative flex h-12 w-28 items-center justify-center overflow-visible transition-transform duration-300 hover:scale-110 sm:h-16 sm:w-36"
       style={{ animationDelay: delay }}
     >
       <div
-        className="dream-cloud absolute inset-0 h-full w-full drop-shadow-lg transition-all group-hover:drop-shadow-xl"
-        style={{ opacity: 0.98 }}
+        className="dream-cloud pointer-events-none absolute inset-0 h-full w-full drop-shadow-lg transition-all group-hover:drop-shadow-xl"
+        style={{
+          opacity: 0.92,
+          backgroundColor: tint,
+        }}
       />
 
       <span
