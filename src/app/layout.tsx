@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
+import { Pacifico, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
 const bodyFont = Plus_Jakarta_Sans({
@@ -7,9 +7,9 @@ const bodyFont = Plus_Jakarta_Sans({
   variable: "--font-body",
 });
 
-const displayFont = Cormorant_Garamond({
+const displayFont = Pacifico({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: "400",
   variable: "--font-display",
 });
 

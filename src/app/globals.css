@@ -3,12 +3,18 @@
 @tailwind utilities;
 
 :root {
-  --page-bg: #f7efe6;
-  --page-surface: rgba(255, 251, 247, 0.74);
-  --page-surface-strong: rgba(255, 255, 255, 0.92);
-  --page-border: rgba(140, 114, 176, 0.18);
-  --page-text: #2c2336;
-  --page-text-soft: #625a73;
+  --page-bg: #fff7ec;
+  --page-surface: rgba(255, 251, 247, 0.78);
+  --page-surface-strong: rgba(255, 255, 255, 0.94);
+  --page-border: rgba(206, 178, 225, 0.28);
+  --page-text: #33243f;
+  --page-text-soft: #715f7f;
+
+  --girly-pink: #f8dfe8;
+  --girly-lavender: #d8d5ff;
+  --girly-cream: #fff0c9;
+  --girly-purple: #8d67cf;
+  --girly-rose: #d96c9f;
 }
 
 html[data-theme="twilight"] {
@@ -27,8 +33,13 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--page-bg);
+  background:
+    radial-gradient(circle at top left, rgba(248, 223, 232, 0.9), transparent 32rem),
+    radial-gradient(circle at top right, rgba(216, 213, 255, 0.8), transparent 30rem),
+    radial-gradient(circle at bottom, rgba(255, 240, 201, 0.7), transparent 34rem),
+    var(--page-bg);
   color: var(--page-text);
+  font-family: var(--font-body), system-ui, sans-serif;
   text-rendering: optimizeLegibility;
 }
 
@@ -37,8 +48,22 @@ body {
 }
 
 ::selection {
-  background: rgba(205, 178, 255, 0.68);
+  background: rgba(216, 213, 255, 0.85);
   color: #2c2336;
+}
+
+.font-body {
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), cursive;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.text-soft {
+  color: var(--page-text-soft);
 }
 
 @layer components {
@@ -53,8 +78,16 @@ body {
   .soft-input {
     @apply rounded-2xl border border-white/60 bg-white/75 px-4 py-3 text-[#2c2336] shadow-sm outline-none transition placeholder:text-[#8d7fa5] focus:border-[#c7b0eb] focus:bg-white;
   }
-}
 
-.text-soft {
-  color: var(--page-text-soft);
+  .girly-pill {
+    @apply rounded-full border border-white/70 bg-white/80 px-4 py-2 text-sm font-semibold text-[#7a4d77] shadow-sm backdrop-blur transition hover:-translate-y-1 hover:bg-[#f8dfe8] hover:shadow-md;
+  }
+
+  .girly-button {
+    @apply inline-flex items-center justify-center rounded-full bg-[#3b2a45] px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-1 hover:scale-105 hover:bg-[#8d67cf] hover:shadow-2xl;
+  }
+
+  .girly-heading {
+    @apply font-display text-[#3b2a45];
+  }
 }

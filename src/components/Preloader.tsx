@@ -8,6 +8,36 @@ interface PreloaderProps {
   musicSrc?: string;
 }
 
+const tinyStars = [
+  { left: "7%", top: "13%", size: 9, delay: "0s" },
+  { left: "14%", top: "21%", size: 12, delay: "0.8s" },
+  { left: "23%", top: "10%", size: 8, delay: "1.2s" },
+  { left: "35%", top: "18%", size: 10, delay: "0.4s" },
+  { left: "47%", top: "9%", size: 13, delay: "1.5s" },
+  { left: "58%", top: "22%", size: 8, delay: "0.7s" },
+  { left: "70%", top: "12%", size: 11, delay: "1.1s" },
+  { left: "82%", top: "19%", size: 9, delay: "0.3s" },
+  { left: "91%", top: "10%", size: 12, delay: "1.7s" },
+
+  { left: "10%", top: "39%", size: 10, delay: "1.4s" },
+  { left: "21%", top: "48%", size: 8, delay: "0.5s" },
+  { left: "33%", top: "36%", size: 12, delay: "1s" },
+  { left: "43%", top: "45%", size: 9, delay: "0.2s" },
+  { left: "57%", top: "38%", size: 11, delay: "1.8s" },
+  { left: "69%", top: "49%", size: 8, delay: "0.9s" },
+  { left: "81%", top: "37%", size: 12, delay: "1.3s" },
+  { left: "92%", top: "46%", size: 9, delay: "0.6s" },
+
+  { left: "8%", top: "72%", size: 12, delay: "0.7s" },
+  { left: "18%", top: "80%", size: 9, delay: "1.6s" },
+  { left: "30%", top: "70%", size: 10, delay: "0.4s" },
+  { left: "42%", top: "78%", size: 8, delay: "1.2s" },
+  { left: "55%", top: "69%", size: 13, delay: "0.8s" },
+  { left: "67%", top: "82%", size: 9, delay: "1.5s" },
+  { left: "79%", top: "72%", size: 11, delay: "0.1s" },
+  { left: "90%", top: "79%", size: 8, delay: "1.1s" },
+];
+
 export default function Preloader({
   onEnter,
   musicSrc = "/music/ambient.mp3",
@@ -67,13 +97,42 @@ export default function Preloader({
       }`}
       style={{
         background:
-          "radial-gradient(circle at 18% 65%, rgba(255, 218, 232, 0.7), transparent 38%), radial-gradient(circle at 82% 70%, rgba(217, 213, 245, 0.6), transparent 40%), radial-gradient(circle at 50% 22%, rgba(255, 240, 235, 0.75), transparent 45%), linear-gradient(180deg, #fde8ec 0%, #f6e3ee 45%, #ece4f5 100%)",
+          "radial-gradient(circle at 18% 65%, rgba(255, 218, 232, 0.78), transparent 38%), radial-gradient(circle at 82% 70%, rgba(217, 213, 245, 0.68), transparent 40%), radial-gradient(circle at 50% 22%, rgba(255, 240, 235, 0.82), transparent 45%), linear-gradient(180deg, #fde8ec 0%, #f6e3ee 45%, #ece4f5 100%)",
       }}
     >
-      <div className="pointer-events-none absolute inset-0 opacity-60">
-        <div className="stars" />
-        <div className="tiny-sparkles" />
-        <div className="soft-glow" />
+      <div className="pointer-events-none absolute inset-0 z-[1]">
+        {tinyStars.map((star, index) => (
+          <TinyStar
+            key={index}
+            left={star.left}
+            top={star.top}
+            size={star.size}
+            delay={star.delay}
+          />
+        ))}
+      </div>
+
+      <div className="pointer-events-none absolute inset-0 z-[2]">
+        <Sparkle
+          className="absolute left-[10%] top-[16%]"
+          size={28}
+          delay="0s"
+        />
+        <Sparkle
+          className="absolute right-[14%] top-[20%]"
+          size={24}
+          delay="0.7s"
+        />
+        <Sparkle
+          className="absolute left-[17%] bottom-[27%]"
+          size={22}
+          delay="1.1s"
+        />
+        <Sparkle
+          className="absolute right-[20%] bottom-[24%]"
+          size={26}
+          delay="0.4s"
+        />
       </div>
 
       <div
@@ -89,88 +148,34 @@ export default function Preloader({
             transition: "opacity 1.2s ease, transform 1.2s ease",
           }}
         >
-          <svg
-            className="pointer-events-none absolute top-[-2.5rem] md:top-[-3.5rem]"
-            width="520"
-            height="120"
-            viewBox="0 0 520 120"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{ maxWidth: "92vw" }}
-          >
-            <path
-              d="M10 90 Q 260 -10 510 90"
-              stroke="url(#arcGradient)"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              fill="none"
-              opacity="0.7"
-            />
-            <defs>
-              <linearGradient id="arcGradient" x1="0" y1="0" x2="520" y2="0">
-                <stop offset="0%" stopColor="#e8c7d9" stopOpacity="0" />
-                <stop offset="35%" stopColor="#c9a3d4" />
-                <stop offset="65%" stopColor="#d4a8c0" />
-                <stop offset="100%" stopColor="#e8c7d9" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-          </svg>
-
-          <svg
-            className="pointer-events-none absolute bottom-[-2.5rem] md:bottom-[-3.5rem]"
-            width="520"
-            height="120"
-            viewBox="0 0 520 120"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{ maxWidth: "92vw" }}
-          >
-            <path
-              d="M10 30 Q 260 130 510 30"
-              stroke="url(#arcGradient2)"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              fill="none"
-              opacity="0.7"
-            />
-            <defs>
-              <linearGradient id="arcGradient2" x1="0" y1="0" x2="520" y2="0">
-                <stop offset="0%" stopColor="#e8c7d9" stopOpacity="0" />
-                <stop offset="35%" stopColor="#d4a8c0" />
-                <stop offset="65%" stopColor="#c9a3d4" />
-                <stop offset="100%" stopColor="#e8c7d9" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-          </svg>
-
           <Sparkle
             className="absolute left-[-3rem] top-[10%] md:left-[-5rem]"
-            size={28}
+            size={38}
             delay="0s"
           />
           <Sparkle
             className="absolute left-[-1.5rem] top-[60%] md:left-[-3.5rem]"
-            size={18}
+            size={24}
             delay="0.6s"
           />
           <Sparkle
             className="absolute right-[-3rem] top-[20%] md:right-[-5rem]"
-            size={32}
+            size={40}
             delay="1.2s"
           />
           <Sparkle
             className="absolute right-[-1rem] top-[70%] md:right-[-3rem]"
-            size={20}
+            size={26}
             delay="0.3s"
           />
           <Sparkle
-            className="absolute left-[40%] top-[-1.5rem]"
-            size={14}
+            className="absolute left-[40%] top-[-2.2rem]"
+            size={22}
             delay="0.9s"
           />
           <Sparkle
-            className="absolute bottom-[-1.5rem] right-[35%]"
-            size={16}
+            className="absolute bottom-[-2rem] right-[35%]"
+            size={22}
             delay="1.5s"
           />
 
@@ -183,8 +188,7 @@ export default function Preloader({
               fontWeight: 500,
               letterSpacing: "-0.02em",
               fontStyle: "italic",
-              textShadow:
-                "0 4px 24px rgba(255,255,255,0.6), 0 0 40px rgba(232, 199, 217, 0.5)",
+              textShadow: "0 1px 0 rgba(255,255,255,0.45)",
             }}
           >
             Julie Anne
@@ -232,43 +236,6 @@ export default function Preloader({
       </div>
 
       <style jsx>{`
-        .stars {
-          position: absolute;
-          inset: 0;
-          background-image:
-            radial-gradient(circle, rgba(255, 255, 255, 0.85) 0 1.5px, transparent 2.5px),
-            radial-gradient(circle, rgba(255, 255, 255, 0.55) 0 1px, transparent 2px);
-          background-size: 150px 150px, 210px 210px;
-          background-position: 20px 30px, 80px 70px;
-        }
-
-        .tiny-sparkles {
-          position: absolute;
-          inset: 0;
-          background-image:
-            radial-gradient(circle, rgba(232, 199, 217, 0.6) 0 1px, transparent 2px),
-            radial-gradient(circle, rgba(217, 199, 232, 0.5) 0 1.2px, transparent 2.5px);
-          background-size: 80px 80px, 130px 130px;
-          background-position: 40px 20px, 10px 60px;
-          opacity: 0.7;
-        }
-
-        .soft-glow {
-          position: absolute;
-          left: 50%;
-          top: 45%;
-          width: 720px;
-          height: 720px;
-          transform: translate(-50%, -50%);
-          background: radial-gradient(
-            circle,
-            rgba(255, 230, 240, 0.35) 0%,
-            rgba(230, 215, 245, 0.22) 35%,
-            transparent 65%
-          );
-          filter: blur(32px);
-        }
-
         .cloud-bank {
           position: absolute;
           left: 50%;
@@ -388,17 +355,83 @@ export default function Preloader({
         }
 
         @media (max-width: 768px) {
-          .soft-glow {
-            width: 480px;
-            height: 480px;
-          }
-
           .cloud-bank {
             width: 220vw;
           }
         }
       `}</style>
     </div>
+  );
+}
+
+function TinyStar({
+  left,
+  top,
+  size = 10,
+  delay = "0s",
+}: {
+  left: string;
+  top: string;
+  size?: number;
+  delay?: string;
+}) {
+  return (
+    <span
+      className="tiny-star"
+      style={{
+        left,
+        top,
+        width: size,
+        height: size,
+        animationDelay: delay,
+      }}
+    >
+      <svg
+        viewBox="0 0 14 14"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ width: "100%", height: "100%" }}
+      >
+        <path
+          d="M7 1.5V4.8M7 9.2V12.5M1.5 7H4.8M9.2 7H12.5"
+          stroke="#ffffff"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </svg>
+
+      <style jsx>{`
+        .tiny-star {
+          position: absolute;
+          display: block;
+          opacity: 0;
+          animation: tinyStarPop 3.4s ease-in-out infinite;
+        }
+
+        @keyframes tinyStarPop {
+          0%,
+          100% {
+            opacity: 0;
+            transform: scale(0.4) rotate(0deg);
+          }
+
+          18% {
+            opacity: 1;
+            transform: scale(1.2) rotate(8deg);
+          }
+
+          35% {
+            opacity: 0.75;
+            transform: scale(0.95) rotate(-4deg);
+          }
+
+          55% {
+            opacity: 0;
+            transform: scale(0.4) rotate(0deg);
+          }
+        }
+      `}</style>
+    </span>
   );
 }
 
@@ -412,8 +445,8 @@ function Sparkle({
   delay?: string;
 }) {
   return (
-    <div
-      className={`pointer-events-none sparkle-twinkle ${className}`}
+    <span
+      className={`accent-star ${className}`}
       style={{
         width: size,
         height: size,
@@ -427,36 +460,44 @@ function Sparkle({
         style={{ width: "100%", height: "100%" }}
       >
         <path
-          d="M12 0 Q 13 10 24 12 Q 13 14 12 24 Q 11 14 0 12 Q 11 10 12 0 Z"
-          fill="url(#sparkleGrad)"
+          d="M12 2.5C12.8 7.6 16.4 11.2 21.5 12C16.4 12.8 12.8 16.4 12 21.5C11.2 16.4 7.6 12.8 2.5 12C7.6 11.2 11.2 7.6 12 2.5Z"
+          stroke="#d96c9f"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
         />
-        <defs>
-          <radialGradient id="sparkleGrad" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#fff" stopOpacity="1" />
-            <stop offset="60%" stopColor="#f4d4e3" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#c9a3d4" stopOpacity="0.6" />
-          </radialGradient>
-        </defs>
       </svg>
 
       <style jsx>{`
-        .sparkle-twinkle {
-          animation: twinkle 3s ease-in-out infinite;
+        .accent-star {
+          position: relative;
+          display: block;
+          opacity: 0;
+          animation: accentStarPop 2.8s ease-in-out infinite;
         }
 
-        @keyframes twinkle {
+        @keyframes accentStarPop {
           0%,
           100% {
-            opacity: 0.4;
-            transform: scale(0.85) rotate(0deg);
+            opacity: 0;
+            transform: scale(0.55) rotate(0deg);
           }
 
-          50% {
+          20% {
             opacity: 1;
-            transform: scale(1.1) rotate(15deg);
+            transform: scale(1.15) rotate(8deg);
+          }
+
+          42% {
+            opacity: 0.9;
+            transform: scale(1) rotate(-4deg);
+          }
+
+          65% {
+            opacity: 0;
+            transform: scale(0.55) rotate(0deg);
           }
         }
       `}</style>
-    </div>
+    </span>
   );
 }
