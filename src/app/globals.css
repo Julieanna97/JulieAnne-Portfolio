@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --page-bg: #fff7ec;
+  --page-bg: #f4e1ee;
   --page-surface: rgba(255, 251, 247, 0.78);
   --page-surface-strong: rgba(255, 255, 255, 0.94);
   --page-border: rgba(206, 178, 225, 0.28);
@@ -15,6 +15,33 @@
   --girly-cream: #fff0c9;
   --girly-purple: #8d67cf;
   --girly-rose: #d96c9f;
+
+  /*
+    This matches the preloader background.
+    The browser paints it immediately before React hydrates.
+  */
+  --boot-background:
+    radial-gradient(
+      circle at 18% 65%,
+      rgba(255, 218, 232, 0.8),
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 82% 70%,
+      rgba(217, 213, 245, 0.72),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 50% 22%,
+      rgba(238, 224, 255, 0.78),
+      transparent 45%
+    ),
+    linear-gradient(
+      180deg,
+      #fde7f0 0%,
+      #f4e1ee 45%,
+      #e8e0fb 100%
+    );
 }
 
 html[data-theme="twilight"] {
@@ -27,17 +54,28 @@ html[data-theme="twilight"] {
 }
 
 html {
+  min-height: 100%;
   scroll-behavior: smooth;
+
+  /*
+    Solid fallback color for the earliest browser paint,
+    before gradients or JavaScript have finished loading.
+  */
+  background-color: #f4e1ee;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(248, 223, 232, 0.9), transparent 32rem),
-    radial-gradient(circle at top right, rgba(216, 213, 255, 0.8), transparent 30rem),
-    radial-gradient(circle at bottom, rgba(255, 240, 201, 0.7), transparent 34rem),
-    var(--page-bg);
+
+  /*
+    Use the preloader colors instead of the old yellow-cream background.
+    This prevents the foggy yellow flash before the preloader appears.
+  */
+  background-color: #f4e1ee;
+  background-image: var(--boot-background);
+  background-attachment: fixed;
+
   color: var(--page-text);
   font-family: var(--font-body), system-ui, sans-serif;
   text-rendering: optimizeLegibility;

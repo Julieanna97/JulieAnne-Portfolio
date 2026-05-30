@@ -7,7 +7,6 @@ import type { PerspectiveCamera } from "three";
 import { ContactShadows, OrbitControls } from "@react-three/drei";
 import { NoToneMapping, SRGBColorSpace } from "three";
 import gsap from "gsap";
-import Loader from "../components/Loader";
 import IsometricRoom from "../models/IsometricRoom";
 
 type SectionName = "home";
@@ -387,7 +386,7 @@ function SceneContent({
         position={[-4, 3, 4]}
         intensity={0.22}
         distance={11}
-        color="#ffc0d2"
+        color="#ffbfdc"
       />
 
       <pointLight
@@ -570,7 +569,7 @@ const HeroScene = ({ onSceneReady }: { onSceneReady?: () => void }) => {
           background: "transparent",
         }}
       >
-        <Suspense fallback={<Loader />}>
+        <Suspense fallback={null}>
           <SceneContent
             shouldZoomOutFromLaptop={shouldZoomOutFromLaptop}
             shouldZoomOutFromWindow={shouldZoomOutFromWindow}
