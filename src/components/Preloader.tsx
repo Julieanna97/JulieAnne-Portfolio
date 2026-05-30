@@ -55,11 +55,11 @@ export default function Preloader({
 
     const textTimer = window.setTimeout(() => {
       setTextRevealed(true);
-    }, 2600);
+    }, 2550);
 
     const buttonTimer = window.setTimeout(() => {
       setButtonRevealed(true);
-    }, 3400);
+    }, 3350);
 
     return () => {
       window.clearTimeout(cloudTimer);
@@ -98,7 +98,6 @@ export default function Preloader({
           "radial-gradient(circle at 18% 65%, rgba(255, 201, 225, 0.55), transparent 34%), radial-gradient(circle at 82% 70%, rgba(198, 188, 245, 0.5), transparent 36%), radial-gradient(circle at 50% 18%, rgba(231, 214, 255, 0.42), transparent 40%), linear-gradient(180deg, #edd8ea 0%, #d9cdec 48%, #cfc6ea 100%)",
       }}
     >
-      {/* Soft edge clouds that remain visible */}
       <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">
         <div className="edge-cloud edge-cloud-left-top" />
         <div className="edge-cloud edge-cloud-right-top" />
@@ -106,8 +105,30 @@ export default function Preloader({
         <div className="edge-cloud edge-cloud-right-middle" />
       </div>
 
-      {/* Small background stars */}
-      <div className="pointer-events-none absolute inset-0 z-[2]">
+      <div className="pointer-events-none absolute inset-0 z-[6] overflow-hidden">
+        <div className="center-cloud-row center-cloud-row-one">
+          <MovingCloud className="h-24 w-[270px]" opacity={0.34} />
+          <MovingCloud className="h-20 w-[220px]" opacity={0.28} />
+          <MovingCloud className="h-28 w-[310px]" opacity={0.36} />
+          <MovingCloud className="h-22 w-[240px]" opacity={0.3} />
+        </div>
+
+        <div className="center-cloud-row center-cloud-row-two">
+          <MovingCloud className="h-26 w-[290px]" opacity={0.32} />
+          <MovingCloud className="h-22 w-[235px]" opacity={0.26} />
+          <MovingCloud className="h-30 w-[330px]" opacity={0.36} />
+          <MovingCloud className="h-20 w-[215px]" opacity={0.24} />
+        </div>
+
+        <div className="center-cloud-row center-cloud-row-three">
+          <MovingCloud className="h-24 w-[260px]" opacity={0.28} />
+          <MovingCloud className="h-20 w-[210px]" opacity={0.22} />
+          <MovingCloud className="h-28 w-[300px]" opacity={0.32} />
+          <MovingCloud className="h-22 w-[230px]" opacity={0.24} />
+        </div>
+      </div>
+
+      <div className="pointer-events-none absolute inset-0 z-[3]">
         {tinyStars.map((star, index) => (
           <TinyStar
             key={index}
@@ -119,26 +140,22 @@ export default function Preloader({
         ))}
       </div>
 
-      {/* Larger decorative sparkles */}
-      <div className="pointer-events-none absolute inset-0 z-[3]">
+      <div className="pointer-events-none absolute inset-0 z-[4]">
         <Sparkle
           className="absolute left-[10%] top-[16%]"
           size={28}
           delay="0s"
         />
-
         <Sparkle
           className="absolute right-[14%] top-[20%]"
           size={24}
           delay="0.7s"
         />
-
         <Sparkle
           className="absolute bottom-[27%] left-[17%]"
           size={22}
           delay="1.1s"
         />
-
         <Sparkle
           className="absolute bottom-[24%] right-[20%]"
           size={26}
@@ -146,18 +163,6 @@ export default function Preloader({
         />
       </div>
 
-      {/* Main clouds sit behind the title and Enter button */}
-      <div
-        className={`pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[68vh] ${
-          cloudsParted ? "clouds-reveal-enter" : ""
-        }`}
-      >
-        <div className="cloud-bank cloud-bank-back" />
-        <div className="cloud-bank cloud-bank-front" />
-        <div className="cloud-mist" />
-      </div>
-
-      {/* Content stays above the cloud layers */}
       <div
         className={`relative z-30 flex h-full w-full flex-col items-center justify-center px-6 transition-all duration-700 ${
           opening ? "content-fade" : ""
@@ -167,9 +172,7 @@ export default function Preloader({
           className="relative flex flex-col items-center"
           style={{
             opacity: textRevealed ? 1 : 0,
-            transform: textRevealed
-              ? "translateY(0)"
-              : "translateY(24px)",
+            transform: textRevealed ? "translateY(0)" : "translateY(24px)",
             transition: "opacity 1.2s ease, transform 1.2s ease",
           }}
         >
@@ -178,31 +181,26 @@ export default function Preloader({
             size={38}
             delay="0s"
           />
-
           <Sparkle
             className="absolute left-[-1.5rem] top-[60%] md:left-[-3.5rem]"
             size={24}
             delay="0.6s"
           />
-
           <Sparkle
             className="absolute right-[-3rem] top-[20%] md:right-[-5rem]"
             size={40}
             delay="1.2s"
           />
-
           <Sparkle
             className="absolute right-[-1rem] top-[70%] md:right-[-3rem]"
             size={26}
             delay="0.3s"
           />
-
           <Sparkle
             className="absolute left-[40%] top-[-2.2rem]"
             size={22}
             delay="0.9s"
           />
-
           <Sparkle
             className="absolute bottom-[-2rem] right-[35%]"
             size={22}
@@ -229,9 +227,7 @@ export default function Preloader({
           className="mt-10 text-center text-[11px] font-semibold uppercase tracking-[0.55em] text-[#8b6b9e] md:text-xs"
           style={{
             opacity: textRevealed ? 1 : 0,
-            transform: textRevealed
-              ? "translateY(0)"
-              : "translateY(24px)",
+            transform: textRevealed ? "translateY(0)" : "translateY(24px)",
             transition: "opacity 1s ease 0.2s, transform 1s ease 0.2s",
           }}
         >
@@ -248,7 +244,7 @@ export default function Preloader({
             transform: buttonRevealed
               ? "translateY(0) scale(1)"
               : "translateY(30px) scale(0.96)",
-            textShadow: "0 1px 8px rgba(255, 255, 255, 0.95)",
+            textShadow: "0 1px 8px rgba(255,255,255,0.95)",
             transition:
               "opacity 1s ease, transform 1s ease, letter-spacing 0.5s ease, color 0.5s ease",
             pointerEvents: buttonRevealed ? "auto" : "none",
@@ -258,11 +254,58 @@ export default function Preloader({
         </button>
       </div>
 
+      <div
+        className={`pointer-events-none absolute inset-x-0 top-0 z-40 h-[104vh] ${
+          cloudsParted ? "top-clouds-reveal-enter" : ""
+        }`}
+      >
+        <div className="top-cloud-bank top-cloud-bank-back" />
+        <div className="top-cloud-bank top-cloud-bank-front" />
+        <div className="top-cloud-mist" />
+      </div>
+
+      <div
+        className={`pointer-events-none absolute inset-x-0 bottom-0 z-40 h-[104vh] ${
+          cloudsParted ? "bottom-clouds-reveal-enter" : ""
+        }`}
+      >
+        <div className="bottom-cloud-bank bottom-cloud-bank-back" />
+        <div className="bottom-cloud-bank bottom-cloud-bank-front" />
+        <div className="bottom-cloud-mist" />
+      </div>
+
       <style jsx>{`
+        .center-cloud-row {
+          position: absolute;
+          display: flex;
+          align-items: center;
+          gap: 10vw;
+          width: max-content;
+          will-change: transform;
+        }
+
+        .center-cloud-row-one {
+          top: 32%;
+          left: 0;
+          animation: moveCenterCloudsRight 54s linear infinite;
+        }
+
+        .center-cloud-row-two {
+          top: 48%;
+          left: 0;
+          animation: moveCenterCloudsLeft 68s linear infinite;
+        }
+
+        .center-cloud-row-three {
+          top: 63%;
+          left: 0;
+          animation: moveCenterCloudsRight 78s linear infinite;
+        }
+
         .edge-cloud {
           position: absolute;
           border-radius: 999px;
-          background: rgba(255, 255, 255, 0.42);
+          background: rgba(255, 255, 255, 0.44);
           filter: blur(24px);
           animation: edgeCloudFloat 10s ease-in-out infinite;
         }
@@ -287,7 +330,7 @@ export default function Preloader({
           top: 42%;
           width: 28rem;
           height: 11rem;
-          background: rgba(255, 239, 247, 0.48);
+          background: rgba(255, 239, 247, 0.5);
           animation-delay: 0.8s;
         }
 
@@ -296,125 +339,264 @@ export default function Preloader({
           top: 48%;
           width: 29rem;
           height: 11rem;
-          background: rgba(238, 231, 255, 0.5);
+          background: rgba(238, 231, 255, 0.52);
           animation-delay: 2s;
         }
 
-        .cloud-bank {
+        .top-cloud-bank,
+        .bottom-cloud-bank {
           position: absolute;
           left: 50%;
-          bottom: -8%;
-          width: 155vw;
-          height: 116%;
+          width: 180vw;
+          height: 128%;
           transform: translateX(-50%);
           will-change: transform;
         }
 
-        .cloud-bank-back {
-          bottom: 14%;
-          opacity: 0.9;
+        .top-cloud-bank {
+          top: -2%;
+        }
+
+        .bottom-cloud-bank {
+          bottom: -2%;
+        }
+
+        .top-cloud-bank-back {
+          top: 10%;
+          opacity: 0.98;
           filter: blur(5px);
           background:
             radial-gradient(
-              ellipse 300px 175px at 8% 65%,
-              rgba(255, 246, 250, 1) 0%,
-              rgba(255, 236, 244, 0.96) 50%,
-              transparent 72%
-            ),
-            radial-gradient(
-              ellipse 350px 200px at 25% 55%,
-              rgba(255, 245, 251, 1) 0%,
-              rgba(250, 232, 247, 0.96) 52%,
+              ellipse 340px 210px at 4% 32%,
+              rgba(255, 248, 252, 1) 0%,
+              rgba(255, 233, 244, 0.98) 52%,
               transparent 74%
             ),
             radial-gradient(
-              ellipse 320px 190px at 46% 64%,
-              rgba(255, 244, 250, 1) 0%,
-              rgba(255, 236, 244, 0.96) 54%,
-              transparent 74%
+              ellipse 410px 245px at 19% 45%,
+              rgba(255, 249, 253, 1) 0%,
+              rgba(251, 232, 247, 0.98) 54%,
+              transparent 76%
             ),
             radial-gradient(
-              ellipse 390px 215px at 68% 52%,
-              rgba(248, 242, 255, 1) 0%,
-              rgba(238, 227, 255, 0.96) 52%,
-              transparent 74%
+              ellipse 370px 220px at 36% 31%,
+              rgba(255, 247, 252, 1) 0%,
+              rgba(255, 235, 245, 0.98) 54%,
+              transparent 76%
             ),
             radial-gradient(
-              ellipse 330px 190px at 88% 65%,
-              rgba(255, 246, 250, 1) 0%,
-              rgba(255, 236, 244, 0.96) 52%,
-              transparent 74%
+              ellipse 450px 265px at 55% 46%,
+              rgba(250, 246, 255, 1) 0%,
+              rgba(238, 228, 255, 0.98) 54%,
+              transparent 76%
+            ),
+            radial-gradient(
+              ellipse 390px 230px at 74% 33%,
+              rgba(255, 248, 252, 1) 0%,
+              rgba(248, 236, 253, 0.98) 54%,
+              transparent 76%
+            ),
+            radial-gradient(
+              ellipse 420px 250px at 93% 44%,
+              rgba(255, 249, 253, 1) 0%,
+              rgba(255, 233, 244, 0.98) 54%,
+              transparent 76%
             );
 
-          animation: cloudFloatBack 9s ease-in-out infinite;
+          animation: topCloudFloatBack 10s ease-in-out infinite;
         }
 
-        .cloud-bank-front {
-          opacity: 0.92;
+        .top-cloud-bank-front {
+          opacity: 1;
           filter: blur(2px);
           background:
             radial-gradient(
-              ellipse 290px 170px at 4% 72%,
-              #fff9fb 0%,
-              #fff0f5 52%,
-              transparent 74%
-            ),
-            radial-gradient(
-              ellipse 380px 220px at 17% 58%,
-              #fffaff 0%,
-              #fdf2fb 54%,
+              ellipse 330px 205px at 2% 24%,
+              #fffafd 0%,
+              #fff0f6 54%,
               transparent 76%
             ),
             radial-gradient(
-              ellipse 330px 195px at 34% 70%,
-              #fcf6ff 0%,
-              #f7edf9 56%,
+              ellipse 430px 255px at 16% 38%,
+              #fffaff 0%,
+              #fdf1fb 56%,
               transparent 78%
             ),
             radial-gradient(
-              ellipse 420px 240px at 54% 58%,
-              #fffaff 0%,
-              #fdf2fb 54%,
-              transparent 76%
+              ellipse 380px 225px at 31% 26%,
+              #fcf7ff 0%,
+              #f6edfb 56%,
+              transparent 78%
             ),
             radial-gradient(
-              ellipse 360px 205px at 73% 70%,
-              #f7f1ff 0%,
+              ellipse 470px 275px at 50% 41%,
+              #fffaff 0%,
+              #fdf2fb 56%,
+              transparent 78%
+            ),
+            radial-gradient(
+              ellipse 410px 240px at 69% 26%,
+              #f8f2ff 0%,
               #efe7fb 56%,
               transparent 78%
             ),
             radial-gradient(
-              ellipse 410px 235px at 93% 60%,
+              ellipse 450px 265px at 86% 39%,
               #fffaff 0%,
-              #fdf2fb 54%,
+              #fdf2fb 56%,
+              transparent 78%
+            ),
+            radial-gradient(
+              ellipse 340px 210px at 99% 24%,
+              #fffafd 0%,
+              #fff0f6 54%,
+              transparent 76%
+            ),
+            linear-gradient(
+              to top,
+              transparent 0%,
+              rgba(249, 235, 247, 0.96) 58%,
+              rgba(245, 231, 250, 0.98) 100%
+            );
+
+          animation: topCloudFloatFront 8s ease-in-out infinite;
+        }
+
+        .bottom-cloud-bank-back {
+          bottom: 10%;
+          opacity: 0.98;
+          filter: blur(5px);
+          background:
+            radial-gradient(
+              ellipse 340px 210px at 4% 68%,
+              rgba(255, 248, 252, 1) 0%,
+              rgba(255, 233, 244, 0.98) 52%,
+              transparent 74%
+            ),
+            radial-gradient(
+              ellipse 410px 245px at 19% 55%,
+              rgba(255, 249, 253, 1) 0%,
+              rgba(251, 232, 247, 0.98) 54%,
+              transparent 76%
+            ),
+            radial-gradient(
+              ellipse 370px 220px at 36% 68%,
+              rgba(255, 247, 252, 1) 0%,
+              rgba(255, 235, 245, 0.98) 54%,
+              transparent 76%
+            ),
+            radial-gradient(
+              ellipse 450px 265px at 55% 54%,
+              rgba(250, 246, 255, 1) 0%,
+              rgba(238, 228, 255, 0.98) 54%,
+              transparent 76%
+            ),
+            radial-gradient(
+              ellipse 390px 230px at 74% 66%,
+              rgba(255, 248, 252, 1) 0%,
+              rgba(248, 236, 253, 0.98) 54%,
+              transparent 76%
+            ),
+            radial-gradient(
+              ellipse 420px 250px at 93% 57%,
+              rgba(255, 249, 253, 1) 0%,
+              rgba(255, 233, 244, 0.98) 54%,
+              transparent 76%
+            );
+
+          animation: bottomCloudFloatBack 10s ease-in-out infinite;
+        }
+
+        .bottom-cloud-bank-front {
+          opacity: 1;
+          filter: blur(2px);
+          background:
+            radial-gradient(
+              ellipse 330px 205px at 2% 76%,
+              #fffafd 0%,
+              #fff0f6 54%,
+              transparent 76%
+            ),
+            radial-gradient(
+              ellipse 430px 255px at 16% 62%,
+              #fffaff 0%,
+              #fdf1fb 56%,
+              transparent 78%
+            ),
+            radial-gradient(
+              ellipse 380px 225px at 31% 74%,
+              #fcf7ff 0%,
+              #f6edfb 56%,
+              transparent 78%
+            ),
+            radial-gradient(
+              ellipse 470px 275px at 50% 59%,
+              #fffaff 0%,
+              #fdf2fb 56%,
+              transparent 78%
+            ),
+            radial-gradient(
+              ellipse 410px 240px at 69% 74%,
+              #f8f2ff 0%,
+              #efe7fb 56%,
+              transparent 78%
+            ),
+            radial-gradient(
+              ellipse 450px 265px at 86% 61%,
+              #fffaff 0%,
+              #fdf2fb 56%,
+              transparent 78%
+            ),
+            radial-gradient(
+              ellipse 340px 210px at 99% 76%,
+              #fffafd 0%,
+              #fff0f6 54%,
               transparent 76%
             ),
             linear-gradient(
               to bottom,
               transparent 0%,
-              rgba(249, 235, 247, 0.9) 58%,
-              rgba(245, 231, 250, 0.94) 100%
+              rgba(249, 235, 247, 0.96) 58%,
+              rgba(245, 231, 250, 0.98) 100%
             );
 
-          animation: cloudFloatFront 8s ease-in-out infinite;
+          animation: bottomCloudFloatFront 8s ease-in-out infinite;
         }
 
-        .cloud-mist {
+        .top-cloud-mist {
           position: absolute;
-          inset: auto -5% -8% -5%;
-          height: 42%;
+          inset: -7% -5% auto -5%;
+          height: 52%;
           background: linear-gradient(
-            180deg,
+            0deg,
             rgba(241, 228, 248, 0) 0%,
-            rgba(229, 213, 243, 0.22) 44%,
-            rgba(218, 205, 238, 0.42) 100%
+            rgba(231, 214, 243, 0.32) 42%,
+            rgba(218, 205, 238, 0.62) 100%
           );
           filter: blur(8px);
         }
 
-        .clouds-reveal-enter {
-          animation: cloudsMoveDown 2.8s
-            cubic-bezier(0.77, 0, 0.175, 1) forwards;
+        .bottom-cloud-mist {
+          position: absolute;
+          inset: auto -5% -7% -5%;
+          height: 52%;
+          background: linear-gradient(
+            180deg,
+            rgba(241, 228, 248, 0) 0%,
+            rgba(231, 214, 243, 0.32) 42%,
+            rgba(218, 205, 238, 0.62) 100%
+          );
+          filter: blur(8px);
+        }
+
+        .top-clouds-reveal-enter {
+          animation: topCloudsMoveUp 2.8s cubic-bezier(0.77, 0, 0.175, 1)
+            forwards;
+        }
+
+        .bottom-clouds-reveal-enter {
+          animation: bottomCloudsMoveDown 2.8s cubic-bezier(0.77, 0, 0.175, 1)
+            forwards;
         }
 
         .content-fade {
@@ -425,35 +607,79 @@ export default function Preloader({
           animation: preloaderFadeOut 1.1s ease forwards;
         }
 
-        @keyframes cloudsMoveDown {
+        @keyframes moveCenterCloudsRight {
+          0% {
+            transform: translateX(-48vw);
+          }
+          100% {
+            transform: translateX(115vw);
+          }
+        }
+
+        @keyframes moveCenterCloudsLeft {
+          0% {
+            transform: translateX(115vw);
+          }
+          100% {
+            transform: translateX(-48vw);
+          }
+        }
+
+        @keyframes topCloudsMoveUp {
           0% {
             transform: translateY(0);
           }
-
           100% {
-            transform: translateY(38%);
+            transform: translateY(-62%);
           }
         }
 
-        @keyframes cloudFloatBack {
+        @keyframes bottomCloudsMoveDown {
+          0% {
+            transform: translateY(0);
+          }
+          100% {
+            transform: translateY(62%);
+          }
+        }
+
+        @keyframes topCloudFloatBack {
           0%,
           100% {
             transform: translateX(-50%) translateY(0);
           }
-
           50% {
-            transform: translateX(-50%) translateY(-12px);
+            transform: translateX(-48.5%) translateY(12px);
           }
         }
 
-        @keyframes cloudFloatFront {
+        @keyframes topCloudFloatFront {
           0%,
           100% {
             transform: translateX(-50%) translateY(0);
           }
-
           50% {
-            transform: translateX(-50%) translateY(-18px);
+            transform: translateX(-51.5%) translateY(18px);
+          }
+        }
+
+        @keyframes bottomCloudFloatBack {
+          0%,
+          100% {
+            transform: translateX(-50%) translateY(0);
+          }
+          50% {
+            transform: translateX(-48.5%) translateY(-12px);
+          }
+        }
+
+        @keyframes bottomCloudFloatFront {
+          0%,
+          100% {
+            transform: translateX(-50%) translateY(0);
+          }
+          50% {
+            transform: translateX(-51.5%) translateY(-18px);
           }
         }
 
@@ -462,7 +688,6 @@ export default function Preloader({
           100% {
             transform: translateX(0) translateY(0);
           }
-
           50% {
             transform: translateX(18px) translateY(-10px);
           }
@@ -473,7 +698,6 @@ export default function Preloader({
             opacity: 1;
             transform: scale(1);
           }
-
           100% {
             opacity: 0;
             transform: scale(0.96);
@@ -484,15 +708,19 @@ export default function Preloader({
           0% {
             opacity: 1;
           }
-
           100% {
             opacity: 0;
           }
         }
 
         @media (max-width: 768px) {
-          .cloud-bank {
-            width: 220vw;
+          .top-cloud-bank,
+          .bottom-cloud-bank {
+            width: 260vw;
+          }
+
+          .center-cloud-row {
+            gap: 18vw;
           }
 
           .edge-cloud-left-top,
@@ -504,6 +732,54 @@ export default function Preloader({
           .edge-cloud-right-middle {
             right: -14rem;
           }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function MovingCloud({
+  className = "",
+  opacity = 1,
+}: {
+  className?: string;
+  opacity?: number;
+}) {
+  return (
+    <div
+      className={`moving-cloud relative shrink-0 ${className}`}
+      style={{ opacity }}
+      aria-hidden="true"
+    >
+      <style jsx>{`
+        .moving-cloud {
+          border-radius: 999px;
+          filter: blur(7px);
+          background:
+            radial-gradient(
+              ellipse 27% 44% at 8% 66%,
+              rgba(255, 255, 255, 0.96) 0%,
+              rgba(255, 245, 252, 0.9) 50%,
+              transparent 74%
+            ),
+            radial-gradient(
+              ellipse 35% 58% at 30% 56%,
+              rgba(255, 255, 255, 0.98) 0%,
+              rgba(255, 246, 253, 0.92) 52%,
+              transparent 75%
+            ),
+            radial-gradient(
+              ellipse 38% 62% at 56% 58%,
+              rgba(255, 255, 255, 0.98) 0%,
+              rgba(249, 242, 255, 0.92) 52%,
+              transparent 75%
+            ),
+            radial-gradient(
+              ellipse 30% 48% at 82% 66%,
+              rgba(255, 255, 255, 0.96) 0%,
+              rgba(246, 242, 255, 0.9) 52%,
+              transparent 75%
+            );
         }
       `}</style>
     </div>
