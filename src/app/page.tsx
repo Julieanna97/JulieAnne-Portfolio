@@ -768,7 +768,7 @@ function CloudButton({
         className="dream-cloud pointer-events-none absolute inset-0 h-full w-full drop-shadow-lg transition-all group-hover:drop-shadow-xl"
         style={{
           opacity: 0.92,
-          backgroundColor: tint,
+          ...(isNight ? {} : { backgroundColor: tint }),
         }}
       />
 
