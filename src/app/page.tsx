@@ -11,7 +11,7 @@ const HeroScene = dynamic(() => import("@/components/HeroScene"), {
 });
 
 const PRELOADER_STORAGE_KEY = "preloaderShown";
-const THEME_STORAGE_KEY = "portfolioTheme";
+const THEME_STORAGE_KEY = "siteTheme";
 
 type ThemeMode = "day" | "night";
 
@@ -366,13 +366,6 @@ export default function HomePage() {
                 />
 
                 <div className="relative px-8 py-8 sm:px-12 sm:py-10 md:px-14 md:py-12">
-                  <p
-                    className="text-[10px] font-black uppercase tracking-[0.28em] sm:text-[11px] sm:tracking-[0.32em]"
-                    style={{ color: "var(--home-eyebrow)" }}
-                  >
-                    ✨ Portfolio Room
-                  </p>
-
                   <h1
                     className="mt-2 font-display text-[clamp(2.2rem,10vw,3.25rem)] font-bold leading-[1.05] sm:mt-3 md:text-[3.25rem]"
                     style={{
@@ -389,11 +382,13 @@ export default function HomePage() {
                     className="mt-2 max-w-[220px] text-[13px] font-semibold leading-relaxed sm:mt-3 sm:max-w-[280px] sm:text-sm md:text-[15px]"
                     style={{
                       color: "var(--home-copy)",
-                      textShadow: "0 1px 6px rgba(10, 8, 16, 0.72)",
+                      textShadow: isNight
+                        ? "0 1px 6px rgba(10, 8, 16, 0.72)"
+                        : "0 1px 2px rgba(10, 8, 16, 0.12)",
                     }}
                   >
-                    Fullstack developer crafting cozy, creative, and
-                    interactive web experiences.
+                    I design playful, polished web experiences with soft
+                    motion, warm visuals, and a little bit of wonder.
                   </p>
                 </div>
               </div>
