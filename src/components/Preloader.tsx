@@ -97,7 +97,7 @@ export default function Preloader({
         background: "var(--preloader-background)",
       }}
     >
-      {/* Soft clouds around the screen edges */}
+      {/* Soft clouds around the edges */}
       <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">
         <div className="edge-cloud edge-cloud-left-top" />
         <div className="edge-cloud edge-cloud-right-top" />
@@ -169,7 +169,7 @@ export default function Preloader({
         />
       </div>
 
-      {/* Main title and enter button */}
+      {/* Name and enter button */}
       <div
         className={`relative z-30 flex h-full w-full flex-col items-center justify-center px-6 transition-all duration-700 ${
           opening ? "content-fade" : ""
@@ -269,7 +269,7 @@ export default function Preloader({
         </button>
       </div>
 
-      {/* Large clouds that open upward */}
+      {/* Large clouds opening upward */}
       <div
         className={`pointer-events-none absolute inset-x-0 top-0 z-40 h-[104vh] ${
           cloudsParted ? "top-clouds-reveal-enter" : ""
@@ -280,7 +280,7 @@ export default function Preloader({
         <div className="top-cloud-mist" />
       </div>
 
-      {/* Large clouds that open downward */}
+      {/* Large clouds opening downward */}
       <div
         className={`pointer-events-none absolute inset-x-0 bottom-0 z-40 h-[104vh] ${
           cloudsParted ? "bottom-clouds-reveal-enter" : ""
@@ -320,7 +320,7 @@ export default function Preloader({
         }
 
         /*
-          These blurred edge clouds give the preloader a soft and dreamy frame.
+          Dreamy edge clouds
         */
         .edge-cloud {
           position: absolute;
@@ -328,15 +328,6 @@ export default function Preloader({
           background: rgba(255, 255, 255, 0.44);
           filter: blur(24px);
           animation: edgeCloudFloat 10s ease-in-out infinite;
-        }
-
-        /*
-          Dark mode edge clouds:
-          replace bright white clouds with muted violet clouds.
-        */
-        :global(html[data-theme="twilight"]) .edge-cloud {
-          background: rgba(73, 55, 104, 0.44);
-          filter: blur(26px) saturate(0.88);
         }
 
         .edge-cloud-left-top {
@@ -372,6 +363,22 @@ export default function Preloader({
           animation-delay: 2s;
         }
 
+        /*
+          Twilight edge clouds
+        */
+        :global(html[data-theme="twilight"]) .edge-cloud {
+          background: rgba(95, 72, 138, 0.34);
+          filter: blur(26px) saturate(0.98);
+        }
+
+        :global(html[data-theme="twilight"]) .edge-cloud-left-middle {
+          background: rgba(103, 79, 143, 0.28);
+        }
+
+        :global(html[data-theme="twilight"]) .edge-cloud-right-middle {
+          background: rgba(87, 66, 122, 0.3);
+        }
+
         .top-cloud-bank,
         .bottom-cloud-bank {
           position: absolute;
@@ -391,7 +398,7 @@ export default function Preloader({
         }
 
         /*
-          Day-mode upper back cloud layer.
+          Day mode: upper back cloud layer
         */
         .top-cloud-bank-back {
           top: 10%;
@@ -439,7 +446,7 @@ export default function Preloader({
         }
 
         /*
-          Day-mode upper front cloud layer.
+          Day mode: upper front cloud layer
         */
         .top-cloud-bank-front {
           opacity: 1;
@@ -498,7 +505,7 @@ export default function Preloader({
         }
 
         /*
-          Day-mode lower back cloud layer.
+          Day mode: lower back cloud layer
         */
         .bottom-cloud-bank-back {
           bottom: 10%;
@@ -546,7 +553,7 @@ export default function Preloader({
         }
 
         /*
-          Day-mode lower front cloud layer.
+          Day mode: lower front cloud layer
         */
         .bottom-cloud-bank-front {
           opacity: 1;
@@ -604,6 +611,9 @@ export default function Preloader({
           animation: bottomCloudFloatFront 8s ease-in-out infinite;
         }
 
+        /*
+          Day-mode mist
+        */
         .top-cloud-mist {
           position: absolute;
           inset: -7% -5% auto -5%;
@@ -631,29 +641,210 @@ export default function Preloader({
         }
 
         /*
-          Dark mode:
-          The 3D room already uses muted violet clouds in twilight mode.
-          These filters make the preloader cloud banks match that mood
-          instead of glowing like bright daytime clouds.
+          Twilight mode:
+          Use actual purple gradients rather than applying brightness()
+          to the daytime clouds. This avoids the flat gray appearance.
         */
-        :global(html[data-theme="twilight"]) .top-cloud-bank-back,
-        :global(html[data-theme="twilight"]) .bottom-cloud-bank-back {
-          opacity: 0.82;
-          filter: blur(6px) brightness(0.42) saturate(0.82) hue-rotate(8deg);
+        :global(html[data-theme="twilight"]) .top-cloud-bank-back {
+          top: 10%;
+          opacity: 0.95;
+          filter: blur(6px) saturate(0.95);
+          background:
+            radial-gradient(
+              ellipse 340px 210px at 4% 32%,
+              rgba(87, 66, 122, 0.95) 0%,
+              rgba(70, 52, 103, 0.88) 52%,
+              transparent 74%
+            ),
+            radial-gradient(
+              ellipse 410px 245px at 19% 45%,
+              rgba(103, 79, 143, 0.94) 0%,
+              rgba(79, 60, 118, 0.88) 54%,
+              transparent 76%
+            ),
+            radial-gradient(
+              ellipse 370px 220px at 36% 31%,
+              rgba(92, 69, 131, 0.94) 0%,
+              rgba(74, 56, 108, 0.87) 54%,
+              transparent 76%
+            ),
+            radial-gradient(
+              ellipse 450px 265px at 55% 46%,
+              rgba(107, 82, 145, 0.95) 0%,
+              rgba(83, 63, 122, 0.89) 54%,
+              transparent 76%
+            ),
+            radial-gradient(
+              ellipse 390px 230px at 74% 33%,
+              rgba(94, 74, 130, 0.94) 0%,
+              rgba(73, 56, 110, 0.87) 54%,
+              transparent 76%
+            ),
+            radial-gradient(
+              ellipse 420px 250px at 93% 44%,
+              rgba(87, 66, 122, 0.95) 0%,
+              rgba(67, 50, 100, 0.88) 54%,
+              transparent 76%
+            );
         }
 
-        :global(html[data-theme="twilight"]) .top-cloud-bank-front,
+        :global(html[data-theme="twilight"]) .top-cloud-bank-front {
+          opacity: 0.98;
+          filter: blur(3px) saturate(0.98);
+          background:
+            radial-gradient(
+              ellipse 330px 205px at 2% 24%,
+              rgba(103, 79, 143, 0.96) 0%,
+              rgba(85, 64, 126, 0.9) 54%,
+              transparent 76%
+            ),
+            radial-gradient(
+              ellipse 430px 255px at 16% 38%,
+              rgba(118, 92, 160, 0.96) 0%,
+              rgba(92, 70, 134, 0.9) 56%,
+              transparent 78%
+            ),
+            radial-gradient(
+              ellipse 380px 225px at 31% 26%,
+              rgba(98, 77, 138, 0.95) 0%,
+              rgba(79, 60, 117, 0.89) 56%,
+              transparent 78%
+            ),
+            radial-gradient(
+              ellipse 470px 275px at 50% 41%,
+              rgba(124, 97, 167, 0.97) 0%,
+              rgba(95, 72, 138, 0.91) 56%,
+              transparent 78%
+            ),
+            radial-gradient(
+              ellipse 410px 240px at 69% 26%,
+              rgba(103, 79, 143, 0.95) 0%,
+              rgba(83, 63, 122, 0.89) 56%,
+              transparent 78%
+            ),
+            radial-gradient(
+              ellipse 450px 265px at 86% 39%,
+              rgba(113, 87, 154, 0.96) 0%,
+              rgba(90, 68, 131, 0.9) 56%,
+              transparent 78%
+            ),
+            radial-gradient(
+              ellipse 340px 210px at 99% 24%,
+              rgba(98, 77, 138, 0.96) 0%,
+              rgba(77, 58, 114, 0.89) 54%,
+              transparent 76%
+            ),
+            linear-gradient(
+              to top,
+              transparent 0%,
+              rgba(77, 58, 114, 0.74) 58%,
+              rgba(48, 35, 70, 0.92) 100%
+            );
+        }
+
+        :global(html[data-theme="twilight"]) .bottom-cloud-bank-back {
+          bottom: 10%;
+          opacity: 0.95;
+          filter: blur(6px) saturate(0.95);
+          background:
+            radial-gradient(
+              ellipse 340px 210px at 4% 68%,
+              rgba(87, 66, 122, 0.95) 0%,
+              rgba(70, 52, 103, 0.88) 52%,
+              transparent 74%
+            ),
+            radial-gradient(
+              ellipse 410px 245px at 19% 55%,
+              rgba(103, 79, 143, 0.94) 0%,
+              rgba(79, 60, 118, 0.88) 54%,
+              transparent 76%
+            ),
+            radial-gradient(
+              ellipse 370px 220px at 36% 68%,
+              rgba(92, 69, 131, 0.94) 0%,
+              rgba(74, 56, 108, 0.87) 54%,
+              transparent 76%
+            ),
+            radial-gradient(
+              ellipse 450px 265px at 55% 54%,
+              rgba(107, 82, 145, 0.95) 0%,
+              rgba(83, 63, 122, 0.89) 54%,
+              transparent 76%
+            ),
+            radial-gradient(
+              ellipse 390px 230px at 74% 66%,
+              rgba(94, 74, 130, 0.94) 0%,
+              rgba(73, 56, 110, 0.87) 54%,
+              transparent 76%
+            ),
+            radial-gradient(
+              ellipse 420px 250px at 93% 57%,
+              rgba(87, 66, 122, 0.95) 0%,
+              rgba(67, 50, 100, 0.88) 54%,
+              transparent 76%
+            );
+        }
+
         :global(html[data-theme="twilight"]) .bottom-cloud-bank-front {
-          opacity: 0.9;
-          filter: blur(3px) brightness(0.38) saturate(0.86) hue-rotate(10deg);
+          opacity: 0.98;
+          filter: blur(3px) saturate(0.98);
+          background:
+            radial-gradient(
+              ellipse 330px 205px at 2% 76%,
+              rgba(103, 79, 143, 0.96) 0%,
+              rgba(85, 64, 126, 0.9) 54%,
+              transparent 76%
+            ),
+            radial-gradient(
+              ellipse 430px 255px at 16% 62%,
+              rgba(118, 92, 160, 0.96) 0%,
+              rgba(92, 70, 134, 0.9) 56%,
+              transparent 78%
+            ),
+            radial-gradient(
+              ellipse 380px 225px at 31% 74%,
+              rgba(98, 77, 138, 0.95) 0%,
+              rgba(79, 60, 117, 0.89) 56%,
+              transparent 78%
+            ),
+            radial-gradient(
+              ellipse 470px 275px at 50% 59%,
+              rgba(124, 97, 167, 0.97) 0%,
+              rgba(95, 72, 138, 0.91) 56%,
+              transparent 78%
+            ),
+            radial-gradient(
+              ellipse 410px 240px at 69% 74%,
+              rgba(103, 79, 143, 0.95) 0%,
+              rgba(83, 63, 122, 0.89) 56%,
+              transparent 78%
+            ),
+            radial-gradient(
+              ellipse 450px 265px at 86% 61%,
+              rgba(113, 87, 154, 0.96) 0%,
+              rgba(90, 68, 131, 0.9) 56%,
+              transparent 78%
+            ),
+            radial-gradient(
+              ellipse 340px 210px at 99% 76%,
+              rgba(98, 77, 138, 0.96) 0%,
+              rgba(77, 58, 114, 0.89) 54%,
+              transparent 76%
+            ),
+            linear-gradient(
+              to bottom,
+              transparent 0%,
+              rgba(77, 58, 114, 0.74) 58%,
+              rgba(48, 35, 70, 0.92) 100%
+            );
         }
 
         :global(html[data-theme="twilight"]) .top-cloud-mist {
           background: linear-gradient(
             0deg,
             rgba(35, 25, 51, 0) 0%,
-            rgba(48, 35, 70, 0.38) 42%,
-            rgba(28, 20, 42, 0.74) 100%
+            rgba(73, 56, 110, 0.34) 42%,
+            rgba(48, 35, 70, 0.76) 100%
           );
         }
 
@@ -661,8 +852,8 @@ export default function Preloader({
           background: linear-gradient(
             180deg,
             rgba(35, 25, 51, 0) 0%,
-            rgba(48, 35, 70, 0.38) 42%,
-            rgba(28, 20, 42, 0.74) 100%
+            rgba(73, 56, 110, 0.34) 42%,
+            rgba(48, 35, 70, 0.76) 100%
           );
         }
 
@@ -841,8 +1032,7 @@ function MovingCloud({
     >
       <style jsx>{`
         /*
-          Each cloud is built using overlapping round lobes.
-          This looks more like an actual fluffy cloud than a single oval.
+          Full overlapping cloud lobes for a softer and more natural shape.
         */
         .moving-cloud {
           border-radius: 999px;
@@ -906,9 +1096,8 @@ function MovingCloud({
         }
 
         /*
-          Dark-mode moving clouds:
-          use violet and muted-purple tones that match the night clouds
-          in the 3D room.
+          Twilight moving clouds:
+          the same family of purples used in the larger opening clouds.
         */
         :global(html[data-theme="twilight"]) .moving-cloud {
           background:
