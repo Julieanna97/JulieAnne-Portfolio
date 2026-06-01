@@ -490,7 +490,7 @@ function SceneContent({
 
       <ContactShadows
         position={[0, isCompactViewport ? -1.2 : -1.15, 0]}
-        opacity={isNightMode ? 0 : 0.12}
+        opacity={isNightMode ? 0.04 : 0.1}
         scale={isCompactViewport ? 8.8 : 10}
         blur={isCompactViewport ? 2.3 : 2.8}
         far={4}
