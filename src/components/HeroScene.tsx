@@ -145,6 +145,8 @@ function SceneContent({
   const hasPlayedReturnAnimation = useRef(false);
   const hasCalledSceneReady = useRef(false);
   const [isMoving, setIsMoving] = useState(false);
+  const [lampOn, setLampOn] = useState(false);
+  const lampLightRef = useRef<any>(null);
   const isNightMode = theme === "night";
 
   const { camera } = useThree();
@@ -373,6 +375,16 @@ function SceneContent({
     };
   }, [isMoving]);
 
+  useEffect(() => {
+    if (!lampLightRef.current) return;
+
+    gsap.to(lampLightRef.current, {
+      intensity: lampOn ? 1.2 : 0,
+      duration: 0.6,
+      ease: "power2.out",
+    });
+  }, [lampOn]);
+
   return (
     <>
       <ambientLight intensity={isNightMode ? 0.42 : 1.0} />
@@ -409,8 +421,20 @@ function SceneContent({
         rotation={[0, -0.72, 0]}
         scale={isCompactViewport ? 0.78 : isTabletViewport ? 0.9 : 1}
       >
-        <IsometricRoom theme={theme} />
+        <IsometricRoom theme={theme} lampOn={lampOn} />
       </group>
+
+      {/* Lamp point light controlled by the lamp hotspot (night mode only) */}
+      {theme === "night" && (
+        <pointLight
+          ref={lampLightRef}
+          position={[-6.25, 12.85, -4.15]}
+          intensity={lampOn ? 1.2 : 0}
+          distance={6}
+          decay={2}
+          color={lampOn ? "#ffd9b3" : "#000000"}
+        />
+      )}
 
       {/* ABOUT: laptop screen hotspot */}
       <group
@@ -438,6 +462,27 @@ function SceneContent({
           <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
       </group>
+
+      {/* LAMP: separate clickable hotspot near the desk lamp */}
+      <mesh
+        position={getRoomPositionForViewport([-6.25, 12.85, -4.15], viewportWidth)}
+        onClick={(event) => {
+          event.stopPropagation();
+
+          if (!isMoving && isNightMode) {
+            setLampOn((v) => !v);
+          }
+        }}
+        onPointerOver={() => {
+          if (isNightMode) document.body.style.cursor = "pointer";
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = "default";
+        }}
+      >
+        <boxGeometry args={[1.1, 1.1, 1.1]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
 
       {/* PROJECTS: big blue window hotspot */}
       <group
