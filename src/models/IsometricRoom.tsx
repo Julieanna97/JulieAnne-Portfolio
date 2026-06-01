@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useGLTF } from "@react-three/drei";
 import { a } from "@react-spring/three";
-import { Color } from "three";
+import { Color, PointLight } from "three";
 
 const IsometricRoom = ({
   theme,
@@ -96,7 +96,7 @@ const IsometricRoom = ({
 
             if ("emissiveIntensity" in nextMaterial) {
               // increase emissiveIntensity to make the lamp glow
-              nextMaterial.emissiveIntensity = (nextMaterial.userData?.origEmissiveIntensity ?? nextMaterial.emissiveIntensity ?? 0) + 1.2;
+              nextMaterial.emissiveIntensity = (nextMaterial.userData?.origEmissiveIntensity ?? nextMaterial.emissiveIntensity ?? 0) + 1.8;
             }
           } else if (!lampOn && nodeName.includes("lamp") && "emissiveIntensity" in nextMaterial) {
             // reset to original stored value if present
@@ -114,6 +114,33 @@ const IsometricRoom = ({
         ? clonedMaterials
         : clonedMaterials[0];
     });
+
+    // Attach a dedicated PointLight to any node that looks like the lamp so
+    // the light is positioned exactly where the model's lamp is.
+    try {
+      clone.traverse((node: any) => {
+        const nodeName = (node.name || "").toLowerCase();
+
+        if (nodeName.includes("lamp") || nodeName.includes("desk_lamp") || nodeName.includes("lamp01")) {
+          // Remove existing helper lights we might have added earlier
+          if (node.userData && node.userData._attachedLampLight) {
+            try {
+              node.remove(node.userData._attachedLampLight);
+            } catch (e) {}
+            node.userData._attachedLampLight = null;
+          }
+
+          if (lampOn) {
+            const pl = new PointLight(new Color("#ffd8a6"), 5.2, 9.0, 2);
+            pl.position.set(0, -0.02, 0.02);
+            node.add(pl);
+            node.userData._attachedLampLight = pl;
+          }
+        }
+      });
+    } catch (e) {
+      // ignore traversal errors
+    }
 
     return clone;
   }, [scene, isNightMode, lampOn]);
