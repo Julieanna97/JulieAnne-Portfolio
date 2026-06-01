@@ -94,8 +94,7 @@ export default function Preloader({
         opening ? "preloader-fade-out" : ""
       }`}
       style={{
-        background:
-          "radial-gradient(circle at 18% 65%, rgba(255, 201, 225, 0.55), transparent 34%), radial-gradient(circle at 82% 70%, rgba(198, 188, 245, 0.5), transparent 36%), radial-gradient(circle at 50% 18%, rgba(231, 214, 255, 0.42), transparent 40%), linear-gradient(180deg, #edd8ea 0%, #d9cdec 48%, #cfc6ea 100%)",
+        background: "var(--preloader-background)",
       }}
     >
       <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">
@@ -208,7 +207,7 @@ export default function Preloader({
           />
 
           <h1
-            className="text-center font-display leading-[0.95] text-[#3b2a45]"
+            className="text-center font-display leading-[0.95]"
             style={{
               fontFamily:
                 "'Cormorant Garamond', 'Playfair Display', Georgia, serif",
@@ -216,7 +215,8 @@ export default function Preloader({
               fontWeight: 500,
               letterSpacing: "-0.02em",
               fontStyle: "italic",
-              textShadow: "0 1px 0 rgba(255,255,255,0.45)",
+              color: "var(--preloader-title)",
+              textShadow: "0 1px 0 var(--preloader-shadow)",
             }}
           >
             Julie Anne
@@ -224,8 +224,9 @@ export default function Preloader({
         </div>
 
         <p
-          className="mt-10 text-center text-[11px] font-semibold uppercase tracking-[0.55em] text-[#8b6b9e] md:text-xs"
+          className="mt-10 text-center text-[11px] font-semibold uppercase tracking-[0.55em] md:text-xs"
           style={{
+            color: "var(--preloader-copy)",
             opacity: textRevealed ? 1 : 0,
             transform: textRevealed ? "translateY(0)" : "translateY(24px)",
             transition: "opacity 1s ease 0.2s, transform 1s ease 0.2s",
@@ -238,13 +239,14 @@ export default function Preloader({
           type="button"
           onClick={handleEnter}
           disabled={opening || !buttonRevealed}
-          className="mt-12 bg-transparent px-5 py-3 text-xs font-semibold uppercase tracking-[0.45em] text-[#765388] transition duration-500 hover:-translate-y-1 hover:text-[#3b2a45] hover:tracking-[0.55em] disabled:cursor-default"
+          className="mt-12 bg-transparent px-5 py-3 text-xs font-semibold uppercase tracking-[0.45em] transition duration-500 hover:-translate-y-1 hover:tracking-[0.55em] disabled:cursor-default"
           style={{
+            color: "var(--preloader-button)",
             opacity: buttonRevealed ? 1 : 0,
             transform: buttonRevealed
               ? "translateY(0) scale(1)"
               : "translateY(30px) scale(0.96)",
-            textShadow: "0 1px 8px rgba(255,255,255,0.95)",
+            textShadow: "0 1px 8px var(--preloader-shadow)",
             transition:
               "opacity 1s ease, transform 1s ease, letter-spacing 0.5s ease, color 0.5s ease",
             pointerEvents: buttonRevealed ? "auto" : "none",

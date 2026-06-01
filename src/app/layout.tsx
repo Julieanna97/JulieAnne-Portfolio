@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Pacifico, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -26,6 +27,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`(() => {
+            try {
+              const storageKey = 'portfolioTheme';
+              const storedTheme = window.localStorage.getItem(storageKey);
+              const prefersNight = window.matchMedia('(prefers-color-scheme: dark)').matches;
+              const resolvedTheme = storedTheme === 'night' || (!storedTheme && prefersNight) ? 'twilight' : 'day';
+              document.documentElement.dataset.theme = resolvedTheme === 'twilight' ? 'twilight' : 'day';
+              document.documentElement.style.colorScheme = resolvedTheme === 'twilight' ? 'dark' : 'light';
+            } catch (error) {
+              document.documentElement.dataset.theme = 'day';
+              document.documentElement.style.colorScheme = 'light';
+            }
+          })();`}
+        </Script>
+      </head>
       <body className={`${bodyFont.variable} ${displayFont.variable} font-body`}>
         {children}
       </body>

@@ -4,8 +4,9 @@ import { useMemo } from "react";
 import { useGLTF } from "@react-three/drei";
 import { a } from "@react-spring/three";
 
-const IsometricRoom = (props: any) => {
+const IsometricRoom = ({ theme, ...props }: { theme?: "day" | "night" } & any) => {
   const { scene } = useGLTF("/isometric_room.glb");
+  const isNightMode = theme === "night";
 
   const clonedScene = useMemo(() => {
     const clone = scene.clone(true);
@@ -23,11 +24,14 @@ const IsometricRoom = (props: any) => {
           if (!material) return;
 
           if ("roughness" in material && material.roughness !== undefined) {
-            material.roughness = Math.min(1, material.roughness + 0.05);
+            material.roughness = Math.min(
+              1,
+              material.roughness + (isNightMode ? 0.12 : 0.04)
+            );
           }
 
           if ("metalness" in material && material.metalness !== undefined) {
-            material.metalness = 0;
+            material.metalness = isNightMode ? 0 : Math.min(material.metalness, 0.05);
           }
 
           if ("color" in material && material.color) {
@@ -37,9 +41,15 @@ const IsometricRoom = (props: any) => {
               material.color.b
             );
 
-            if (maxChannel > 0.94) {
-              material.color.multiplyScalar(0.94);
+            if (isNightMode) {
+              material.color.multiplyScalar(maxChannel > 0.94 ? 0.72 : 0.9);
+            } else if (maxChannel > 0.94) {
+              material.color.multiplyScalar(0.95);
             }
+          }
+
+          if (isNightMode && "emissive" in material && material.emissive) {
+            material.emissive.multiplyScalar(0.15);
           }
 
           material.needsUpdate = true;
@@ -48,7 +58,7 @@ const IsometricRoom = (props: any) => {
     });
 
     return clone;
-  }, [scene]);
+  }, [scene, isNightMode]);
 
   return (
     <a.group {...props}>

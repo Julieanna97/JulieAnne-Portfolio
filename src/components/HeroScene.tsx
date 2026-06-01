@@ -131,18 +131,21 @@ function SceneContent({
   shouldZoomOutFromCredits,
   onSceneReady,
   viewportWidth,
+  theme,
 }: {
   shouldZoomOutFromLaptop: boolean;
   shouldZoomOutFromWindow: boolean;
   shouldZoomOutFromCredits: boolean;
   onSceneReady?: () => void;
   viewportWidth: number;
+  theme: "day" | "night";
 }) {
   const router = useRouter();
   const controlsRef = useRef<any>(null);
   const hasPlayedReturnAnimation = useRef(false);
   const hasCalledSceneReady = useRef(false);
   const [isMoving, setIsMoving] = useState(false);
+  const isNightMode = theme === "night";
 
   const { camera } = useThree();
 
@@ -372,39 +375,41 @@ function SceneContent({
 
   return (
     <>
-      <ambientLight intensity={1.0} />
-      <hemisphereLight args={["#ffffff", "#f0ebe8", 0.85]} />
+      <ambientLight intensity={isNightMode ? 0.42 : 1.0} />
+      <hemisphereLight
+        args={isNightMode ? ["#b9c8ff", "#17111f", 0.42] : ["#ffffff", "#f0ebe8", 0.85]}
+      />
 
       <directionalLight
         position={[5, 8, 5]}
-        intensity={1.05}
-        color="#ffffff"
+        intensity={isNightMode ? 0.5 : 1.05}
+        color={isNightMode ? "#c7d3ff" : "#ffffff"}
         castShadow
       />
 
       <pointLight
         position={[-4, 3, 4]}
-        intensity={0.22}
+        intensity={isNightMode ? 0.08 : 0.22}
         distance={11}
-        color="#ffbfdc"
+        color={isNightMode ? "#8d74cc" : "#ffbfdc"}
       />
 
       <pointLight
         position={[4, 3, 3]}
-        intensity={0.18}
+        intensity={isNightMode ? 0.1 : 0.18}
         distance={11}
-        color="#b9dcff"
+        color={isNightMode ? "#6ea5ff" : "#b9dcff"}
       />
 
-      <SoftWebsiteGlow />
-      <SoftGroundGlow />
+      {isNightMode ? null : <SoftWebsiteGlow />}
+      {isNightMode ? null : <SoftGroundGlow />}
 
       <group
         position={[0, isCompactViewport ? -0.84 : isTabletViewport ? -0.58 : -0.45, 0]}
         rotation={[0, -0.72, 0]}
         scale={isCompactViewport ? 0.78 : isTabletViewport ? 0.9 : 1}
       >
-        <IsometricRoom />
+        <IsometricRoom theme={theme} />
       </group>
 
       {/* ABOUT: laptop screen hotspot */}
@@ -485,7 +490,7 @@ function SceneContent({
 
       <ContactShadows
         position={[0, isCompactViewport ? -1.2 : -1.15, 0]}
-        opacity={0.12}
+        opacity={isNightMode ? 0 : 0.12}
         scale={isCompactViewport ? 8.8 : 10}
         blur={isCompactViewport ? 2.3 : 2.8}
         far={4}
@@ -511,7 +516,13 @@ function SceneContent({
   );
 }
 
-const HeroScene = ({ onSceneReady }: { onSceneReady?: () => void }) => {
+const HeroScene = ({
+  onSceneReady,
+  theme = "day",
+}: {
+  onSceneReady?: () => void;
+  theme?: "day" | "night";
+}) => {
   const searchParams = useSearchParams();
   const [viewportWidth, setViewportWidth] = useState(() => {
     if (typeof window === "undefined") return 1440;
@@ -576,6 +587,7 @@ const HeroScene = ({ onSceneReady }: { onSceneReady?: () => void }) => {
             shouldZoomOutFromCredits={shouldZoomOutFromCredits}
             onSceneReady={onSceneReady}
             viewportWidth={viewportWidth}
+            theme={theme}
           />
         </Suspense>
       </Canvas>
