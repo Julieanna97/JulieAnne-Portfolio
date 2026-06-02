@@ -146,6 +146,7 @@ function SceneContent({
   const hasCalledSceneReady = useRef(false);
   const [isMoving, setIsMoving] = useState(false);
   const [lampOn, setLampOn] = useState(false);
+  const [cactusLampOn, setCactusLampOn] = useState(false);
   const lampLightRef = useRef<any>(null);
   const isNightMode = theme === "night";
 
@@ -421,7 +422,59 @@ function SceneContent({
         rotation={[0, -0.72, 0]}
         scale={isCompactViewport ? 0.78 : isTabletViewport ? 0.9 : 1}
       >
-        <IsometricRoom theme={theme} lampOn={lampOn} />
+        <IsometricRoom
+          theme={theme}
+          lampOn={lampOn}
+          cactusLampOn={cactusLampOn}
+        />
+
+        {/*
+          CACTUS FLOOR LAMP
+
+          The cactus-shaped floor lamp is stored in the GLB as the
+          neon_flower_* meshes. These coordinates are model-local, so the
+          glow stays attached to the lamp when the room is rotated or scaled.
+        */}
+        {isNightMode && (
+          <>
+            <pointLight
+              position={[6.85, 2.1, 0.42]}
+              intensity={cactusLampOn ? 2.6 : 0}
+              distance={1.9}
+              decay={2}
+              color="#69ff75"
+            />
+
+            <pointLight
+              position={[6.85, 1.38, 0.42]}
+              intensity={cactusLampOn ? 0.85 : 0}
+              distance={1.15}
+              decay={2}
+              color="#a4ffab"
+            />
+
+            {/* Larger invisible click area around the cactus lamp */}
+            <mesh
+              position={[6.85, 1.58, 0.42]}
+              onClick={(event) => {
+                event.stopPropagation();
+
+                if (!isMoving) {
+                  setCactusLampOn((value) => !value);
+                }
+              }}
+              onPointerOver={() => {
+                document.body.style.cursor = "pointer";
+              }}
+              onPointerOut={() => {
+                document.body.style.cursor = "default";
+              }}
+            >
+              <boxGeometry args={[1.35, 2.9, 1.35]} />
+              <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+            </mesh>
+          </>
+        )}
       </group>
 
       {/* Lamp point light controlled by the lamp hotspot (night mode only) */}

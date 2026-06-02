@@ -8,8 +8,13 @@ import { Color, PointLight } from "three";
 const IsometricRoom = ({
   theme,
   lampOn = false,
+  cactusLampOn = false,
   ...props
-}: { theme?: "day" | "night"; lampOn?: boolean } & any) => {
+}: {
+  theme?: "day" | "night";
+  lampOn?: boolean;
+  cactusLampOn?: boolean;
+} & any) => {
   const { scene } = useGLTF("/isometric_room.glb");
   const isNightMode = theme === "night";
 
@@ -102,6 +107,31 @@ const IsometricRoom = ({
             // reset to original stored value if present
             nextMaterial.emissiveIntensity = nextMaterial.userData?.origEmissiveIntensity ?? nextMaterial.emissiveIntensity ?? 0;
           }
+
+          // The cactus-shaped floor lamp is named neon_flower_* in the GLB.
+          // Make those meshes themselves glow green when the cactus is on.
+          const isCactusLampMesh = nodeName.includes("neon_flower");
+
+          if (cactusLampOn && isCactusLampMesh && "emissive" in nextMaterial) {
+            const cactusTint = new Color("#63ff70");
+            nextMaterial.emissive.lerp(cactusTint, 0.9);
+
+            if ("emissiveIntensity" in nextMaterial) {
+              nextMaterial.emissiveIntensity =
+                (nextMaterial.userData?.origEmissiveIntensity ??
+                  nextMaterial.emissiveIntensity ??
+                  0) + 2.8;
+            }
+          } else if (
+            !cactusLampOn &&
+            isCactusLampMesh &&
+            "emissiveIntensity" in nextMaterial
+          ) {
+            nextMaterial.emissiveIntensity =
+              nextMaterial.userData?.origEmissiveIntensity ??
+              nextMaterial.emissiveIntensity ??
+              0;
+          }
         } catch (e) {
           // ignore any traverse errors
         }
@@ -143,7 +173,7 @@ const IsometricRoom = ({
     }
 
     return clone;
-  }, [scene, isNightMode, lampOn]);
+  }, [scene, isNightMode, lampOn, cactusLampOn]);
 
   return (
     <a.group {...props}>
