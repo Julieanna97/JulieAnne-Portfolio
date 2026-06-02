@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import type { PerspectiveCamera } from "three";
@@ -13,6 +13,7 @@ import {
   MeshPhysicalMaterial,
   NoToneMapping,
   SRGBColorSpace,
+  Shape,
 } from "three";
 import gsap from "gsap";
 import IsometricRoom from "../models/IsometricRoom";
@@ -149,9 +150,13 @@ function SoftGroundGlow() {
   - gradually drains the bath
 */
 function BathtubWaterEffect({
-  active,
+  mode,
+  onFilled,
+  onDrained,
 }: {
-  active: boolean;
+  mode: "empty" | "filling" | "full" | "draining";
+  onFilled: () => void;
+  onDrained: () => void;
 }) {
   const waterSurfaceRef = useRef<Mesh>(null);
   const waterMaterialRef = useRef<MeshPhysicalMaterial>(null);
@@ -166,6 +171,8 @@ function BathtubWaterEffect({
   const splashMaterialTwoRef = useRef<MeshBasicMaterial>(null);
 
   const fillProgressRef = useRef(0);
+  const hasReportedFilledRef = useRef(false);
+  const hasReportedDrainedRef = useRef(true);
 
   /*
     Model-local positions measured from the GLB:
@@ -182,12 +189,34 @@ function BathtubWaterEffect({
   const minimumWaterY = 1.02;
   const maximumWaterY = 1.82;
 
+  /*
+    Rounded capsule-like water surface. This follows the bathtub opening
+    much more closely than the old rectangular plane, so water does not
+    visibly extend over the outside walls of the tub.
+  */
+  const waterSurfaceShape = useMemo(() => {
+    const width = 5.48;
+    const depth = 2.18;
+    const radius = depth / 2;
+    const halfWidth = width / 2;
+    const halfDepth = depth / 2;
+
+    const shape = new Shape();
+
+    shape.moveTo(-halfWidth + radius, -halfDepth);
+    shape.lineTo(halfWidth - radius, -halfDepth);
+    shape.absarc(halfWidth - radius, 0, radius, -Math.PI / 2, Math.PI / 2, false);
+    shape.lineTo(-halfWidth + radius, halfDepth);
+    shape.absarc(-halfWidth + radius, 0, radius, Math.PI / 2, Math.PI * 1.5, false);
+    shape.closePath();
+
+    return shape;
+  }, []);
+
   useFrame((state, delta) => {
-    /*
-      Fill more slowly than the drain so the animation feels natural.
-    */
-    const target = active ? 1 : 0;
-    const speed = active ? 0.38 : 0.68;
+    const shouldStayFilled = mode === "filling" || mode === "full";
+    const target = shouldStayFilled ? 1 : 0;
+    const speed = mode === "draining" ? 0.68 : 0.38;
 
     fillProgressRef.current = MathUtils.damp(
       fillProgressRef.current,
@@ -204,15 +233,11 @@ function BathtubWaterEffect({
       fillProgress
     );
 
-    /*
-      Keep the surface hidden until a small amount of water has collected.
-    */
     if (waterSurfaceRef.current) {
       waterSurfaceRef.current.position.y = currentWaterY;
 
       const subtleRipple =
-        1 +
-        Math.sin(state.clock.elapsedTime * 2.4) * 0.008;
+        1 + Math.sin(state.clock.elapsedTime * 2.4) * 0.006;
 
       waterSurfaceRef.current.scale.set(
         subtleRipple,
@@ -224,23 +249,26 @@ function BathtubWaterEffect({
     if (waterMaterialRef.current) {
       waterMaterialRef.current.opacity =
         fillProgress > 0.015
-          ? 0.2 + fillProgress * 0.38
+          ? 0.22 + fillProgress * 0.38
           : 0;
     }
 
     /*
-      The shower stream runs while active, even after the tub is full.
+      The shower only runs while the tub is actively filling.
+      As soon as the water reaches the maximum level, onFilled switches
+      the mode to "full", which stops the stream but keeps the water visible.
     */
+    const showerRunning = mode === "filling" && fillProgress < 0.985;
+
     const streamBottomY = Math.max(
       currentWaterY + 0.08,
       1.18
     );
 
-    const streamHeight =
-      showerStartY - streamBottomY;
+    const streamHeight = showerStartY - streamBottomY;
 
     if (streamRef.current) {
-      streamRef.current.visible = active;
+      streamRef.current.visible = showerRunning;
 
       streamRef.current.position.set(
         showerX,
@@ -256,22 +284,13 @@ function BathtubWaterEffect({
     }
 
     if (streamMaterialRef.current) {
-      streamMaterialRef.current.opacity =
-        active
-          ? 0.58 +
-            Math.sin(state.clock.elapsedTime * 8) *
-              0.08
-          : 0;
+      streamMaterialRef.current.opacity = showerRunning
+        ? 0.58 + Math.sin(state.clock.elapsedTime * 8) * 0.08
+        : 0;
     }
 
-    /*
-      Two animated splash rings where the shower stream meets the water.
-    */
-    const splashVisible =
-      active && fillProgress > 0.015;
-
-    const splashTime =
-      state.clock.elapsedTime;
+    const splashVisible = showerRunning && fillProgress > 0.015;
+    const splashTime = state.clock.elapsedTime;
 
     const updateSplashRing = (
       ring: Mesh | null,
@@ -283,9 +302,7 @@ function BathtubWaterEffect({
       ring.visible = splashVisible;
       ring.position.y = currentWaterY + 0.018;
 
-      const cycle =
-        (splashTime * 1.55 + phase) % 1;
-
+      const cycle = (splashTime * 1.55 + phase) % 1;
       const scale = 0.45 + cycle * 1.35;
 
       ring.scale.set(scale, scale, scale);
@@ -306,13 +323,30 @@ function BathtubWaterEffect({
       splashMaterialTwoRef.current,
       0.52
     );
+
+    if (fillProgress >= 0.985 && mode === "filling") {
+      if (!hasReportedFilledRef.current) {
+        hasReportedFilledRef.current = true;
+        hasReportedDrainedRef.current = false;
+        onFilled();
+      }
+    } else if (fillProgress < 0.98) {
+      hasReportedFilledRef.current = false;
+    }
+
+    if (fillProgress <= 0.015 && mode === "draining") {
+      if (!hasReportedDrainedRef.current) {
+        hasReportedDrainedRef.current = true;
+        onDrained();
+      }
+    } else if (fillProgress > 0.02) {
+      hasReportedDrainedRef.current = false;
+    }
   });
 
   return (
     <group>
-      {/*
-        Transparent water surface inside the bathtub.
-      */}
+      {/* Rounded water surface that stays within the tub opening. */}
       <mesh
         ref={waterSurfaceRef}
         position={[
@@ -323,7 +357,7 @@ function BathtubWaterEffect({
         rotation={[-Math.PI / 2, 0, 0]}
         renderOrder={3}
       >
-        <planeGeometry args={[5.75, 2.35, 20, 12]} />
+        <shapeGeometry args={[waterSurfaceShape, 32]} />
 
         <meshPhysicalMaterial
           ref={waterMaterialRef}
@@ -339,10 +373,7 @@ function BathtubWaterEffect({
         />
       </mesh>
 
-      {/*
-        Narrow vertical shower stream. The geometry is one unit tall;
-        useFrame stretches it to meet the rising water level.
-      */}
+      {/* Shower stream stretched to meet the rising water level. */}
       <mesh
         ref={streamRef}
         visible={false}
@@ -373,9 +404,7 @@ function BathtubWaterEffect({
         />
       </mesh>
 
-      {/*
-        Small splash rings at the stream impact point.
-      */}
+      {/* Small splash rings at the stream impact point. */}
       <mesh
         ref={splashRingOneRef}
         visible={false}
@@ -422,7 +451,6 @@ function BathtubWaterEffect({
     </group>
   );
 }
-
 function SceneContent({
   shouldZoomOutFromLaptop,
   shouldZoomOutFromWindow,
@@ -445,7 +473,9 @@ function SceneContent({
   const [isMoving, setIsMoving] = useState(false);
   const [lampOn, setLampOn] = useState(false);
   const [cactusLampOn, setCactusLampOn] = useState(false);
-  const [bathtubRunning, setBathtubRunning] = useState(false);
+  const [bathtubMode, setBathtubMode] = useState<
+    "empty" | "filling" | "full" | "draining"
+  >("empty");
   const lampLightRef = useRef<any>(null);
   const isNightMode = theme === "night";
 
@@ -782,7 +812,15 @@ function SceneContent({
           remain attached to the bathroom after responsive scaling and room
           rotation.
         */}
-        <BathtubWaterEffect active={bathtubRunning} />
+        <BathtubWaterEffect
+          mode={bathtubMode}
+          onFilled={() => {
+            setBathtubMode("full");
+          }}
+          onDrained={() => {
+            setBathtubMode("empty");
+          }}
+        />
 
         <mesh
           position={[-4.79, 1.36, 4.84]}
@@ -790,7 +828,12 @@ function SceneContent({
             event.stopPropagation();
 
             if (!isMoving) {
-              setBathtubRunning((value) => !value);
+              setBathtubMode((currentMode) => {
+                if (currentMode === "empty") return "filling";
+                if (currentMode === "filling") return "draining";
+                if (currentMode === "full") return "draining";
+                return "filling";
+              });
             }
           }}
           onPointerOver={() => {
