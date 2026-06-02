@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import type { PerspectiveCamera } from "three";
-import { ContactShadows, Html, OrbitControls } from "@react-three/drei";
+import { Billboard, ContactShadows, Html, OrbitControls, Text } from "@react-three/drei";
 import {
   DoubleSide,
   FrontSide,
@@ -16,6 +16,7 @@ import {
   SRGBColorSpace,
   Shape,
   Group,
+  PointLight,
   Vector3,
 } from "three";
 import gsap from "gsap";
@@ -185,9 +186,16 @@ function BathtubWaterEffect({
   const tubCenterX = -4.79;
   const tubCenterZ = 4.84;
 
-  const showerX = -7.69;
-  const showerZ = 4.97;
+  /*
+    The shower is mounted against the wall, but the water should land
+    slightly inward inside the bathtub rather than falling down the wall.
+  */
+  const showerStartX = -7.69;
   const showerStartY = 6.48;
+  const showerStartZ = 4.97;
+
+  const showerLandingX = -6.98;
+  const showerLandingZ = 4.97;
 
   const minimumWaterY = 1.02;
   const maximumWaterY = 1.82;
@@ -268,15 +276,37 @@ function BathtubWaterEffect({
       1.18
     );
 
-    const streamHeight = showerStartY - streamBottomY;
+    /*
+      Aim the shower stream diagonally from the wall-mounted shower head
+      toward a landing point inside the tub. A vertical stream would pour
+      outside the tub because the shower fixture sits close to the wall.
+    */
+    const streamStart = new Vector3(
+      showerStartX,
+      showerStartY,
+      showerStartZ
+    );
+
+    const streamEnd = new Vector3(
+      showerLandingX,
+      streamBottomY,
+      showerLandingZ
+    );
+
+    const streamDirection = streamEnd.clone().sub(streamStart);
+    const streamHeight = streamDirection.length();
 
     if (streamRef.current) {
       streamRef.current.visible = showerRunning;
 
-      streamRef.current.position.set(
-        showerX,
-        streamBottomY + streamHeight / 2,
-        showerZ
+      streamRef.current.position
+        .copy(streamStart)
+        .add(streamEnd)
+        .multiplyScalar(0.5);
+
+      streamRef.current.quaternion.setFromUnitVectors(
+        new Vector3(0, 1, 0),
+        streamDirection.normalize()
       );
 
       streamRef.current.scale.set(
@@ -303,7 +333,11 @@ function BathtubWaterEffect({
       if (!ring || !material) return;
 
       ring.visible = splashVisible;
-      ring.position.y = currentWaterY + 0.018;
+      ring.position.set(
+        showerLandingX,
+        currentWaterY + 0.018,
+        showerLandingZ
+      );
 
       const cycle = (splashTime * 1.55 + phase) % 1;
       const scale = 0.45 + cycle * 1.35;
@@ -381,9 +415,9 @@ function BathtubWaterEffect({
         ref={streamRef}
         visible={false}
         position={[
-          showerX,
+          showerStartX,
           3.8,
-          showerZ,
+          showerStartZ,
         ]}
       >
         <cylinderGeometry
@@ -412,9 +446,9 @@ function BathtubWaterEffect({
         ref={splashRingOneRef}
         visible={false}
         position={[
-          showerX,
+          showerLandingX,
           minimumWaterY + 0.018,
-          showerZ,
+          showerLandingZ,
         ]}
         rotation={[-Math.PI / 2, 0, 0]}
       >
@@ -434,9 +468,9 @@ function BathtubWaterEffect({
         ref={splashRingTwoRef}
         visible={false}
         position={[
-          showerX,
+          showerLandingX,
           minimumWaterY + 0.02,
-          showerZ,
+          showerLandingZ,
         ]}
         rotation={[-Math.PI / 2, 0, 0]}
       >
@@ -451,6 +485,1103 @@ function BathtubWaterEffect({
           depthWrite={false}
         />
       </mesh>
+    </group>
+  );
+}
+
+
+/*
+  Animated bathroom-sink interaction.
+
+  This mirrors the bathtub behavior on a smaller scale:
+  - click the sink to start the faucet
+  - the basin gradually fills
+  - the faucet switches off automatically when the basin is full
+  - click again to drain the water
+
+  All positions below use the GLB model-local coordinate system.
+*/
+function SinkWaterEffect({
+  mode,
+  onFilled,
+  onDrained,
+}: {
+  mode: "empty" | "filling" | "full" | "draining";
+  onFilled: () => void;
+  onDrained: () => void;
+}) {
+  const waterSurfaceRef = useRef<Mesh>(null);
+  const waterMaterialRef = useRef<MeshPhysicalMaterial>(null);
+
+  const streamRef = useRef<Mesh>(null);
+  const streamMaterialRef = useRef<MeshPhysicalMaterial>(null);
+
+  const splashRingOneRef = useRef<Mesh>(null);
+  const splashRingTwoRef = useRef<Mesh>(null);
+
+  const splashMaterialOneRef = useRef<MeshBasicMaterial>(null);
+  const splashMaterialTwoRef = useRef<MeshBasicMaterial>(null);
+
+  const fillProgressRef = useRef(0);
+  const hasReportedFilledRef = useRef(false);
+  const hasReportedDrainedRef = useRef(true);
+
+  /*
+    GLB sink bounds:
+    - basin mesh: x -8.242 to -6.614, z 0.626 to 2.528
+    - crane mesh: x -8.236 to -7.681, y 3.839 to 4.478, z 1.144 to 2.022
+  */
+  const sinkCenterX = -7.43;
+  const sinkCenterZ = 1.58;
+
+  /*
+    The faucet outlet faces straight downward.
+
+    Keep the start and landing X/Z coordinates identical so the stream
+    falls vertically at a 90-degree angle from the visible faucet nozzle
+    into the sink basin.
+  */
+  const faucetStartX = -7.72;
+  const faucetStartY = 4.25;
+  const faucetStartZ = 1.58;
+
+  const faucetLandingX = -7.72;
+  const faucetLandingZ = 1.58;
+
+  const minimumWaterY = 3.22;
+  const maximumWaterY = 3.48;
+
+  /*
+    Small rounded rectangle that stays inside the sink basin.
+  */
+  const waterSurfaceShape = useMemo(() => {
+    const width = 1.22;
+    const depth = 1.02;
+    const radius = 0.22;
+    const halfWidth = width / 2;
+    const halfDepth = depth / 2;
+
+    const shape = new Shape();
+
+    shape.moveTo(-halfWidth + radius, -halfDepth);
+    shape.lineTo(halfWidth - radius, -halfDepth);
+    shape.quadraticCurveTo(halfWidth, -halfDepth, halfWidth, -halfDepth + radius);
+    shape.lineTo(halfWidth, halfDepth - radius);
+    shape.quadraticCurveTo(halfWidth, halfDepth, halfWidth - radius, halfDepth);
+    shape.lineTo(-halfWidth + radius, halfDepth);
+    shape.quadraticCurveTo(-halfWidth, halfDepth, -halfWidth, halfDepth - radius);
+    shape.lineTo(-halfWidth, -halfDepth + radius);
+    shape.quadraticCurveTo(-halfWidth, -halfDepth, -halfWidth + radius, -halfDepth);
+    shape.closePath();
+
+    return shape;
+  }, []);
+
+  useFrame((state, delta) => {
+    const shouldStayFilled = mode === "filling" || mode === "full";
+    const target = shouldStayFilled ? 1 : 0;
+    const speed = mode === "draining" ? 0.92 : 0.52;
+
+    fillProgressRef.current = MathUtils.damp(
+      fillProgressRef.current,
+      target,
+      speed,
+      delta
+    );
+
+    const fillProgress = fillProgressRef.current;
+    const currentWaterY = MathUtils.lerp(
+      minimumWaterY,
+      maximumWaterY,
+      fillProgress
+    );
+
+    if (waterSurfaceRef.current) {
+      waterSurfaceRef.current.position.y = currentWaterY;
+
+      const subtleRipple =
+        1 + Math.sin(state.clock.elapsedTime * 3.2) * 0.008;
+
+      waterSurfaceRef.current.scale.set(
+        subtleRipple,
+        subtleRipple,
+        1
+      );
+    }
+
+    if (waterMaterialRef.current) {
+      waterMaterialRef.current.opacity =
+        fillProgress > 0.015
+          ? 0.2 + fillProgress * 0.42
+          : 0;
+    }
+
+    /* Stop the faucet automatically once the sink is full. */
+    const faucetRunning = mode === "filling" && fillProgress < 0.985;
+
+    const streamBottomY = Math.max(
+      currentWaterY + 0.05,
+      minimumWaterY + 0.04
+    );
+
+    const streamStart = new Vector3(
+      faucetStartX,
+      faucetStartY,
+      faucetStartZ
+    );
+
+    const streamEnd = new Vector3(
+      faucetLandingX,
+      streamBottomY,
+      faucetLandingZ
+    );
+
+    const streamDirection = streamEnd.clone().sub(streamStart);
+    const streamHeight = Math.max(streamDirection.length(), 0.05);
+
+    if (streamRef.current) {
+      streamRef.current.visible = faucetRunning;
+
+      streamRef.current.position
+        .copy(streamStart)
+        .add(streamEnd)
+        .multiplyScalar(0.5);
+
+      streamRef.current.quaternion.setFromUnitVectors(
+        new Vector3(0, 1, 0),
+        streamDirection.normalize()
+      );
+
+      streamRef.current.scale.set(1, streamHeight, 1);
+    }
+
+    if (streamMaterialRef.current) {
+      streamMaterialRef.current.opacity = faucetRunning
+        ? 0.72 + Math.sin(state.clock.elapsedTime * 9) * 0.06
+        : 0;
+    }
+
+    const splashVisible = faucetRunning && fillProgress > 0.015;
+    const splashTime = state.clock.elapsedTime;
+
+    const updateSplashRing = (
+      ring: Mesh | null,
+      material: MeshBasicMaterial | null,
+      phase: number
+    ) => {
+      if (!ring || !material) return;
+
+      ring.visible = splashVisible;
+      ring.position.set(
+        faucetLandingX,
+        currentWaterY + 0.012,
+        faucetLandingZ
+      );
+
+      const cycle = (splashTime * 1.9 + phase) % 1;
+      const scale = 0.26 + cycle * 0.78;
+
+      ring.scale.set(scale, scale, scale);
+      material.opacity = splashVisible ? (1 - cycle) * 0.46 : 0;
+    };
+
+    updateSplashRing(
+      splashRingOneRef.current,
+      splashMaterialOneRef.current,
+      0
+    );
+
+    updateSplashRing(
+      splashRingTwoRef.current,
+      splashMaterialTwoRef.current,
+      0.5
+    );
+
+    if (fillProgress >= 0.985 && mode === "filling") {
+      if (!hasReportedFilledRef.current) {
+        hasReportedFilledRef.current = true;
+        hasReportedDrainedRef.current = false;
+        onFilled();
+      }
+    } else if (fillProgress < 0.98) {
+      hasReportedFilledRef.current = false;
+    }
+
+    if (fillProgress <= 0.015 && mode === "draining") {
+      if (!hasReportedDrainedRef.current) {
+        hasReportedDrainedRef.current = true;
+        onDrained();
+      }
+    } else if (fillProgress > 0.02) {
+      hasReportedDrainedRef.current = false;
+    }
+  });
+
+  return (
+    <group>
+      {/* Water inside the sink basin. */}
+      <mesh
+        ref={waterSurfaceRef}
+        position={[sinkCenterX, minimumWaterY, sinkCenterZ]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        renderOrder={4}
+      >
+        <shapeGeometry args={[waterSurfaceShape, 24]} />
+
+        <meshPhysicalMaterial
+          ref={waterMaterialRef}
+          color="#77d9ff"
+          transparent
+          opacity={0}
+          roughness={0.07}
+          metalness={0}
+          transmission={0.16}
+          thickness={0.05}
+          side={DoubleSide}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* Thin vertical faucet stream that starts at the visible nozzle. */}
+      <mesh
+        ref={streamRef}
+        visible={false}
+        position={[faucetStartX, 3.7, faucetStartZ]}
+        renderOrder={6}
+      >
+        <cylinderGeometry args={[0.03, 0.038, 1, 12]} />
+
+        <meshPhysicalMaterial
+          ref={streamMaterialRef}
+          color="#b5edff"
+          transparent
+          opacity={0}
+          roughness={0.02}
+          metalness={0}
+          transmission={0.18}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* Small animated ripple rings where the faucet water lands. */}
+      <mesh
+        ref={splashRingOneRef}
+        visible={false}
+        position={[faucetLandingX, minimumWaterY + 0.012, faucetLandingZ]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <ringGeometry args={[0.045, 0.07, 18]} />
+        <meshBasicMaterial
+          ref={splashMaterialOneRef}
+          color="#d9f7ff"
+          transparent
+          opacity={0}
+          side={DoubleSide}
+          depthWrite={false}
+        />
+      </mesh>
+
+      <mesh
+        ref={splashRingTwoRef}
+        visible={false}
+        position={[faucetLandingX, minimumWaterY + 0.014, faucetLandingZ]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <ringGeometry args={[0.04, 0.062, 18]} />
+        <meshBasicMaterial
+          ref={splashMaterialTwoRef}
+          color="#d9f7ff"
+          transparent
+          opacity={0}
+          side={DoubleSide}
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+
+/*
+  Interactive bathroom mirror border light.
+
+  The mirror above the sink is mounted on the left bathroom wall.
+  Clicking the invisible hotspot toggles a soft pink-lilac illuminated
+  border. The effect uses the GLB model-local coordinate system so it
+  follows the room rotation and responsive scaling automatically.
+*/
+function MirrorBorderLight({
+  isOn,
+  isNightMode,
+  disabled,
+  onToggle,
+}: {
+  isOn: boolean;
+  isNightMode: boolean;
+  disabled: boolean;
+  onToggle: () => void;
+}) {
+  const mirrorX = -8.16;
+  const mirrorCenterY = 6.24;
+  const mirrorCenterZ = 1.59;
+
+  const frameHeight = 3.48;
+  const frameWidth = 1.86;
+  const frameThickness = 0.09;
+
+  return (
+    <group>
+      {isOn && (
+        <>
+          {/* Soft ambient glow around the mirror frame. */}
+          <pointLight
+            position={[-7.72, mirrorCenterY, mirrorCenterZ]}
+            intensity={isNightMode ? 2.2 : 1.25}
+            distance={3.2}
+            decay={2}
+            color="#ff9de8"
+          />
+
+          {/* Left illuminated border. */}
+          <mesh
+            position={[
+              mirrorX,
+              mirrorCenterY,
+              mirrorCenterZ - frameWidth / 2,
+            ]}
+          >
+            <boxGeometry args={[0.1, frameHeight, frameThickness]} />
+            <meshStandardMaterial
+              color="#ffd8f6"
+              emissive="#ff8ce2"
+              emissiveIntensity={4.2}
+            />
+          </mesh>
+
+          {/* Right illuminated border. */}
+          <mesh
+            position={[
+              mirrorX,
+              mirrorCenterY,
+              mirrorCenterZ + frameWidth / 2,
+            ]}
+          >
+            <boxGeometry args={[0.1, frameHeight, frameThickness]} />
+            <meshStandardMaterial
+              color="#ffd8f6"
+              emissive="#ff8ce2"
+              emissiveIntensity={4.2}
+            />
+          </mesh>
+
+          {/* Top illuminated border. */}
+          <mesh
+            position={[
+              mirrorX,
+              mirrorCenterY + frameHeight / 2,
+              mirrorCenterZ,
+            ]}
+          >
+            <boxGeometry args={[0.1, frameThickness, frameWidth]} />
+            <meshStandardMaterial
+              color="#ffd8f6"
+              emissive="#ff8ce2"
+              emissiveIntensity={4.2}
+            />
+          </mesh>
+
+          {/* Bottom illuminated border. */}
+          <mesh
+            position={[
+              mirrorX,
+              mirrorCenterY - frameHeight / 2,
+              mirrorCenterZ,
+            ]}
+          >
+            <boxGeometry args={[0.1, frameThickness, frameWidth]} />
+            <meshStandardMaterial
+              color="#ffd8f6"
+              emissive="#ff8ce2"
+              emissiveIntensity={4.2}
+            />
+          </mesh>
+        </>
+      )}
+
+      {/* Larger invisible hotspot covering the bathroom mirror. */}
+      <mesh
+        position={[-7.98, mirrorCenterY, mirrorCenterZ]}
+        onClick={(event) => {
+          event.stopPropagation();
+
+          if (!disabled) {
+            onToggle();
+          }
+        }}
+        onPointerOver={() => {
+          document.body.style.cursor = "pointer";
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = "default";
+        }}
+      >
+        <boxGeometry args={[0.5, 3.72, 2.1]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
+    </group>
+  );
+}
+
+
+/*
+  Cozy interactive bed animation.
+
+  Clicking the bed replays a short bedtime sequence:
+  - a dreamy cloud appears over the pillow
+  - floating Zzzz... text drifts upward
+  - tiny sparkles twinkle around the cloud
+  - a warm pillow / cat-headboard glow pulses gently
+
+  All coordinates are model-local, so the effect follows the upstairs
+  bedroom correctly when the complete room rotates or scales.
+*/
+function BedtimeEffect({
+  replayKey,
+}: {
+  replayKey: number;
+}) {
+  const dreamCloudRef = useRef<Group>(null);
+  const pillowGlowRef = useRef<PointLight>(null);
+
+  const zTextGroupRef = useRef<Group>(null);
+  const zTextRef = useRef<any>(null);
+
+  const sparkleRefs = useRef<Array<Mesh | null>>([]);
+
+  const elapsedRef = useRef(999);
+
+  useEffect(() => {
+    if (replayKey <= 0) return;
+
+    elapsedRef.current = 0;
+  }, [replayKey]);
+
+  useFrame((state, delta) => {
+    elapsedRef.current += delta;
+
+    const elapsed = elapsedRef.current;
+    const isActive = elapsed < 6.2;
+
+    /*
+      Dream cloud:
+      fade it in after the blanket settles, float it gently, then fade out.
+    */
+    if (dreamCloudRef.current) {
+      const cloudStarts = 0.65;
+      const cloudEnds = 5.95;
+      const cloudIsVisible =
+        elapsed >= cloudStarts && elapsed <= cloudEnds;
+
+      dreamCloudRef.current.visible = cloudIsVisible;
+
+      if (cloudIsVisible) {
+        const fadeIn = Math.min((elapsed - cloudStarts) / 0.62, 1);
+        const fadeOut = Math.min((cloudEnds - elapsed) / 0.72, 1);
+        const cloudScale = Math.max(
+          0,
+          Math.min(fadeIn, fadeOut)
+        );
+
+        dreamCloudRef.current.scale.setScalar(cloudScale);
+
+        dreamCloudRef.current.position.y =
+          12.52 +
+          Math.sin(state.clock.elapsedTime * 1.55) * 0.11;
+
+        dreamCloudRef.current.rotation.y =
+          Math.sin(state.clock.elapsedTime * 0.78) * 0.08;
+      }
+    }
+
+    /*
+      Floating Zzzz... text:
+      a cozy sleepy label drifts upward slowly above the cat pillow.
+    */
+    if (zTextGroupRef.current) {
+      const textStarts = 0.45;
+      const textEnds = 5.95;
+      const textVisible =
+        isActive && elapsed >= textStarts && elapsed <= textEnds;
+
+      zTextGroupRef.current.visible = textVisible;
+
+      if (textVisible) {
+        const localElapsed = elapsed - textStarts;
+        const progress = Math.min(localElapsed / (textEnds - textStarts), 1);
+
+        zTextGroupRef.current.position.set(
+          -6.18 + Math.sin(state.clock.elapsedTime * 1.1) * 0.08,
+          12.72 + progress * 0.9,
+          4.0 + Math.sin(state.clock.elapsedTime * 0.85) * 0.06
+        );
+
+        const pulse =
+          0.98 + Math.sin(state.clock.elapsedTime * 2.15) * 0.08;
+
+        zTextGroupRef.current.scale.setScalar(pulse);
+
+        if (zTextRef.current?.material) {
+          const fadeIn = Math.min(localElapsed / 0.42, 1);
+          const fadeOut = Math.min((textEnds - elapsed) / 0.72, 1);
+
+          zTextRef.current.material.opacity =
+            Math.max(0, Math.min(fadeIn, fadeOut)) * 0.98;
+        }
+      }
+    }
+
+    /*
+      Sparkles:
+      twinkle around the dream cloud and drift subtly upward.
+    */
+    sparkleRefs.current.forEach(
+      (sparkle, index) => {
+        if (!sparkle) return;
+
+        const sparkleStarts =
+          0.78 + index * 0.12;
+
+        const sparkleEnds =
+          5.72 - index * 0.08;
+
+        const visible =
+          elapsed >= sparkleStarts &&
+          elapsed <= sparkleEnds;
+
+        sparkle.visible = visible;
+
+        if (!visible) return;
+
+        const twinkle =
+          0.45 +
+          Math.sin(
+            state.clock.elapsedTime *
+              (3.8 + index * 0.34) +
+              index
+          ) *
+            0.32;
+
+        sparkle.scale.setScalar(
+          Math.max(0.14, twinkle)
+        );
+
+        sparkle.position.y +=
+          Math.sin(
+            state.clock.elapsedTime * 1.25 +
+              index
+          ) *
+          0.0009;
+      }
+    );
+
+    /*
+      Warm glow:
+      softly illuminates the cat headboard and pillow area.
+    */
+    if (pillowGlowRef.current) {
+      pillowGlowRef.current.intensity =
+        isActive
+          ? 0.7 +
+            Math.sin(
+              state.clock.elapsedTime * 2.1
+            ) *
+              0.2
+          : 0;
+    }
+  });
+
+  return (
+    <group>
+      {/* Dream cloud floating above the pillow. */}
+      <group
+        ref={dreamCloudRef}
+        visible={false}
+        position={[-6.36, 12.52, 4.58]}
+      >
+        <mesh position={[-0.34, 0, 0]}>
+          <sphereGeometry args={[0.34, 16, 16]} />
+          <meshBasicMaterial
+            color="#f8dcff"
+            transparent
+            opacity={0.58}
+            depthWrite={false}
+          />
+        </mesh>
+
+        <mesh position={[0, 0.12, 0.03]}>
+          <sphereGeometry args={[0.44, 16, 16]} />
+          <meshBasicMaterial
+            color="#ffe8ff"
+            transparent
+            opacity={0.62}
+            depthWrite={false}
+          />
+        </mesh>
+
+        <mesh position={[0.42, -0.02, 0]}>
+          <sphereGeometry args={[0.31, 16, 16]} />
+          <meshBasicMaterial
+            color="#e8dcff"
+            transparent
+            opacity={0.58}
+            depthWrite={false}
+          />
+        </mesh>
+
+        <mesh position={[0.05, -0.18, 0.03]}>
+          <sphereGeometry args={[0.42, 16, 16]} />
+          <meshBasicMaterial
+            color="#f2dcff"
+            transparent
+            opacity={0.55}
+            depthWrite={false}
+          />
+        </mesh>
+
+        {/* Tiny stars inside the dream cloud. */}
+        <mesh position={[-0.1, 0.12, 0.37]}>
+          <octahedronGeometry args={[0.11, 0]} />
+          <meshBasicMaterial
+            color="#fff4a8"
+            transparent
+            opacity={0.95}
+            depthWrite={false}
+          />
+        </mesh>
+
+        <mesh position={[0.28, -0.05, 0.35]}>
+          <octahedronGeometry args={[0.08, 0]} />
+          <meshBasicMaterial
+            color="#ffd2f3"
+            transparent
+            opacity={0.95}
+            depthWrite={false}
+          />
+        </mesh>
+      </group>
+
+      {/* Floating sleepy Zzzz... text that always faces the visitor. */}
+      <Billboard
+        ref={zTextGroupRef}
+        visible={false}
+        position={[-6.18, 12.72, 4.0]}
+        follow
+      >
+        <Text
+          ref={zTextRef}
+          fontSize={0.54}
+          color="#fff1fb"
+          anchorX="center"
+          anchorY="middle"
+          material-transparent
+          material-opacity={0}
+          material-depthTest={false}
+          outlineWidth={0.018}
+          outlineColor="#87518f"
+          renderOrder={30}
+        >
+          Zzzz...
+        </Text>
+      </Billboard>
+
+      {/* Twinkling sparkles surrounding the cloud. */}
+      {[
+        [-6.94, 12.38, 4.22],
+        [-6.03, 12.89, 4.76],
+        [-6.46, 13.16, 4.16],
+        [-5.78, 12.44, 4.4],
+        [-6.88, 12.91, 4.69],
+      ].map((position, index) => (
+        <mesh
+          key={`bed-sparkle-${index}`}
+          ref={(mesh) => {
+            sparkleRefs.current[index] =
+              mesh;
+          }}
+          visible={false}
+          position={
+            position as [
+              number,
+              number,
+              number,
+            ]
+          }
+        >
+          <octahedronGeometry
+            args={[
+              index % 2 === 0
+                ? 0.11
+                : 0.075,
+              0,
+            ]}
+          />
+
+          <meshBasicMaterial
+            color={
+              index % 2 === 0
+                ? "#fff0a8"
+                : "#ffc9ef"
+            }
+            transparent
+            opacity={0.92}
+            depthWrite={false}
+          />
+        </mesh>
+      ))}
+
+      {/* Warm light pulsing around the pillow and cat-shaped headboard. */}
+      <pointLight
+        ref={pillowGlowRef}
+        position={[-7.18, 11.26, 4.59]}
+        intensity={0}
+        distance={3.2}
+        decay={2}
+        color="#ffb4dc"
+      />
+    </group>
+  );
+}
+
+
+/*
+  Interactive dream-gallery frames above the upstairs bed.
+
+  Each frame can be clicked independently:
+  - left frame reveals a softly pulsing heart
+  - middle frame reveals a rocking crescent moon
+  - right frame reveals a twinkling star
+
+  When all three frames are active, they play a short left-to-right wave
+  and release a few tiny pastel sparkles above the bed.
+
+  All coordinates use the GLB model-local coordinate system so the effect
+  stays aligned when the complete room rotates or scales responsively.
+*/
+function DreamGalleryFrames({
+  disabled,
+}: {
+  disabled: boolean;
+}) {
+  const frameCenters: Array<[number, number, number]> = [
+    [-8.12, 12.72, 6.05],
+    [-8.12, 12.72, 4.61],
+    [-8.12, 12.72, 3.21],
+  ];
+
+  const frameColors = [
+    "#ffb6ce",
+    "#caa7ff",
+    "#9edcff",
+  ];
+
+  const frameGlowColors = [
+    "#ff8fb9",
+    "#bb8dff",
+    "#7fcfff",
+  ];
+
+  const iconColors = [
+    "#fff0f6",
+    "#fff4c7",
+    "#fff0a6",
+  ];
+
+  const [activeFrames, setActiveFrames] = useState([
+    false,
+    false,
+    false,
+  ]);
+
+  const frameGroupRefs = useRef<Array<Group | null>>([]);
+  const iconGroupRefs = useRef<Array<Group | null>>([]);
+  const sparkleRefs = useRef<Array<Mesh | null>>([]);
+
+  const clockRef = useRef(0);
+  const clickPulseStartRefs = useRef([-99, -99, -99]);
+  const waveStartRef = useRef(-99);
+
+  const heartShape = useMemo(() => {
+    const shape = new Shape();
+
+    shape.moveTo(0, -0.18);
+    shape.bezierCurveTo(-0.42, -0.48, -0.7, -0.06, -0.42, 0.22);
+    shape.bezierCurveTo(-0.2, 0.44, 0, 0.26, 0, 0.09);
+    shape.bezierCurveTo(0, 0.26, 0.2, 0.44, 0.42, 0.22);
+    shape.bezierCurveTo(0.7, -0.06, 0.42, -0.48, 0, -0.18);
+    shape.closePath();
+
+    return shape;
+  }, []);
+
+  const starShape = useMemo(() => {
+    const shape = new Shape();
+    const outerRadius = 0.39;
+    const innerRadius = 0.17;
+    const points = 5;
+
+    for (let index = 0; index < points * 2; index += 1) {
+      const radius = index % 2 === 0 ? outerRadius : innerRadius;
+      const angle = -Math.PI / 2 + (index * Math.PI) / points;
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius;
+
+      if (index === 0) {
+        shape.moveTo(x, y);
+      } else {
+        shape.lineTo(x, y);
+      }
+    }
+
+    shape.closePath();
+
+    return shape;
+  }, []);
+
+  const toggleFrame = (index: number) => {
+    if (disabled) return;
+
+    clickPulseStartRefs.current[index] = clockRef.current;
+
+    setActiveFrames((currentFrames) => {
+      const nextFrames = [...currentFrames];
+      nextFrames[index] = !nextFrames[index];
+
+      if (nextFrames.every(Boolean)) {
+        waveStartRef.current = clockRef.current;
+      }
+
+      return nextFrames;
+    });
+  };
+
+  useFrame((state) => {
+    const elapsed = state.clock.elapsedTime;
+    clockRef.current = elapsed;
+
+    const waveElapsed = elapsed - waveStartRef.current;
+    const waveIsActive = waveElapsed >= 0 && waveElapsed <= 3.15;
+
+    frameGroupRefs.current.forEach((frameGroup, index) => {
+      if (!frameGroup) return;
+
+      const clickElapsed = elapsed - clickPulseStartRefs.current[index];
+      const clickPulse =
+        clickElapsed >= 0 && clickElapsed <= 0.76
+          ? Math.sin((clickElapsed / 0.76) * Math.PI)
+          : 0;
+
+      const waveDelay = index * 0.2;
+      const localWaveElapsed = waveElapsed - waveDelay;
+      const wavePulse =
+        waveIsActive && localWaveElapsed >= 0 && localWaveElapsed <= 0.92
+          ? Math.sin((localWaveElapsed / 0.92) * Math.PI)
+          : 0;
+
+      const popAmount = clickPulse * 0.18 + wavePulse * 0.16;
+      const tiltAmount = (clickPulse * 0.1 + wavePulse * 0.075) *
+        (index % 2 === 0 ? 1 : -1);
+
+      frameGroup.position.x = frameCenters[index][0] + popAmount;
+      frameGroup.rotation.x = tiltAmount;
+
+      const frameScale = 1 + clickPulse * 0.1 + wavePulse * 0.09;
+      frameGroup.scale.setScalar(frameScale);
+    });
+
+    iconGroupRefs.current.forEach((iconGroup, index) => {
+      if (!iconGroup) return;
+
+      const isActive = activeFrames[index];
+      iconGroup.visible = isActive;
+
+      if (!isActive) return;
+
+      if (index === 0) {
+        const heartbeat = 1 + Math.sin(elapsed * 4.4) * 0.08;
+        iconGroup.scale.setScalar(heartbeat);
+        iconGroup.rotation.x = 0;
+      }
+
+      if (index === 1) {
+        iconGroup.scale.setScalar(1);
+        iconGroup.rotation.x = Math.sin(elapsed * 1.8) * 0.14;
+      }
+
+      if (index === 2) {
+        const twinkle = 1 + Math.sin(elapsed * 4.8) * 0.13;
+        iconGroup.scale.setScalar(twinkle);
+        iconGroup.rotation.x = elapsed * 0.42;
+      }
+    });
+
+    sparkleRefs.current.forEach((sparkle, index) => {
+      if (!sparkle) return;
+
+      const sparkleDelay = 0.64 + index * 0.17;
+      const localElapsed = waveElapsed - sparkleDelay;
+      const visible = waveIsActive && localElapsed >= 0 && localElapsed <= 1.42;
+
+      sparkle.visible = visible;
+
+      if (!visible) return;
+
+      const progress = Math.min(localElapsed / 1.42, 1);
+      const driftDirection = index % 2 === 0 ? 1 : -1;
+
+      sparkle.position.set(
+        -7.86 + progress * 0.28,
+        12.18 - progress * (0.62 + index * 0.035),
+        5.72 - index * 0.57 + Math.sin(elapsed * 2.4 + index) * 0.06
+      );
+
+      const sparkleScale =
+        Math.sin(progress * Math.PI) *
+        (index % 2 === 0 ? 1 : 0.72);
+
+      sparkle.scale.setScalar(Math.max(0.05, sparkleScale));
+      sparkle.rotation.x = elapsed * driftDirection * 0.9;
+      sparkle.rotation.z = elapsed * driftDirection * 0.7;
+    });
+  });
+
+  return (
+    <group>
+      {frameCenters.map((position, index) => (
+        <group
+          key={`dream-gallery-frame-${index}`}
+          ref={(group) => {
+            frameGroupRefs.current[index] = group;
+          }}
+          position={position}
+        >
+          {/* Soft colored panel layered over the original pastel artwork. */}
+          <mesh position={[0, 0, 0]}>
+            <boxGeometry args={[0.075, 0.64, 0.64]} />
+            <meshStandardMaterial
+              color={frameColors[index]}
+              emissive={frameGlowColors[index]}
+              emissiveIntensity={activeFrames[index] ? 2.2 : 0.16}
+              transparent
+              opacity={activeFrames[index] ? 0.9 : 0.12}
+            />
+          </mesh>
+
+          {/* Symbol revealed when this frame is active. */}
+          <group
+            ref={(group) => {
+              iconGroupRefs.current[index] = group;
+            }}
+            visible={activeFrames[index]}
+            position={[0.055, 0, 0]}
+          >
+            {index === 0 && (
+              <Text
+                rotation={[0, Math.PI / 2, 0]}
+                fontSize={0.58}
+                color="#fff5fa"
+                anchorX="center"
+                anchorY="middle"
+                outlineWidth={0.012}
+                outlineColor="#ff8fb9"
+                material-transparent
+                material-opacity={1}
+                material-depthTest={false}
+                renderOrder={20}
+              >
+                ♥
+              </Text>
+            )}
+
+            {index === 1 && (
+              <Text
+                rotation={[0, Math.PI / 2, 0]}
+                fontSize={0.62}
+                color="#fff9cf"
+                anchorX="center"
+                anchorY="middle"
+                outlineWidth={0.012}
+                outlineColor="#d9b8ff"
+                material-transparent
+                material-opacity={1}
+                material-depthTest={false}
+                renderOrder={20}
+              >
+                ☾
+              </Text>
+            )}
+
+            {index === 2 && (
+              <mesh rotation={[0, Math.PI / 2, 0]}>
+                <shapeGeometry args={[starShape, 18]} />
+                <meshStandardMaterial
+                  color={iconColors[index]}
+                  emissive="#fff09d"
+                  emissiveIntensity={4.1}
+                  side={DoubleSide}
+                />
+              </mesh>
+            )}
+          </group>
+        </group>
+      ))}
+
+      {/* Invisible individual click areas covering the three wall frames. */}
+      {frameCenters.map(([, centerY, centerZ], index) => (
+        <mesh
+          key={`dream-gallery-frame-hotspot-${index}`}
+          position={[-7.94, centerY, centerZ]}
+          onClick={(event) => {
+            event.stopPropagation();
+            toggleFrame(index);
+          }}
+          onPointerOver={() => {
+            document.body.style.cursor = "pointer";
+          }}
+          onPointerOut={() => {
+            document.body.style.cursor = "default";
+          }}
+        >
+          <boxGeometry args={[0.58, 1.2, 1.2]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+      ))}
+
+      {/* Secret all-frames-active sparkle wave drifting toward the bed. */}
+      {[
+        "#fff2a8",
+        "#ffc8ee",
+        "#d9c2ff",
+        "#fff2a8",
+        "#aee8ff",
+        "#ffc8ee",
+      ].map((color, index) => (
+        <mesh
+          key={`dream-gallery-wave-sparkle-${index}`}
+          ref={(mesh) => {
+            sparkleRefs.current[index] = mesh;
+          }}
+          visible={false}
+          position={[-7.86, 12.18, 5.72 - index * 0.57]}
+        >
+          <octahedronGeometry args={[index % 2 === 0 ? 0.1 : 0.072, 0]} />
+          <meshBasicMaterial
+            color={color}
+            transparent
+            opacity={0.94}
+            depthWrite={false}
+          />
+        </mesh>
+      ))}
     </group>
   );
 }
@@ -626,6 +1757,11 @@ function SceneContent({
   const [bathtubMode, setBathtubMode] = useState<
     "empty" | "filling" | "full" | "draining"
   >("empty");
+  const [sinkMode, setSinkMode] = useState<
+    "empty" | "filling" | "full" | "draining"
+  >("empty");
+  const [mirrorLightOn, setMirrorLightOn] = useState(false);
+  const [bedAnimationKey, setBedAnimationKey] = useState(0);
   const lampLightRef = useRef<any>(null);
   const isNightMode = theme === "night";
 
@@ -1047,6 +2183,101 @@ function SceneContent({
           }}
         >
           <boxGeometry args={[6.7, 2.15, 3.15]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+
+
+        {/*
+          BATHROOM SINK INTERACTION
+
+          Click the sink to start the faucet and fill the basin. The faucet
+          automatically stops when the sink is full. Click again to drain it.
+        */}
+        <SinkWaterEffect
+          mode={sinkMode}
+          onFilled={() => {
+            setSinkMode("full");
+          }}
+          onDrained={() => {
+            setSinkMode("empty");
+          }}
+        />
+
+        <mesh
+          position={[-7.43, 3.18, 1.58]}
+          onClick={(event) => {
+            event.stopPropagation();
+
+            if (!isMoving) {
+              setSinkMode((currentMode) => {
+                if (currentMode === "empty") return "filling";
+                if (currentMode === "filling") return "draining";
+                if (currentMode === "full") return "draining";
+                return "filling";
+              });
+            }
+          }}
+          onPointerOver={() => {
+            document.body.style.cursor = "pointer";
+          }}
+          onPointerOut={() => {
+            document.body.style.cursor = "default";
+          }}
+        >
+          <boxGeometry args={[1.95, 1.45, 2.1]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+
+        {/*
+          BATHROOM MIRROR INTERACTION
+
+          Click the mirror above the sink to toggle its illuminated border.
+          The hotspot and border are model-local, so they stay attached to
+          the mirror while the room rotates and scales responsively.
+        */}
+        <MirrorBorderLight
+          isOn={mirrorLightOn}
+          isNightMode={isNightMode}
+          disabled={isMoving}
+          onToggle={() => {
+            setMirrorLightOn((value) => !value);
+          }}
+        />
+
+        {/*
+          COZY BED INTERACTION
+
+          Click the upstairs bed to replay the dream cloud, floating Zzzz...
+          text, sparkles, and soft cat-headboard glow.
+        */}
+        <BedtimeEffect replayKey={bedAnimationKey} />
+
+        {/*
+          DREAM GALLERY FRAMES
+
+          Click the three pastel frames above the bed to reveal a heart,
+          crescent moon, and star. Activating all three triggers a short
+          left-to-right sparkle wave toward the bed.
+        */}
+        <DreamGalleryFrames disabled={isMoving} />
+
+        <mesh
+          position={[-4.54, 10.46, 4.59]}
+          onClick={(event) => {
+            event.stopPropagation();
+
+            if (!isMoving) {
+              setBedAnimationKey((value) => value + 1);
+            }
+          }}
+          onPointerOver={() => {
+            document.body.style.cursor = "pointer";
+          }}
+          onPointerOut={() => {
+            document.body.style.cursor = "default";
+          }}
+        >
+          <boxGeometry args={[6.65, 2.35, 4.35]} />
           <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
       </group>
