@@ -2,10 +2,18 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import type { PerspectiveCamera } from "three";
 import { ContactShadows, OrbitControls } from "@react-three/drei";
-import { NoToneMapping, SRGBColorSpace } from "three";
+import {
+  DoubleSide,
+  MathUtils,
+  Mesh,
+  MeshBasicMaterial,
+  MeshPhysicalMaterial,
+  NoToneMapping,
+  SRGBColorSpace,
+} from "three";
 import gsap from "gsap";
 import IsometricRoom from "../models/IsometricRoom";
 
@@ -125,6 +133,296 @@ function SoftGroundGlow() {
   );
 }
 
+
+/*
+  Animated bathtub interaction.
+
+  The effect is placed inside the transformed room group, so these
+  coordinates use the same model-local coordinate system as the GLB.
+
+  First click:
+  - starts the shower stream
+  - gradually raises the bath water
+
+  Second click:
+  - stops the shower
+  - gradually drains the bath
+*/
+function BathtubWaterEffect({
+  active,
+}: {
+  active: boolean;
+}) {
+  const waterSurfaceRef = useRef<Mesh>(null);
+  const waterMaterialRef = useRef<MeshPhysicalMaterial>(null);
+
+  const streamRef = useRef<Mesh>(null);
+  const streamMaterialRef = useRef<MeshPhysicalMaterial>(null);
+
+  const splashRingOneRef = useRef<Mesh>(null);
+  const splashRingTwoRef = useRef<Mesh>(null);
+
+  const splashMaterialOneRef = useRef<MeshBasicMaterial>(null);
+  const splashMaterialTwoRef = useRef<MeshBasicMaterial>(null);
+
+  const fillProgressRef = useRef(0);
+
+  /*
+    Model-local positions measured from the GLB:
+    - bathtub bounds: x -8.208 to -1.372, z 3.181 to 6.506
+    - shower head: around x -7.70, y 6.74, z 4.97
+  */
+  const tubCenterX = -4.79;
+  const tubCenterZ = 4.84;
+
+  const showerX = -7.69;
+  const showerZ = 4.97;
+  const showerStartY = 6.48;
+
+  const minimumWaterY = 1.02;
+  const maximumWaterY = 1.82;
+
+  useFrame((state, delta) => {
+    /*
+      Fill more slowly than the drain so the animation feels natural.
+    */
+    const target = active ? 1 : 0;
+    const speed = active ? 0.38 : 0.68;
+
+    fillProgressRef.current = MathUtils.damp(
+      fillProgressRef.current,
+      target,
+      speed,
+      delta
+    );
+
+    const fillProgress = fillProgressRef.current;
+
+    const currentWaterY = MathUtils.lerp(
+      minimumWaterY,
+      maximumWaterY,
+      fillProgress
+    );
+
+    /*
+      Keep the surface hidden until a small amount of water has collected.
+    */
+    if (waterSurfaceRef.current) {
+      waterSurfaceRef.current.position.y = currentWaterY;
+
+      const subtleRipple =
+        1 +
+        Math.sin(state.clock.elapsedTime * 2.4) * 0.008;
+
+      waterSurfaceRef.current.scale.set(
+        subtleRipple,
+        subtleRipple,
+        1
+      );
+    }
+
+    if (waterMaterialRef.current) {
+      waterMaterialRef.current.opacity =
+        fillProgress > 0.015
+          ? 0.2 + fillProgress * 0.38
+          : 0;
+    }
+
+    /*
+      The shower stream runs while active, even after the tub is full.
+    */
+    const streamBottomY = Math.max(
+      currentWaterY + 0.08,
+      1.18
+    );
+
+    const streamHeight =
+      showerStartY - streamBottomY;
+
+    if (streamRef.current) {
+      streamRef.current.visible = active;
+
+      streamRef.current.position.set(
+        showerX,
+        streamBottomY + streamHeight / 2,
+        showerZ
+      );
+
+      streamRef.current.scale.set(
+        1,
+        streamHeight,
+        1
+      );
+    }
+
+    if (streamMaterialRef.current) {
+      streamMaterialRef.current.opacity =
+        active
+          ? 0.58 +
+            Math.sin(state.clock.elapsedTime * 8) *
+              0.08
+          : 0;
+    }
+
+    /*
+      Two animated splash rings where the shower stream meets the water.
+    */
+    const splashVisible =
+      active && fillProgress > 0.015;
+
+    const splashTime =
+      state.clock.elapsedTime;
+
+    const updateSplashRing = (
+      ring: Mesh | null,
+      material: MeshBasicMaterial | null,
+      phase: number
+    ) => {
+      if (!ring || !material) return;
+
+      ring.visible = splashVisible;
+      ring.position.y = currentWaterY + 0.018;
+
+      const cycle =
+        (splashTime * 1.55 + phase) % 1;
+
+      const scale = 0.45 + cycle * 1.35;
+
+      ring.scale.set(scale, scale, scale);
+
+      material.opacity = splashVisible
+        ? (1 - cycle) * 0.5
+        : 0;
+    };
+
+    updateSplashRing(
+      splashRingOneRef.current,
+      splashMaterialOneRef.current,
+      0
+    );
+
+    updateSplashRing(
+      splashRingTwoRef.current,
+      splashMaterialTwoRef.current,
+      0.52
+    );
+  });
+
+  return (
+    <group>
+      {/*
+        Transparent water surface inside the bathtub.
+      */}
+      <mesh
+        ref={waterSurfaceRef}
+        position={[
+          tubCenterX,
+          minimumWaterY,
+          tubCenterZ,
+        ]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        renderOrder={3}
+      >
+        <planeGeometry args={[5.75, 2.35, 20, 12]} />
+
+        <meshPhysicalMaterial
+          ref={waterMaterialRef}
+          color="#78d7ff"
+          transparent
+          opacity={0}
+          roughness={0.08}
+          metalness={0}
+          transmission={0.18}
+          thickness={0.08}
+          side={DoubleSide}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/*
+        Narrow vertical shower stream. The geometry is one unit tall;
+        useFrame stretches it to meet the rising water level.
+      */}
+      <mesh
+        ref={streamRef}
+        visible={false}
+        position={[
+          showerX,
+          3.8,
+          showerZ,
+        ]}
+      >
+        <cylinderGeometry
+          args={[
+            0.055,
+            0.07,
+            1,
+            14,
+          ]}
+        />
+
+        <meshPhysicalMaterial
+          ref={streamMaterialRef}
+          color="#a9e9ff"
+          transparent
+          opacity={0}
+          roughness={0.02}
+          metalness={0}
+          transmission={0.24}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/*
+        Small splash rings at the stream impact point.
+      */}
+      <mesh
+        ref={splashRingOneRef}
+        visible={false}
+        position={[
+          showerX,
+          minimumWaterY + 0.018,
+          showerZ,
+        ]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <ringGeometry args={[0.11, 0.16, 20]} />
+
+        <meshBasicMaterial
+          ref={splashMaterialOneRef}
+          color="#d5f6ff"
+          transparent
+          opacity={0}
+          side={DoubleSide}
+          depthWrite={false}
+        />
+      </mesh>
+
+      <mesh
+        ref={splashRingTwoRef}
+        visible={false}
+        position={[
+          showerX,
+          minimumWaterY + 0.02,
+          showerZ,
+        ]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <ringGeometry args={[0.1, 0.145, 20]} />
+
+        <meshBasicMaterial
+          ref={splashMaterialTwoRef}
+          color="#d5f6ff"
+          transparent
+          opacity={0}
+          side={DoubleSide}
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
+  );
+}
+
 function SceneContent({
   shouldZoomOutFromLaptop,
   shouldZoomOutFromWindow,
@@ -147,6 +445,7 @@ function SceneContent({
   const [isMoving, setIsMoving] = useState(false);
   const [lampOn, setLampOn] = useState(false);
   const [cactusLampOn, setCactusLampOn] = useState(false);
+  const [bathtubRunning, setBathtubRunning] = useState(false);
   const lampLightRef = useRef<any>(null);
   const isNightMode = theme === "night";
 
@@ -475,6 +774,35 @@ function SceneContent({
             </mesh>
           </>
         )}
+
+        {/*
+          BATHTUB INTERACTION
+
+          The water effect and hotspot use model-local coordinates, so they
+          remain attached to the bathroom after responsive scaling and room
+          rotation.
+        */}
+        <BathtubWaterEffect active={bathtubRunning} />
+
+        <mesh
+          position={[-4.79, 1.36, 4.84]}
+          onClick={(event) => {
+            event.stopPropagation();
+
+            if (!isMoving) {
+              setBathtubRunning((value) => !value);
+            }
+          }}
+          onPointerOver={() => {
+            document.body.style.cursor = "pointer";
+          }}
+          onPointerOut={() => {
+            document.body.style.cursor = "default";
+          }}
+        >
+          <boxGeometry args={[6.7, 2.15, 3.15]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
       </group>
 
       {/* Lamp point light controlled by the lamp hotspot (night mode only) */}
