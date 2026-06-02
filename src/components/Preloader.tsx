@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { playAmbientAudio } from "@/lib/ambientAudio";
+import {
+  playAmbientAudio,
+  setAmbientAudioMuted,
+} from "@/lib/ambientAudio";
 
 interface PreloaderProps {
   onEnter: () => void;
@@ -74,6 +77,19 @@ export default function Preloader({
     setOpening(true);
 
     try {
+      /*
+        Enter is an explicit user gesture, so always begin the room
+        experience with the ambient music audible. The TV can still
+        mute the ambient track later when its video is switched on.
+      */
+      setAmbientAudioMuted(false);
+
+      window.dispatchEvent(
+        new CustomEvent("ambient:set-muted", {
+          detail: { muted: false },
+        })
+      );
+
       await playAmbientAudio(musicSrc, 0.1);
     } catch (error) {
       console.error("Audio play failed:", error);

@@ -4,9 +4,10 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import type { PerspectiveCamera } from "three";
-import { ContactShadows, OrbitControls } from "@react-three/drei";
+import { ContactShadows, Html, OrbitControls } from "@react-three/drei";
 import {
   DoubleSide,
+  FrontSide,
   MathUtils,
   Mesh,
   MeshBasicMaterial,
@@ -14,6 +15,8 @@ import {
   NoToneMapping,
   SRGBColorSpace,
   Shape,
+  Group,
+  Vector3,
 } from "three";
 import gsap from "gsap";
 import IsometricRoom from "../models/IsometricRoom";
@@ -451,6 +454,152 @@ function BathtubWaterEffect({
     </group>
   );
 }
+
+/*
+  Interactive YouTube TV screen.
+
+  The iframe is attached to the same model-local position as the TV display.
+  Clicking the TV hotspot turns it on. The small close button turns it off.
+  The video starts muted so browser autoplay policies are less likely to block it.
+*/
+function TvScreenEffect({
+  isOn,
+  onTurnOff,
+}: {
+  isOn: boolean;
+  onTurnOff: () => void;
+}) {
+  const screenGroupRef = useRef<Group>(null);
+  const { camera } = useThree();
+  const [isFacingCamera, setIsFacingCamera] = useState(true);
+
+  const previousFacingState = useRef(true);
+  const screenWorldPosition = useRef(new Vector3());
+  const screenNormal = useRef(new Vector3());
+  const directionToCamera = useRef(new Vector3());
+
+  useFrame(() => {
+    if (!screenGroupRef.current) return;
+
+    screenGroupRef.current.getWorldPosition(screenWorldPosition.current);
+    /*
+      PlaneGeometry and Drei Html face local +Z by default.
+      After the TV group's -90 degree Y rotation, local +Z points toward
+      the real front glass of the GLB television (negative local X).
+      Using +Z here prevents the iframe from rendering on the mirrored back.
+    */
+    screenNormal.current
+      .set(0, 0, 1)
+      .applyQuaternion(
+        screenGroupRef.current.getWorldQuaternion(
+          screenGroupRef.current.quaternion.clone()
+        )
+      )
+      .normalize();
+
+    directionToCamera.current
+      .copy(camera.position)
+      .sub(screenWorldPosition.current)
+      .normalize();
+
+    const nextFacingState =
+      screenNormal.current.dot(directionToCamera.current) > 0.02;
+
+    if (nextFacingState !== previousFacingState.current) {
+      previousFacingState.current = nextFacingState;
+      setIsFacingCamera(nextFacingState);
+    }
+  });
+
+  if (!isOn) {
+    return null;
+  }
+
+  return (
+    <group
+      ref={screenGroupRef}
+      position={[6.865, 2.842, 3.846]}
+      rotation={[0, -Math.PI / 2, 0]}
+    >
+      {/**
+       * Keep the iframe mounted while the TV is on.
+       *
+       * Unmounting the iframe when the camera rotates behind the TV would
+       * stop and restart the YouTube player. Instead, hide it visually from
+       * the backside while preserving playback in the existing iframe.
+       */}
+      <Html
+        transform
+        center
+        distanceFactor={3.78}
+        zIndexRange={[10, 0]}
+        style={{
+          pointerEvents: isFacingCamera ? "auto" : "none",
+          opacity: isFacingCamera ? 1 : 0,
+          visibility: isFacingCamera ? "visible" : "hidden",
+        }}
+      >
+        <div
+          aria-hidden={!isFacingCamera}
+          style={{
+            position: "relative",
+            width: "300px",
+            height: "154px",
+            overflow: "hidden",
+            borderRadius: "3px",
+            background: "#000",
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+          }}
+        >
+          <iframe
+            src="https://www.youtube.com/embed/nZXd0TMEJfo?autoplay=1&mute=1&controls=1&playsinline=1&rel=0&modestbranding=1"
+            title="Portfolio TV video"
+            width="300"
+            height="154"
+            allow="autoplay; encrypted-media; picture-in-picture"
+            allowFullScreen
+            style={{
+              display: "block",
+              width: "300px",
+              height: "154px",
+              border: 0,
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+            }}
+          />
+
+          <button
+            type="button"
+            aria-label="Turn off TV"
+            onClick={(event) => {
+              event.stopPropagation();
+              onTurnOff();
+            }}
+            style={{
+              position: "absolute",
+              top: "4px",
+              right: "4px",
+              width: "20px",
+              height: "20px",
+              border: "1px solid rgba(255, 255, 255, 0.7)",
+              borderRadius: "999px",
+              background: "rgba(0, 0, 0, 0.58)",
+              color: "#fff",
+              cursor: "pointer",
+              fontSize: "14px",
+              lineHeight: "16px",
+              padding: 0,
+            }}
+          >
+            ×
+          </button>
+        </div>
+      </Html>
+    </group>
+  );
+}
+
 function SceneContent({
   shouldZoomOutFromLaptop,
   shouldZoomOutFromWindow,
@@ -473,6 +622,7 @@ function SceneContent({
   const [isMoving, setIsMoving] = useState(false);
   const [lampOn, setLampOn] = useState(false);
   const [cactusLampOn, setCactusLampOn] = useState(false);
+  const [tvOn, setTvOn] = useState(false);
   const [bathtubMode, setBathtubMode] = useState<
     "empty" | "filling" | "full" | "draining"
   >("empty");
@@ -804,6 +954,59 @@ function SceneContent({
             </mesh>
           </>
         )}
+
+        {/*
+          TV INTERACTION
+
+          The TV screen and its hotspot use model-local coordinates, so the
+          effect remains attached to the television on desktop and mobile.
+          This interaction is intentionally available in both day and night
+          mode.
+        */}
+        <TvScreenEffect
+          isOn={tvOn}
+          onTurnOff={() => {
+            setTvOn(false);
+          }}
+        />
+
+        <mesh
+          position={[6.865, 2.842, 3.846]}
+          rotation={[0, -Math.PI / 2, 0]}
+          onClick={(event) => {
+            event.stopPropagation();
+
+            if (!isMoving) {
+              setTvOn((value) => {
+                const nextValue = !value;
+
+                if (nextValue) {
+                  window.dispatchEvent(
+                    new CustomEvent("ambient:set-muted", {
+                      detail: { muted: true },
+                    })
+                  );
+                }
+
+                return nextValue;
+              });
+            }
+          }}
+          onPointerOver={() => {
+            document.body.style.cursor = "pointer";
+          }}
+          onPointerOut={() => {
+            document.body.style.cursor = "default";
+          }}
+        >
+          <planeGeometry args={[3.35, 1.72]} />
+          <meshBasicMaterial
+            transparent
+            opacity={0}
+            depthWrite={false}
+            side={FrontSide}
+          />
+        </mesh>
 
         {/*
           BATHTUB INTERACTION

@@ -2,8 +2,12 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { MoonStar, SunMedium } from "lucide-react";
+import { MoonStar, SunMedium, Volume2, VolumeX } from "lucide-react";
 import Preloader from "@/components/Preloader";
+import {
+  getAmbientAudioMuted,
+  setAmbientAudioMuted,
+} from "@/lib/ambientAudio";
 
 const HeroScene = dynamic(() => import("@/components/HeroScene"), {
   ssr: false,
@@ -40,6 +44,7 @@ export default function HomePage() {
   const [sceneReady, setSceneReady] = useState(false);
   const [theme, setTheme] = useState<ThemeMode>("day");
   const [themeReady, setThemeReady] = useState(false);
+  const [musicMuted, setMusicMuted] = useState(false);
 
   /*
     The canvas may be mounted while remaining invisible.
@@ -157,6 +162,24 @@ export default function HomePage() {
     };
   }, []);
 
+  useEffect(() => {
+    setMusicMuted(getAmbientAudioMuted());
+
+    const handleAmbientMuteRequest = (event: Event) => {
+      const customEvent = event as CustomEvent<{ muted?: boolean }>;
+      const nextMuted = customEvent.detail?.muted ?? true;
+
+      setAmbientAudioMuted(nextMuted);
+      setMusicMuted(nextMuted);
+    };
+
+    window.addEventListener("ambient:set-muted", handleAmbientMuteRequest);
+
+    return () => {
+      window.removeEventListener("ambient:set-muted", handleAmbientMuteRequest);
+    };
+  }, []);
+
   const handleEntered = () => {
     sessionStorage.setItem(PRELOADER_STORAGE_KEY, "true");
 
@@ -184,6 +207,16 @@ export default function HomePage() {
     );
   };
 
+  const toggleMusic = () => {
+    setMusicMuted((currentMuted) => {
+      const nextMuted = !currentMuted;
+
+      setAmbientAudioMuted(nextMuted);
+
+      return nextMuted;
+    });
+  };
+
   return (
     <>
       {themeReady && (
@@ -199,6 +232,35 @@ export default function HomePage() {
           aria-label={isNight ? "Switch to day mode" : "Switch to night mode"}
         >
           {isNight ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
+        </button>
+      )}
+
+      {bootChecked && !showPreloader && (
+        <button
+          type="button"
+          onClick={toggleMusic}
+          className="fixed bottom-4 right-4 z-[9999] inline-flex h-12 w-12 items-center justify-center rounded-full border shadow-lg backdrop-blur-xl transition hover:-translate-y-0.5"
+          style={{
+            borderColor: "var(--page-border)",
+            background: "var(--page-surface)",
+            color: "var(--page-text-soft)",
+          }}
+          aria-label={
+            musicMuted
+              ? "Unmute background music"
+              : "Mute background music"
+          }
+          title={
+            musicMuted
+              ? "Unmute background music"
+              : "Mute background music"
+          }
+        >
+          {musicMuted ? (
+            <VolumeX className="h-4 w-4" />
+          ) : (
+            <Volume2 className="h-4 w-4" />
+          )}
         </button>
       )}
 
