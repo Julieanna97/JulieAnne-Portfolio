@@ -1696,6 +1696,156 @@ function DreamGalleryFrames({
   );
 }
 
+
+/*
+  Interactive ladder highlight.
+
+  Hovering over the ladder plays a soft bottom-to-top glow across the rungs.
+  Clicking the ladder replays a stronger wave, which also works well on
+  touch devices where hover is unavailable.
+
+  All coordinates use the GLB model-local coordinate system, so the effect
+  stays aligned with the ladder while the room rotates and scales.
+*/
+function LadderHighlight({
+  isHovered,
+  replayKey,
+  disabled,
+  onHoverChange,
+  onReplay,
+}: {
+  isHovered: boolean;
+  replayKey: number;
+  disabled: boolean;
+  onHoverChange: (value: boolean) => void;
+  onReplay: () => void;
+}) {
+  const rungMaterialRefs = useRef<Array<MeshBasicMaterial | null>>([]);
+  const glowLightRef = useRef<PointLight>(null);
+  const replayStartedAtRef = useRef<number | null>(null);
+  const previousReplayKeyRef = useRef(replayKey);
+
+  const ladderRungs = useMemo<Array<[number, number, number]>>(
+    () => [
+      [3.363, 1.176, -0.713],
+      [3.039, 1.999, -0.713],
+      [2.706, 2.823, -0.713],
+      [2.383, 3.647, -0.713],
+      [2.04, 4.47, -0.713],
+      [1.711, 5.294, -0.713],
+      [1.383, 6.118, -0.713],
+      [1.05, 6.941, -0.713],
+      [0.717, 7.765, -0.713],
+      [0.386, 8.589, -0.713],
+    ],
+    []
+  );
+
+  useFrame((state) => {
+    const elapsed = state.clock.elapsedTime;
+
+    if (previousReplayKeyRef.current !== replayKey) {
+      previousReplayKeyRef.current = replayKey;
+      replayStartedAtRef.current = elapsed;
+    }
+
+    const replayElapsed = replayStartedAtRef.current === null
+      ? Number.POSITIVE_INFINITY
+      : elapsed - replayStartedAtRef.current;
+
+    const replayActive = replayElapsed < 3.6;
+    const animationActive = isHovered || replayActive;
+
+    if (glowLightRef.current) {
+      glowLightRef.current.intensity = animationActive
+        ? isHovered
+          ? 0.72
+          : 0.48
+        : 0;
+    }
+
+    rungMaterialRefs.current.forEach((material, index) => {
+      if (!material) return;
+
+      if (!animationActive) {
+        material.opacity = 0;
+        return;
+      }
+
+      const waveTime = isHovered
+        ? (elapsed * 3.2) % (ladderRungs.length + 2.5)
+        : replayElapsed * 4.0;
+
+      const distanceFromWave = Math.abs(waveTime - index);
+      const glow = Math.max(0, 1 - distanceFromWave / 2.15);
+      const afterGlow = Math.max(0, 1 - distanceFromWave / 4.4) * 0.22;
+      const pulse = 0.82 + Math.sin(elapsed * 4.2 + index * 0.55) * 0.18;
+
+      material.opacity = Math.min(0.92, (glow + afterGlow) * pulse);
+    });
+  });
+
+  return (
+    <group>
+      {ladderRungs.map((position, index) => (
+        <mesh
+          key={`ladder-glow-rung-${index}`}
+          position={position}
+          renderOrder={12}
+        >
+          <boxGeometry args={[0.56, 0.23, 2.08]} />
+          <meshBasicMaterial
+            ref={(material) => {
+              rungMaterialRefs.current[index] = material;
+            }}
+            color="#ffe6a8"
+            transparent
+            opacity={0}
+            depthWrite={false}
+          />
+        </mesh>
+      ))}
+
+      <pointLight
+        ref={glowLightRef}
+        position={[1.82, 4.95, -0.71]}
+        intensity={0}
+        distance={5.2}
+        decay={2}
+        color="#ffd98a"
+      />
+
+      {/* Larger invisible hotspot around the complete ladder. */}
+      <mesh
+        position={[1.83, 5.02, -0.71]}
+        onClick={(event) => {
+          event.stopPropagation();
+
+          if (!disabled) {
+            onReplay();
+          }
+        }}
+        onPointerOver={(event) => {
+          event.stopPropagation();
+
+          if (!disabled) {
+            document.body.style.cursor = "pointer";
+            onHoverChange(true);
+          }
+        }}
+        onPointerOut={(event) => {
+          event.stopPropagation();
+          document.body.style.cursor = "default";
+          onHoverChange(false);
+        }}
+      >
+        <boxGeometry args={[4.45, 9.65, 2.48]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
+    </group>
+  );
+}
+
 /*
   Interactive YouTube TV screen.
 
@@ -1873,6 +2023,8 @@ function SceneContent({
   >("empty");
   const [mirrorLightOn, setMirrorLightOn] = useState(false);
   const [bedAnimationKey, setBedAnimationKey] = useState(0);
+  const [ladderHovered, setLadderHovered] = useState(false);
+  const [ladderReplayKey, setLadderReplayKey] = useState(0);
   const lampLightRef = useRef<any>(null);
   const isNightMode = theme === "night";
 
@@ -2371,6 +2523,22 @@ function SceneContent({
           left-to-right sparkle wave toward the bed.
         */}
         <DreamGalleryFrames disabled={isMoving} />
+
+        {/*
+          LADDER INTERACTION
+
+          Hover over the ladder to play a bottom-to-top rung glow. Clicking
+          the ladder replays a stronger wave, which also works on mobile.
+        */}
+        <LadderHighlight
+          isHovered={ladderHovered}
+          replayKey={ladderReplayKey}
+          disabled={isMoving}
+          onHoverChange={setLadderHovered}
+          onReplay={() => {
+            setLadderReplayKey((value) => value + 1);
+          }}
+        />
 
         <mesh
           position={[-4.54, 10.46, 4.59]}
