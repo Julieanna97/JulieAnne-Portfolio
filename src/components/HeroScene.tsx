@@ -17,6 +17,7 @@ import {
   Shape,
   Group,
   PointLight,
+  TOUCH,
   Vector3,
 } from "three";
 import gsap from "gsap";
@@ -2405,8 +2406,12 @@ function SceneContent({
         makeDefault
         target={initialOrbitTarget.current}
         enablePan={false}
-        enableZoom={!isCompactViewport}
-        zoomSpeed={isCompactViewport ? 0.09 : 0.15}
+        enableZoom
+        zoomSpeed={isCompactViewport ? 0.72 : 0.15}
+        touches={{
+          ONE: TOUCH.ROTATE,
+          TWO: TOUCH.DOLLY_ROTATE,
+        }}
         rotateSpeed={isCompactViewport ? 0.24 : 0.35}
         minDistance={isCompactViewport ? 4.2 : 2.8}
         maxDistance={isCompactViewport ? 24 : 30}
@@ -2453,7 +2458,10 @@ const HeroScene = ({
   const shouldZoomOutFromCredits = returnFrom === "credits";
 
   return (
-    <section className="pointer-events-auto relative h-[100dvh] w-full overflow-hidden">
+    <section
+      className="pointer-events-auto relative h-[100dvh] w-full overflow-hidden"
+      style={{ touchAction: "none" }}
+    >
       <Canvas
         shadows
         dpr={viewportWidth < 768 ? [1, 1.25] : [1, 1.7]}
@@ -2476,11 +2484,13 @@ const HeroScene = ({
         onCreated={({ gl }) => {
           gl.outputColorSpace = SRGBColorSpace;
           gl.toneMapping = NoToneMapping;
+          gl.domElement.style.touchAction = "none";
         }}
         style={{
           width: "100%",
           height: "100%",
           background: "transparent",
+          touchAction: "none",
         }}
       >
         <Suspense fallback={null}>
