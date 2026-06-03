@@ -1772,6 +1772,7 @@ function TvScreenEffect({
       <Html
         transform
         center
+        occlude="blending"
         distanceFactor={3.78}
         zIndexRange={[10, 0]}
         style={{
