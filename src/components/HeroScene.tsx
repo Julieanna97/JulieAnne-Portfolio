@@ -14,10 +14,10 @@ import {
   MeshPhysicalMaterial,
   NoToneMapping,
   SRGBColorSpace,
+  TOUCH,
   Shape,
   Group,
   PointLight,
-  TOUCH,
   Vector3,
 } from "three";
 import gsap from "gsap";
@@ -136,6 +136,115 @@ function SoftGroundGlow() {
         `}
       />
     </mesh>
+  );
+}
+
+
+/*
+  Full-screen white bling stars for dark mode.
+
+  These are CSS stars outside the 3D Canvas so they fill the entire homepage
+  background while staying behind the room and never blocking hotspots.
+*/
+function ScreenNightSkyStars() {
+  const stars = useMemo(
+    () =>
+      Array.from({ length: 78 }, (_, index) => {
+        const size = 5 + ((index * 7) % 11);
+
+        return {
+          id: index,
+          left: `${(index * 37 + 11) % 100}%`,
+          top: `${(index * 53 + 7) % 96}%`,
+          size,
+          delay: `${-((index * 0.37) % 5.4)}s`,
+          duration: `${2.6 + ((index * 13) % 24) / 10}s`,
+          rotation: `${(index * 29) % 90}deg`,
+          opacity: 0.42 + ((index * 17) % 36) / 100,
+        };
+      }),
+    []
+  );
+
+  return (
+    <div className="night-sky-stars" aria-hidden="true">
+      {stars.map((star) => (
+        <span
+          key={star.id}
+          className="night-sky-star"
+          style={{
+            left: star.left,
+            top: star.top,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            opacity: star.opacity,
+            animationDelay: star.delay,
+            animationDuration: star.duration,
+            rotate: star.rotation,
+          }}
+        />
+      ))}
+
+      <style jsx>{`
+        .night-sky-stars {
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+          overflow: hidden;
+          pointer-events: none;
+        }
+
+        .night-sky-star {
+          position: absolute;
+          display: block;
+          transform-origin: center;
+          animation-name: night-sky-twinkle;
+          animation-timing-function: ease-in-out;
+          animation-iteration-count: infinite;
+          filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.75));
+        }
+
+        .night-sky-star::before,
+        .night-sky-star::after {
+          content: "";
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.96);
+          transform: translate(-50%, -50%);
+          box-shadow: 0 0 8px rgba(255, 255, 255, 0.82);
+        }
+
+        .night-sky-star::before {
+          width: 100%;
+          height: 1.6px;
+        }
+
+        .night-sky-star::after {
+          width: 1.6px;
+          height: 100%;
+        }
+
+        @keyframes night-sky-twinkle {
+          0%,
+          100% {
+            transform: scale(0.55) rotate(0deg);
+            opacity: 0.26;
+          }
+
+          45% {
+            transform: scale(1.18) rotate(8deg);
+            opacity: 1;
+          }
+
+          70% {
+            transform: scale(0.82) rotate(-5deg);
+            opacity: 0.58;
+          }
+        }
+      `}</style>
+    </div>
   );
 }
 
@@ -2407,14 +2516,14 @@ function SceneContent({
         target={initialOrbitTarget.current}
         enablePan={false}
         enableZoom
-        zoomSpeed={isCompactViewport ? 0.72 : 0.15}
+        zoomSpeed={isCompactViewport ? 0.9 : 0.15}
         touches={{
           ONE: TOUCH.ROTATE,
           TWO: TOUCH.DOLLY_ROTATE,
         }}
         rotateSpeed={isCompactViewport ? 0.24 : 0.35}
         minDistance={isCompactViewport ? 4.2 : 2.8}
-        maxDistance={isCompactViewport ? 24 : 30}
+        maxDistance={isCompactViewport ? 42 : 30}
         minPolarAngle={Math.PI / 6}
         maxPolarAngle={Math.PI / 2.4}
         enableDamping
@@ -2462,6 +2571,8 @@ const HeroScene = ({
       className="pointer-events-auto relative h-[100dvh] w-full overflow-hidden"
       style={{ touchAction: "none" }}
     >
+      {theme === "night" && <ScreenNightSkyStars />}
+
       <Canvas
         shadows
         dpr={viewportWidth < 768 ? [1, 1.25] : [1, 1.7]}
@@ -2484,9 +2595,10 @@ const HeroScene = ({
         onCreated={({ gl }) => {
           gl.outputColorSpace = SRGBColorSpace;
           gl.toneMapping = NoToneMapping;
-          gl.domElement.style.touchAction = "none";
         }}
         style={{
+          position: "relative",
+          zIndex: 1,
           width: "100%",
           height: "100%",
           background: "transparent",
