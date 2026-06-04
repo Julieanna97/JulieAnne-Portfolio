@@ -22,6 +22,7 @@ import {
 } from "three";
 import gsap from "gsap";
 import IsometricRoom from "../models/IsometricRoom";
+import CuteCatBananaController from "../models/CuteCatBananaController";
 
 type SectionName = "home";
 
@@ -1697,6 +1698,216 @@ function DreamGalleryFrames({
 }
 
 
+
+/*
+  Automatic kitchen ambience.
+
+  These effects run by themselves so the kitchen feels alive without adding
+  another hotspot over the Credits navigation area:
+  - warm stove burners softly pulse in sequence
+  - translucent steam puffs drift above the stovetop
+  - tiny sparkles glint near the kitchen faucet and counter
+  - a small fridge indicator light gently breathes
+
+  All coordinates use the GLB model-local coordinate system.
+*/
+function KitchenAmbientAnimations({
+  isNightMode,
+}: {
+  isNightMode: boolean;
+}) {
+  const burnerMaterialRefs = useRef<Array<MeshBasicMaterial | null>>([]);
+  const steamPuffRefs = useRef<Array<Mesh | null>>([]);
+  const steamMaterialRefs = useRef<Array<MeshBasicMaterial | null>>([]);
+  const sparkleRefs = useRef<Array<Mesh | null>>([]);
+  const sparkleMaterialRefs = useRef<Array<MeshBasicMaterial | null>>([]);
+  const fridgeIndicatorMaterialRef = useRef<MeshBasicMaterial>(null);
+  const warmKitchenLightRef = useRef<PointLight>(null);
+
+  const burnerPositions = useMemo<Array<[number, number, number]>>(
+    () => [
+      [0.08, 3.01, -7.86],
+      [0.9, 3.01, -7.86],
+      [0.08, 3.01, -7.12],
+      [0.9, 3.01, -7.12],
+    ],
+    []
+  );
+
+  const sparkleBasePositions = useMemo<Array<[number, number, number]>>(
+    () => [
+      [4.22, 3.5, -7.43],
+      [4.55, 3.22, -7.2],
+      [3.95, 3.27, -7.68],
+      [5.72, 3.8, -6.18],
+    ],
+    []
+  );
+
+  useFrame((state) => {
+    const elapsed = state.clock.elapsedTime;
+
+    burnerMaterialRefs.current.forEach((material, index) => {
+      if (!material) return;
+
+      const pulse = 0.5 + Math.sin(elapsed * 2.15 + index * 1.18) * 0.5;
+      const wave = 0.5 + Math.sin(elapsed * 1.1 + index * 0.8) * 0.5;
+
+      material.opacity =
+        (isNightMode ? 0.34 : 0.22) + pulse * 0.24 + wave * 0.08;
+    });
+
+    if (warmKitchenLightRef.current) {
+      warmKitchenLightRef.current.intensity =
+        (isNightMode ? 0.52 : 0.26) + Math.sin(elapsed * 1.25) * 0.08;
+    }
+
+    steamPuffRefs.current.forEach((puff, index) => {
+      const material = steamMaterialRefs.current[index];
+
+      if (!puff || !material) return;
+
+      const cycle = (elapsed * 0.2 + index * 0.28) % 1;
+      const sway = Math.sin(elapsed * 1.35 + index * 1.7) * 0.14;
+
+      puff.position.set(
+        0.54 + sway,
+        3.28 + cycle * 1.4,
+        -7.45 + Math.cos(elapsed * 1.1 + index) * 0.06
+      );
+
+      const puffScale = 0.24 + cycle * 0.34;
+      puff.scale.set(puffScale * 1.1, puffScale, puffScale * 0.92);
+
+      material.opacity = Math.max(0, (1 - cycle) * (isNightMode ? 0.2 : 0.14));
+    });
+
+    sparkleRefs.current.forEach((sparkle, index) => {
+      const material = sparkleMaterialRefs.current[index];
+
+      if (!sparkle || !material) return;
+
+      const cycle = (elapsed * (0.62 + index * 0.07) + index * 0.31) % 1;
+      const visiblePulse = Math.pow(Math.sin(cycle * Math.PI), 4);
+      const basePosition = sparkleBasePositions[index];
+
+      sparkle.position.set(
+        basePosition[0],
+        basePosition[1] + cycle * 0.26,
+        basePosition[2]
+      );
+
+      sparkle.rotation.y = elapsed * (0.9 + index * 0.18);
+      sparkle.rotation.z = elapsed * (0.7 + index * 0.12);
+
+      const sparkleScale = 0.72 + visiblePulse * 0.58;
+      sparkle.scale.setScalar(sparkleScale);
+
+      material.opacity = visiblePulse * (isNightMode ? 0.9 : 0.64);
+    });
+
+    if (fridgeIndicatorMaterialRef.current) {
+      fridgeIndicatorMaterialRef.current.opacity =
+        0.42 + (0.5 + Math.sin(elapsed * 2.2) * 0.5) * 0.5;
+    }
+  });
+
+  return (
+    <group>
+      {/* Four softly glowing stovetop rings. */}
+      {burnerPositions.map((position, index) => (
+        <mesh
+          key={`automatic-kitchen-burner-${index}`}
+          position={position}
+          rotation={[-Math.PI / 2, 0, 0]}
+          renderOrder={8}
+        >
+          <ringGeometry args={[0.18, 0.25, 28]} />
+          <meshBasicMaterial
+            ref={(material) => {
+              burnerMaterialRefs.current[index] = material;
+            }}
+            color="#ff765f"
+            transparent
+            opacity={0.38}
+            depthWrite={false}
+            side={DoubleSide}
+          />
+        </mesh>
+      ))}
+
+      {/* Warm stove ambience that gently pulses. */}
+      <pointLight
+        ref={warmKitchenLightRef}
+        position={[0.5, 3.5, -7.48]}
+        intensity={isNightMode ? 0.52 : 0.26}
+        distance={3.6}
+        decay={2}
+        color="#ff9b73"
+      />
+
+      {/* Translucent steam drifting upward from the stovetop. */}
+      {[0, 1, 2, 3].map((index) => (
+        <mesh
+          key={`automatic-kitchen-steam-${index}`}
+          ref={(mesh) => {
+            steamPuffRefs.current[index] = mesh;
+          }}
+          position={[0.54, 3.28, -7.45]}
+          renderOrder={9}
+        >
+          <sphereGeometry args={[1, 18, 18]} />
+          <meshBasicMaterial
+            ref={(material) => {
+              steamMaterialRefs.current[index] = material;
+            }}
+            color="#fff4e8"
+            transparent
+            opacity={0}
+            depthWrite={false}
+          />
+        </mesh>
+      ))}
+
+      {/* Occasional glints near the faucet, counter, and fridge. */}
+      {sparkleBasePositions.map((position, index) => (
+        <mesh
+          key={`automatic-kitchen-sparkle-${index}`}
+          ref={(mesh) => {
+            sparkleRefs.current[index] = mesh;
+          }}
+          position={position}
+          renderOrder={10}
+        >
+          <octahedronGeometry args={[index === 0 ? 0.105 : 0.075, 0]} />
+          <meshBasicMaterial
+            ref={(material) => {
+              sparkleMaterialRefs.current[index] = material;
+            }}
+            color={index === 3 ? "#ffe7b5" : "#d9f8ff"}
+            transparent
+            opacity={0}
+            depthWrite={false}
+          />
+        </mesh>
+      ))}
+
+      {/* Tiny refrigerator status light. */}
+      <mesh position={[5.76, 3.76, -6.12]} renderOrder={10}>
+        <sphereGeometry args={[0.065, 16, 16]} />
+        <meshBasicMaterial
+          ref={fridgeIndicatorMaterialRef}
+          color="#b7ffd1"
+          transparent
+          opacity={0.8}
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+
 /*
   Interactive ladder highlight.
 
@@ -2305,6 +2516,22 @@ function SceneContent({
           lampOn={lampOn}
           cactusLampOn={cactusLampOn}
         />
+
+        {/*
+          AUTOMATIC KITCHEN AMBIENCE
+
+          These run continuously without requiring a click, so the Credits
+          hotspot remains available for navigation.
+        */}
+        <KitchenAmbientAnimations isNightMode={isNightMode} />
+
+        {/*
+          KEYBOARD-CONTROLLED BANANA CAT
+
+          Desktop controls: WASD or arrow keys. The cat stays inside the
+          lower-floor room boundaries and plays its Sketchfab animation.
+        */}
+        <CuteCatBananaController />
 
         {/*
           CACTUS FLOOR LAMP
