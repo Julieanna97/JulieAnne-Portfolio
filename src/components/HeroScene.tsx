@@ -37,9 +37,9 @@ type PortfolioSection = {
   focus: [number, number, number];
 };
 
-const HOME_CAMERA_DESKTOP: [number, number, number] = [18, 11.5, 21];
-const HOME_CAMERA_MOBILE: [number, number, number] = [23, 15, 28];
-const HOME_TARGET: [number, number, number] = [0, 4.8, 0];
+const HOME_CAMERA_DESKTOP: [number, number, number] = [19.4, 10.45, 24.6];
+const HOME_CAMERA_MOBILE: [number, number, number] = [24.8, 13.8, 31.4];
+const HOME_TARGET: [number, number, number] = [0, 4.18, 0];
 const INTRO_CAMERA: [number, number, number] = [-25, 17.5, 29];
 const INTRO_TARGET: [number, number, number] = [0, 5.2, 0];
 
@@ -151,9 +151,9 @@ const SECTIONS: PortfolioSection[] = [
       of the building and frames the roof and lucky cat, inspired by the
       creator's original moonlight annotation shot.
     */
-    hotspot: [1.72, 10.15, -3.08],
-    camera: [5.6, 12.25, -8.45],
-    focus: [1.18, 9.78, -3.1],
+    hotspot: [1.48, 10.48, -3.42],
+    camera: [-5.45, 11.62, -10.7],
+    focus: [1.12, 9.72, -3.06],
   },
 ];
 
@@ -519,6 +519,13 @@ function AdventureSceneContent({
 
   const closeAnnotation = () => {
     onActiveChange(null);
+
+    /*
+      Always restore the same centered home framing after closing an
+      annotation. Previously the popup disappeared while the camera stayed
+      near the rooftop, which made the model look too high and off-center.
+    */
+    moveCamera(homeCamera, HOME_TARGET, 1.35);
   };
 
   const moveToCreditsRooftop = (section: PortfolioSection) => {
@@ -541,10 +548,10 @@ function AdventureSceneContent({
     timeline.to(
       camera.position,
       {
-        x: 10.7,
-        y: 11.1,
-        z: -1.4,
-        duration: 0.82,
+        x: 9.15,
+        y: 11.0,
+        z: -0.8,
+        duration: 0.9,
         ease: "power2.inOut",
       },
       0
@@ -553,10 +560,10 @@ function AdventureSceneContent({
     timeline.to(
       controlsRef.current.target,
       {
-        x: 1.7,
-        y: 9.95,
-        z: -2.65,
-        duration: 0.82,
+        x: 1.5,
+        y: 9.9,
+        z: -2.85,
+        duration: 0.9,
         ease: "power2.inOut",
       },
       0
@@ -571,7 +578,7 @@ function AdventureSceneContent({
         duration: 1.35,
         ease: "power3.inOut",
       },
-      0.82
+      0.9
     );
 
     timeline.to(
@@ -583,7 +590,7 @@ function AdventureSceneContent({
         duration: 1.35,
         ease: "power3.inOut",
       },
-      0.82
+      0.9
     );
   };
 
