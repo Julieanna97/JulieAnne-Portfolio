@@ -16,8 +16,6 @@ import {
   Box3,
   Group,
   MathUtils,
-  Mesh,
-  MeshBasicMaterial,
   Object3D,
   Quaternion,
   Vector3,
@@ -34,14 +32,31 @@ const MODEL_SCALE = 0.72;
 const START_POSITION: [number, number, number] = [4.85, 0.48, -1.25];
 
 /*
-  Keep the cat inside the lower floor. Furniture collisions can be added
-  later, but these boundaries prevent the character from leaving the room.
+  Keep the cat inside the full walkable lower floor. Furniture collisions
+  below prevent clipping through objects while these boundaries prevent the
+  character from leaving the room entirely.
 */
 const ROOM_LIMITS = {
-  minX: 0.55,
-  maxX: 7.45,
-  minZ: -5.55,
-  maxZ: 6.4,
+  /*
+    Include the complete walkable lower floor:
+    - bathroom on the left
+    - living room in the center
+    - kitchen and the entrance area toward the back
+
+    The previous values started at x = 0.55 and z = -5.55, which
+    unintentionally prevented the cat from reaching the bathroom and the
+    entrance rug.
+  */
+  /*
+    Leave enough clearance for the visible banana-cat mesh, not only its
+    movement origin. The model is wider than its center point, so allowing
+    the origin to reach x = -8.0 made part of the character disappear into
+    the solid wall beside the wardrobe.
+  */
+  minX: -7.68,
+  maxX: 7.82,
+  minZ: -7.72,
+  maxZ: 6.72,
 };
 
 /*
@@ -57,17 +72,30 @@ type FloorCollider = {
   maxX: number;
   minZ: number;
   maxZ: number;
+
+  /*
+    Optional collider-specific buffer. Narrow obstacles such as the ladder
+    base and glass wall use a smaller value so real walkable gaps remain open.
+  */
+  padding?: number;
 };
 
-const CHARACTER_RADIUS = 0.36;
+/*
+  A smaller default buffer keeps the cat from clipping into furniture while
+  still allowing it to walk through the intentionally narrow gap between the
+  sofa and ladder.
+*/
+const CHARACTER_RADIUS = 0.18;
 
 const FLOOR_COLLIDERS: FloorCollider[] = [
+  /* Living-room furniture */
   {
     name: "sofa",
     minX: 0.28,
     maxX: 2.96,
     minZ: 1.23,
     maxZ: 6.26,
+    padding: 0.1,
   },
   {
     name: "coffee-table",
@@ -83,17 +111,110 @@ const FLOOR_COLLIDERS: FloorCollider[] = [
     minZ: 1.41,
     maxZ: 6.28,
   },
+
+  /*
+    Block only the LOW wooden section of the slanted ladder.
+
+    The upper half of the ladder is raised above the cat's head, so the cat
+    should be allowed to walk behind / underneath that area to reach the
+    bathroom. Blocking the entire projected ladder footprint closes the real
+    passage. Blocking only the feet allows clipping through the lowest rungs.
+
+    These bounds cover the lower feet and the first low rungs, which are the
+    parts that physically intersect the cat at floor level.
+  */
   {
-    /*
-      Only block the ladder's lower-floor footprint.
-      The previous rectangle covered too much open floor and trapped the cat.
-    */
-    name: "ladder-feet",
-    minX: 2.45,
-    maxX: 3.72,
-    minZ: -0.78,
-    maxZ: 0.34,
+    name: "ladder-low-clearance-section",
+    minX: 2.68,
+    maxX: 3.96,
+    minZ: -2.02,
+    maxZ: 0.6,
+    padding: 0.035,
   },
+
+  /*
+    Bathroom wall, glass divider, and folded brown door.
+
+    These rectangles follow the actual GLB mesh bounds instead of using two
+    oversized guessed wall sections. The real doorway stays open between the
+    folded door and the glass divider, while the cat can no longer clip
+    through the solid wall to the right of the brown bathroom entrance.
+  */
+  {
+    name: "bathroom-hall-solid-wall",
+    minX: -8.42,
+    maxX: -0.02,
+    minZ: -2.82,
+    maxZ: -2.58,
+    padding: 0.06,
+  },
+  {
+    name: "bathroom-glass-divider",
+    minX: -0.34,
+    maxX: -0.04,
+    minZ: 0.7,
+    maxZ: 7.2,
+    padding: 0.08,
+  },
+  {
+    name: "bathroom-folded-door-front",
+    minX: -1.9,
+    maxX: -0.1,
+    minZ: -2.68,
+    maxZ: -1.92,
+    padding: 0.05,
+  },
+  {
+    name: "bathroom-folded-door-side",
+    minX: -1.9,
+    maxX: -0.12,
+    minZ: -2.02,
+    maxZ: -1.2,
+    padding: 0.05,
+  },
+
+  /* The cactus lamp needs its own small floor footprint. */
+  {
+    name: "cactus-lamp",
+    minX: 6.5,
+    maxX: 7.2,
+    minZ: 0.03,
+    maxZ: 0.75,
+  },
+
+  /*
+    Tall wardrobe / cabinet beside the entrance door.
+
+    Block the complete lower-floor footprint with enough visual clearance
+    for the wider banana-cat model. Keep the collider simple and solid so
+    there are no small corner gaps for the cat to slip into.
+  */
+  {
+    name: "entrance-wardrobe-solid-volume",
+    minX: -8.52,
+    maxX: -5.5,
+    minZ: -8.5,
+    maxZ: -2.3,
+    padding: 0,
+  },
+
+  /*
+    Extra front lip for the wardrobe / adjacent wall corner.
+
+    This stops the visible banana shell before it appears inside the wall to
+    the left of the cabinet, while leaving the actual door route open on the
+    other side of the wardrobe.
+  */
+  {
+    name: "entrance-wardrobe-front-lip",
+    minX: -8.56,
+    maxX: -5.34,
+    minZ: -3.16,
+    maxZ: -1.96,
+    padding: 0,
+  },
+
+  /* Kitchen furniture. Keep the entrance rug on the left accessible. */
   {
     name: "kitchen-counter",
     minX: -1.78,
@@ -108,14 +229,43 @@ const FLOOR_COLLIDERS: FloorCollider[] = [
     minZ: -8.29,
     maxZ: -6.08,
   },
+
+  /*
+    Bathroom fixtures are blocked individually rather than blocking the
+    entire bathroom. This lets the cat walk into the bathroom and move around
+    the open floor while still respecting the tub, sink, and toilet.
+  */
+  {
+    name: "bathtub",
+    minX: -8.21,
+    maxX: -1.37,
+    minZ: 3.18,
+    maxZ: 6.51,
+  },
+  {
+    name: "bathroom-sink",
+    minX: -8.25,
+    maxX: -6.61,
+    minZ: 0.62,
+    maxZ: 2.53,
+  },
+  {
+    name: "toilet",
+    minX: -8.3,
+    maxX: -5.78,
+    minZ: -2.03,
+    maxZ: -0.4,
+  },
 ];
 
 const getFurniturePenetration = (x: number, z: number) => {
   return FLOOR_COLLIDERS.reduce((total, collider) => {
-    const minX = collider.minX - CHARACTER_RADIUS;
-    const maxX = collider.maxX + CHARACTER_RADIUS;
-    const minZ = collider.minZ - CHARACTER_RADIUS;
-    const maxZ = collider.maxZ + CHARACTER_RADIUS;
+    const padding = collider.padding ?? CHARACTER_RADIUS;
+
+    const minX = collider.minX - padding;
+    const maxX = collider.maxX + padding;
+    const minZ = collider.minZ - padding;
+    const maxZ = collider.maxZ + padding;
 
     const isInside =
       x >= minX &&
@@ -159,8 +309,6 @@ const canMoveTo = (
 export default function CuteCatBananaController() {
   const movementGroupRef = useRef<Group>(null);
   const animatedModelRef = useRef<Group>(null);
-  const markerMaterialRef = useRef<MeshBasicMaterial>(null);
-  const markerRef = useRef<Mesh>(null);
   const pressedKeysRef = useRef<Record<string, boolean>>({});
 
   const { scene, animations } = useGLTF(
@@ -297,17 +445,6 @@ export default function CuteCatBananaController() {
       }
     }
 
-    /* A soft floor marker makes the controllable character easy to find. */
-    if (markerRef.current) {
-      const pulse = 1 + Math.sin(state.clock.elapsedTime * 2.4) * 0.055;
-      markerRef.current.scale.setScalar(pulse);
-    }
-
-    if (markerMaterialRef.current) {
-      markerMaterialRef.current.opacity =
-        0.2 + Math.sin(state.clock.elapsedTime * 2.4) * 0.045;
-    }
-
     if (!isMoving) return;
 
     /*
@@ -419,23 +556,6 @@ export default function CuteCatBananaController() {
       name="keyboard-controlled-banana-cat"
       position={START_POSITION}
     >
-      {/* Soft marker under the cat so its spawn point is immediately visible. */}
-      <mesh
-        ref={markerRef}
-        position={[0, 0.016, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        renderOrder={8}
-      >
-        <ringGeometry args={[0.42, 0.57, 32]} />
-        <meshBasicMaterial
-          ref={markerMaterialRef}
-          color="#fff0a8"
-          transparent
-          opacity={0.22}
-          depthWrite={false}
-        />
-      </mesh>
-
       <group ref={animatedModelRef} scale={MODEL_SCALE} dispose={null}>
         <primitive object={clonedScene} position={originCorrection} />
       </group>
