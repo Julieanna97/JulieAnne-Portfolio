@@ -23,6 +23,7 @@ import {
 import gsap from "gsap";
 import IsometricRoom from "../models/IsometricRoom";
 import CuteCatBananaController from "../models/CuteCatBananaController";
+import OkameBirdFlyer from "../models/OkameBirdFlyer";
 
 type SectionName = "home";
 
@@ -2532,6 +2533,14 @@ function SceneContent({
           lower-floor room boundaries and plays its Sketchfab animation.
         */}
         <CuteCatBananaController />
+
+        {/*
+          AUTOMATIC FLYING OKAME BIRD
+
+          The bird follows a smooth closed route above the lower floor and
+          plays its embedded Sketchfab animation continuously.
+        */}
+        <OkameBirdFlyer />
 
         {/*
           CACTUS FLOOR LAMP
