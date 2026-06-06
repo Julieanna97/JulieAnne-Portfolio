@@ -43,21 +43,8 @@ const HOME_TARGET: [number, number, number] = [0, 4.18, 0];
 const INTRO_CAMERA: [number, number, number] = [-25, 17.5, 29];
 const INTRO_TARGET: [number, number, number] = [0, 5.2, 0];
 
-/*
-  Permanent Tokyo street lamp near the orange cones.
-  These coordinates come from the model click-debug pass and are now fixed,
-  so the lamp is visible automatically as soon as the scene loads.
-*/
 const STREET_LAMP_BULB_POSITION: [number, number, number] = [6.58, 4.586, 7.331];
-
-/*
-  The spotlight is aimed slightly to the left of the lamp post so its warm
-  pool of light reaches the orange cones and street naturally. No fake floor
-  circles are used; the real GLB street geometry receives the light instead.
-*/
-const STREET_LAMP_SPILL_TARGET_POSITION: [number, number, number] = [4.9, 0.08, 7.0];
-const STREET_LAMP_LEFT_FILL_POSITION: [number, number, number] = [4.82, 0.58, 7.02];
-const STREET_LAMP_CENTER_FILL_POSITION: [number, number, number] = [5.92, 0.54, 7.12];
+const STREET_LAMP_SPILL_TARGET_POSITION: [number, number, number] = [4.55, 0.08, 6.94];
 
 function TokyoStreetLampGlow() {
   const spillLightRef = useRef<SpotLight>(null);
@@ -65,17 +52,16 @@ function TokyoStreetLampGlow() {
 
   useEffect(() => {
     if (!spillLightRef.current || !spillTargetRef.current) return;
-
     spillLightRef.current.target = spillTargetRef.current;
     spillLightRef.current.target.updateMatrixWorld();
   }, []);
 
   return (
     <>
-      {/* Invisible target: aims the lamp reflection onto the cones and street. */}
+      {/* Invisible target: aims the soft reflection leftward across the cones. */}
       <object3D ref={spillTargetRef} position={STREET_LAMP_SPILL_TARGET_POSITION} />
 
-      {/* Small visible lantern attached to the existing street-lamp area. */}
+      {/* Small lantern attached to the existing street-lamp area. */}
       <group position={STREET_LAMP_BULB_POSITION}>
         <mesh position={[0, 0.18, -0.03]}>
           <cylinderGeometry args={[0.014, 0.014, 0.24, 10]} />
@@ -89,7 +75,7 @@ function TokyoStreetLampGlow() {
             metalness={0.28}
             roughness={0.72}
             emissive="#2a170a"
-            emissiveIntensity={0.22}
+            emissiveIntensity={0.18}
           />
         </mesh>
 
@@ -97,55 +83,86 @@ function TokyoStreetLampGlow() {
           <boxGeometry args={[0.105, 0.145, 0.105]} />
           <meshStandardMaterial
             color="#ffd9a2"
-            emissive="#ffb857"
-            emissiveIntensity={2.35}
+            emissive="#ffbd6d"
+            emissiveIntensity={1.55}
             transparent
-            opacity={0.94}
+            opacity={0.92}
             toneMapped={false}
           />
         </mesh>
 
-        {/* Small bulb light: keeps the lantern itself illuminated. */}
+        {/* Bright bulb — lantern glows warm and strong */}
         <pointLight
           position={[0, 0.02, 0]}
-          intensity={4.6}
-          distance={5.8}
-          decay={1.82}
-          color="#ffbd72"
-          castShadow
+          intensity={12}
+          distance={10}
+          decay={1.6}
+          color="#ffcc88"
         />
       </group>
 
-      {/* Main downward-left street reflection. */}
+      {/*
+        Wide spotlight — angle pushed near its maximum so the cone of light
+        fans out across the full road surface, matching the broad warm oval
+        visible in the reference screenshot.
+      */}
       <spotLight
         ref={spillLightRef}
         position={STREET_LAMP_BULB_POSITION}
-        angle={0.82}
-        penumbra={0.96}
-        intensity={15.2}
-        distance={10.6}
-        decay={1.76}
-        color="#ffb65c"
-        castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
+        angle={1.45}
+        penumbra={1}
+        intensity={22}
+        distance={22}
+        decay={1.5}
+        color="#ffb86a"
       />
 
-      {/* Soft fills widen the reflection across the orange cones. */}
+      {/* Far-left fill — reaches toward the bike-lane marking */}
       <pointLight
-        position={STREET_LAMP_LEFT_FILL_POSITION}
-        intensity={4.1}
-        distance={6.4}
-        decay={1.86}
-        color="#ffb85e"
+        position={[3.8, 0.18, 7.1]}
+        intensity={10}
+        distance={14}
+        decay={1.6}
+        color="#ffb05a"
       />
 
+      {/* Centre fill — sits at ground level for a wide horizontal wash */}
       <pointLight
-        position={STREET_LAMP_CENTER_FILL_POSITION}
-        intensity={2.8}
-        distance={5.4}
-        decay={1.94}
-        color="#ffd089"
+        position={[5.72, 0.18, 7.08]}
+        intensity={8}
+        distance={12}
+        decay={1.65}
+        color="#ffc878"
+      />
+
+      {/* Right fill — widens the glow toward the far-right cones */}
+      <pointLight
+        position={[7.4, 0.18, 7.2]}
+        intensity={6}
+        distance={10}
+        decay={1.7}
+        color="#ffd090"
+      />
+
+      {/*
+        Extra wide ground wash — produces the large warm oval on the road.
+        Raised intensity dramatically to match the bright reference image.
+      */}
+      <pointLight
+        position={[5.5, 0.08, 8.5]}
+        intensity={10}
+        distance={16}
+        decay={1.5}
+        color="#ffa840"
+      />
+
+      {/* Additional upward bounce — lights the underside of the stall canopy */}
+      <pointLight
+        position={[5.2, 1.2, 7.0]}
+        intensity={6}
+        distance={9}
+        decay={1.8}
+        color="#ffbe6e"
       />
     </>
   );
@@ -217,21 +234,12 @@ const PROJECT_CASE_STUDIES: Record<ProjectId, ProjectCaseStudy> = {
   },
 };
 
-/*
-  The downloaded GLB includes the animated 3D model, but not Sketchfab's
-  annotation widgets. These three local React Three Fiber markers recreate the
-  original small numbered annotation style and animated camera movement.
-
-  Fine-tune only hotspot / camera / focus if you want to nudge a marker later.
-*/
 const SECTIONS: PortfolioSection[] = [
   {
     id: "about",
     number: "01",
     title: "About Me",
     eyebrow: "Fullstack · Embedded · Software Developer",
-
-    // Left storefront / balcony location, inspired by the original tour.
     hotspot: [-6.2, 7.48, 3.4],
     camera: [-11.7, 8.75, 11.25],
     focus: [-6.0, 6.95, 3.0],
@@ -241,8 +249,6 @@ const SECTIONS: PortfolioSection[] = [
     number: "02",
     title: "Projects",
     eyebrow: "Selected development work",
-
-    // Front shop / street entrance location.
     hotspot: [-1.35, 4.42, 5.32],
     camera: [-1.05, 6.95, 13.7],
     focus: [-1.45, 4.2, 4.88],
@@ -253,12 +259,6 @@ const SECTIONS: PortfolioSection[] = [
     markerNumber: "3",
     title: "Credits",
     eyebrow: "Attribution and tools",
-
-    /*
-      Rooftop television marker. Clicking it moves the camera around the back
-      of the building and frames the roof and lucky cat, inspired by the
-      creator's original moonlight annotation shot.
-    */
     hotspot: [1.48, 10.48, -3.42],
     camera: [-5.45, 11.62, -10.7],
     focus: [1.12, 9.72, -3.06],
@@ -268,7 +268,6 @@ const SECTIONS: PortfolioSection[] = [
 function NightBackdrop() {
   return (
     <div className="adventure-backdrop adventure-backdrop--original" aria-hidden="true">
-      {/* Keep the scene close to the original dark GLB preview. */}
       <span className="adventure-original-glow original-glow-left" />
       <span className="adventure-original-glow original-glow-right" />
       <span className="adventure-original-glow original-glow-bottom" />
@@ -363,7 +362,7 @@ function AnnotationContent({
     <>
       <p>Portfolio concept and implementation by Julie Anne Cantillep.</p>
       <p>
-        3D scene: “A Mysterious Adventure - 3D Editor Challenge” by Diosmel,
+        3D scene: "A Mysterious Adventure - 3D Editor Challenge" by Diosmel,
         used under the Creative Commons Attribution 4.0 license.
       </p>
       <p>Built with Next.js, TypeScript, React Three Fiber, Drei, Three.js, and GSAP.</p>
@@ -627,12 +626,6 @@ function AdventureSceneContent({
 
   const closeAnnotation = () => {
     onActiveChange(null);
-
-    /*
-      Always restore the same centered home framing after closing an
-      annotation. Previously the popup disappeared while the camera stayed
-      near the rooftop, which made the model look too high and off-center.
-    */
     moveCamera(homeCamera, HOME_TARGET, 1.35);
   };
 
@@ -648,11 +641,6 @@ function AdventureSceneContent({
       onComplete: () => setMoving(false),
     });
 
-    /*
-      Start by moving around the TV side, then continue the orbit toward the
-      rooftop lucky-cat view. This makes Credits feel like a proper story
-      annotation instead of a simple straight zoom.
-    */
     timeline.to(
       camera.position,
       {
@@ -758,10 +746,6 @@ function AdventureSceneContent({
 
   return (
     <>
-      {/*
-        Creator-inspired setup: a very small ambient fill, two spot lights,
-        one point light and a star field that behaves like moonlight.
-      */}
       <color attach="background" args={["#010106"]} />
       <fog attach="fog" args={["#010106", 30, 74]} />
       <ambientLight intensity={0.12} />
@@ -821,7 +805,6 @@ function AdventureSceneContent({
           onProjectSelect={onProjectSelect}
         />
       ))}
-
 
       <EffectComposer multisampling={0} enableNormalPass>
         <SSAO
@@ -941,11 +924,6 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
       />
 
       <style jsx global>{`
-        /*
-          The Tokyo-night background styles live in src/app/globals.css.
-          Keep the component-level styles below focused on interactive UI.
-        */
-
         .adventure-annotation-wrap {
           position: relative;
           display: grid;
@@ -1153,7 +1131,6 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
         }
 
         .adventure-bottom-nav span { opacity: 0.72; }
-
 
         .adventure-project-card-button {
           display: grid;
@@ -1368,7 +1345,6 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
 
         @keyframes adventure-modal-fade-in { from { opacity: 0; } to { opacity: 1; } }
         @keyframes adventure-modal-enter { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-
 
         @media (max-width: 767px) {
           .adventure-intro-copy {
