@@ -5,7 +5,7 @@ import { Canvas, useThree } from "@react-three/fiber";
 import { Html, OrbitControls, Stars } from "@react-three/drei";
 import { Bloom, EffectComposer, SSAO, Vignette } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
-import type { PerspectiveCamera } from "three";
+import type { Object3D, PerspectiveCamera, SpotLight } from "three";
 import { ACESFilmicToneMapping, SRGBColorSpace, TOUCH } from "three";
 import gsap from "gsap";
 import MysteriousAdventureModel from "../models/MysteriousAdventureModel";
@@ -42,6 +42,114 @@ const HOME_CAMERA_MOBILE: [number, number, number] = [24.8, 13.8, 31.4];
 const HOME_TARGET: [number, number, number] = [0, 4.18, 0];
 const INTRO_CAMERA: [number, number, number] = [-25, 17.5, 29];
 const INTRO_TARGET: [number, number, number] = [0, 5.2, 0];
+
+/*
+  Permanent Tokyo street lamp near the orange cones.
+  These coordinates come from the model click-debug pass and are now fixed,
+  so the lamp is visible automatically as soon as the scene loads.
+*/
+const STREET_LAMP_BULB_POSITION: [number, number, number] = [6.58, 4.586, 7.331];
+
+/*
+  The spotlight is aimed slightly to the left of the lamp post so its warm
+  pool of light reaches the orange cones and street naturally. No fake floor
+  circles are used; the real GLB street geometry receives the light instead.
+*/
+const STREET_LAMP_SPILL_TARGET_POSITION: [number, number, number] = [5.22, 0.08, 7.0];
+const STREET_LAMP_LEFT_FILL_POSITION: [number, number, number] = [5.5, 0.72, 7.04];
+const STREET_LAMP_CENTER_FILL_POSITION: [number, number, number] = [6.26, 0.62, 7.14];
+
+function TokyoStreetLampGlow() {
+  const spillLightRef = useRef<SpotLight>(null);
+  const spillTargetRef = useRef<Object3D>(null);
+
+  useEffect(() => {
+    if (!spillLightRef.current || !spillTargetRef.current) return;
+
+    spillLightRef.current.target = spillTargetRef.current;
+    spillLightRef.current.target.updateMatrixWorld();
+  }, []);
+
+  return (
+    <>
+      {/* Invisible target: aims the lamp reflection onto the cones and street. */}
+      <object3D ref={spillTargetRef} position={STREET_LAMP_SPILL_TARGET_POSITION} />
+
+      {/* Small visible lantern attached to the existing street-lamp area. */}
+      <group position={STREET_LAMP_BULB_POSITION}>
+        <mesh position={[0, 0.18, -0.03]}>
+          <cylinderGeometry args={[0.014, 0.014, 0.24, 10]} />
+          <meshStandardMaterial color="#252a31" metalness={0.82} roughness={0.32} />
+        </mesh>
+
+        <mesh position={[0, 0.035, 0]}>
+          <boxGeometry args={[0.17, 0.22, 0.17]} />
+          <meshStandardMaterial
+            color="#231912"
+            metalness={0.28}
+            roughness={0.72}
+            emissive="#2a170a"
+            emissiveIntensity={0.22}
+          />
+        </mesh>
+
+        <mesh position={[0, 0.02, 0]}>
+          <boxGeometry args={[0.105, 0.145, 0.105]} />
+          <meshStandardMaterial
+            color="#ffd9a2"
+            emissive="#ffb857"
+            emissiveIntensity={2.35}
+            transparent
+            opacity={0.94}
+            toneMapped={false}
+          />
+        </mesh>
+
+        {/* Small bulb light: keeps the lantern itself illuminated. */}
+        <pointLight
+          position={[0, 0.02, 0]}
+          intensity={4.6}
+          distance={5.8}
+          decay={1.82}
+          color="#ffbd72"
+          castShadow
+        />
+      </group>
+
+      {/* Main downward-left street reflection. */}
+      <spotLight
+        ref={spillLightRef}
+        position={STREET_LAMP_BULB_POSITION}
+        angle={0.66}
+        penumbra={0.94}
+        intensity={13.8}
+        distance={9.4}
+        decay={1.82}
+        color="#ffb65c"
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+      />
+
+      {/* Soft fills widen the reflection across the orange cones. */}
+      <pointLight
+        position={STREET_LAMP_LEFT_FILL_POSITION}
+        intensity={3.2}
+        distance={5.2}
+        decay={2.02}
+        color="#ffb85e"
+      />
+
+      <pointLight
+        position={STREET_LAMP_CENTER_FILL_POSITION}
+        intensity={2.0}
+        distance={4.2}
+        decay={2.08}
+        color="#ffd089"
+      />
+    </>
+  );
+}
 
 
 const PROJECT_CASE_STUDIES: Record<ProjectId, ProjectCaseStudy> = {
@@ -700,6 +808,7 @@ function AdventureSceneContent({
       />
 
       <MysteriousAdventureModel />
+      <TokyoStreetLampGlow />
 
       {SECTIONS.map((section) => (
         <NumberHotspot
