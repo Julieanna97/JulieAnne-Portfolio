@@ -794,6 +794,76 @@ function AdventureSceneContent({
       <MysteriousAdventureModel />
       <TokyoStreetLampGlow />
 
+      {/*
+        Right-side full street wrap — same warm amber/golden family as the
+        street lamp. Covers the road surface, ground-level storefronts, alley
+        walls, mid facades, and upper buildings all together so the entire
+        right side of the scene is evenly bathed.
+      */}
+
+      {/* Upper facade — tops of buildings and roofline */}
+      <pointLight
+        position={[10, 12, 4]}
+        intensity={5}
+        distance={28}
+        decay={1.6}
+        color="#ffc87a"
+      />
+
+      {/* Mid-upper storefront — signs, awnings, second floor */}
+      <pointLight
+        position={[10, 7, 5]}
+        intensity={6}
+        distance={24}
+        decay={1.65}
+        color="#ffbe72"
+      />
+
+      {/* Mid-low — ground-floor storefronts, alley entrance */}
+      <pointLight
+        position={[9, 3.5, 6]}
+        intensity={7}
+        distance={22}
+        decay={1.6}
+        color="#ffba68"
+      />
+
+      {/* Street level front — road surface and base of buildings facing camera */}
+      <pointLight
+        position={[8, 0.8, 8]}
+        intensity={7}
+        distance={20}
+        decay={1.55}
+        color="#ffb660"
+      />
+
+      {/* Street level rear — road further back behind the alley */}
+      <pointLight
+        position={[7, 0.5, 3]}
+        intensity={6}
+        distance={18}
+        decay={1.6}
+        color="#ffc070"
+      />
+
+      {/* Deep alley fill — pushes light into the narrow passage */}
+      <pointLight
+        position={[5, 2.5, 1]}
+        intensity={5}
+        distance={16}
+        decay={1.7}
+        color="#ffbe74"
+      />
+
+      {/* Wide low ground wash — the broad amber pool across the whole road */}
+      <pointLight
+        position={[9, 0.1, 6]}
+        intensity={8}
+        distance={22}
+        decay={1.5}
+        color="#ffb258"
+      />
+
       {SECTIONS.map((section) => (
         <NumberHotspot
           key={section.id}
