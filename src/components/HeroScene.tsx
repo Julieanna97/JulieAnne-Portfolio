@@ -55,9 +55,9 @@ const STREET_LAMP_BULB_POSITION: [number, number, number] = [6.58, 4.586, 7.331]
   pool of light reaches the orange cones and street naturally. No fake floor
   circles are used; the real GLB street geometry receives the light instead.
 */
-const STREET_LAMP_SPILL_TARGET_POSITION: [number, number, number] = [5.22, 0.08, 7.0];
-const STREET_LAMP_LEFT_FILL_POSITION: [number, number, number] = [5.5, 0.72, 7.04];
-const STREET_LAMP_CENTER_FILL_POSITION: [number, number, number] = [6.26, 0.62, 7.14];
+const STREET_LAMP_SPILL_TARGET_POSITION: [number, number, number] = [4.9, 0.08, 7.0];
+const STREET_LAMP_LEFT_FILL_POSITION: [number, number, number] = [4.82, 0.58, 7.02];
+const STREET_LAMP_CENTER_FILL_POSITION: [number, number, number] = [5.92, 0.54, 7.12];
 
 function TokyoStreetLampGlow() {
   const spillLightRef = useRef<SpotLight>(null);
@@ -120,11 +120,11 @@ function TokyoStreetLampGlow() {
       <spotLight
         ref={spillLightRef}
         position={STREET_LAMP_BULB_POSITION}
-        angle={0.66}
-        penumbra={0.94}
-        intensity={13.8}
-        distance={9.4}
-        decay={1.82}
+        angle={0.82}
+        penumbra={0.96}
+        intensity={15.2}
+        distance={10.6}
+        decay={1.76}
         color="#ffb65c"
         castShadow
         shadow-mapSize-width={1024}
@@ -134,17 +134,17 @@ function TokyoStreetLampGlow() {
       {/* Soft fills widen the reflection across the orange cones. */}
       <pointLight
         position={STREET_LAMP_LEFT_FILL_POSITION}
-        intensity={3.2}
-        distance={5.2}
-        decay={2.02}
+        intensity={4.1}
+        distance={6.4}
+        decay={1.86}
         color="#ffb85e"
       />
 
       <pointLight
         position={STREET_LAMP_CENTER_FILL_POSITION}
-        intensity={2.0}
-        distance={4.2}
-        decay={2.08}
+        intensity={2.8}
+        distance={5.4}
+        decay={1.94}
         color="#ffd089"
       />
     </>
