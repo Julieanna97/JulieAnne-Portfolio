@@ -58,10 +58,8 @@ function TokyoStreetLampGlow() {
 
   return (
     <>
-      {/* Invisible target: aims the soft reflection leftward across the cones. */}
       <object3D ref={spillTargetRef} position={STREET_LAMP_SPILL_TARGET_POSITION} />
 
-      {/* Small lantern attached to the existing street-lamp area. */}
       <group position={STREET_LAMP_BULB_POSITION}>
         <mesh position={[0, 0.18, -0.03]}>
           <cylinderGeometry args={[0.014, 0.014, 0.24, 10]} />
@@ -91,83 +89,95 @@ function TokyoStreetLampGlow() {
           />
         </mesh>
 
-        {/* Bright bulb — lantern glows warm and strong */}
+        {/* Bulb — softened further */}
         <pointLight
           position={[0, 0.02, 0]}
-          intensity={12}
-          distance={10}
-          decay={1.6}
+          intensity={4}
+          distance={7}
+          decay={2.0}
           color="#ffcc88"
         />
       </group>
 
-      {/*
-        Wide spotlight — angle pushed near its maximum so the cone of light
-        fans out across the full road surface, matching the broad warm oval
-        visible in the reference screenshot.
-      */}
+      {/* Wide spill — softened further */}
       <spotLight
         ref={spillLightRef}
         position={STREET_LAMP_BULB_POSITION}
         angle={1.45}
         penumbra={1}
-        intensity={22}
-        distance={22}
-        decay={1.5}
+        intensity={6}
+        distance={15}
+        decay={1.8}
         color="#ffb86a"
       />
 
-      {/* Far-left fill — reaches toward the bike-lane marking */}
-      <pointLight
-        position={[3.8, 0.18, 7.1]}
-        intensity={10}
-        distance={14}
-        decay={1.6}
-        color="#ffb05a"
-      />
-
-      {/* Centre fill — sits at ground level for a wide horizontal wash */}
-      <pointLight
-        position={[5.72, 0.18, 7.08]}
-        intensity={8}
-        distance={12}
-        decay={1.65}
-        color="#ffc878"
-      />
-
-      {/* Right fill — widens the glow toward the far-right cones */}
-      <pointLight
-        position={[7.4, 0.18, 7.2]}
-        intensity={6}
-        distance={10}
-        decay={1.7}
-        color="#ffd090"
-      />
-
-      {/*
-        Extra wide ground wash — produces the large warm oval on the road.
-        Raised intensity dramatically to match the bright reference image.
-      */}
-      <pointLight
-        position={[5.5, 0.08, 8.5]}
-        intensity={10}
-        distance={16}
-        decay={1.5}
-        color="#ffa840"
-      />
-
-      {/* Additional upward bounce — lights the underside of the stall canopy */}
-      <pointLight
-        position={[5.2, 1.2, 7.0]}
-        intensity={6}
-        distance={9}
-        decay={1.8}
-        color="#ffbe6e"
-      />
+      {/* Ground fills — softened further */}
+      <pointLight position={[3.8, 0.18, 7.1]}  intensity={2.5} distance={10} decay={1.9} color="#ffb05a" />
+      <pointLight position={[5.72, 0.18, 7.08]} intensity={2}   distance={8}  decay={1.9} color="#ffc878" />
+      <pointLight position={[7.4, 0.18, 7.2]}   intensity={1.5} distance={7}  decay={2.0} color="#ffd090" />
+      <pointLight position={[5.5, 0.08, 8.5]}   intensity={2.5} distance={10} decay={1.8} color="#ffa840" />
+      <pointLight position={[5.2, 1.2, 7.0]}    intensity={1.5} distance={6}  decay={2.0} color="#ffbe6e" />
     </>
   );
 }
 
+/*
+  BackAlleyPinkGlow — mimics a pink/magenta neon sign or lantern string
+  tucked in the back alley behind the buildings. All lights sit at negative
+  Z values (behind the front facade) with short distance so they can't
+  bleed through to the street. The color matches the warm-pink lantern
+  reflections visible in the reference screenshot.
+*/
+function BackAlleyPinkGlow() {
+  return (
+    <>
+      {/*
+        Primary neon source — imagined sign mounted mid-height on the alley's
+        back wall. Pink-magenta, tight distance so it only paints the
+        immediate wall surfaces around the lanterns.
+      */}
+      <pointLight
+        position={[1.8, 5.2, -1.8]}
+        intensity={22}
+        distance={12}
+        decay={1.5}
+        color="#ff6eb4"
+      />
+
+      <pointLight
+        position={[2.4, 3.2, -2.6]}
+        intensity={18}
+        distance={11}
+        decay={1.55}
+        color="#ff82b8"
+      />
+
+      <pointLight
+        position={[2.0, 0.6, -2.2]}
+        intensity={14}
+        distance={10}
+        decay={1.6}
+        color="#ff90c0"
+      />
+
+      <pointLight
+        position={[1.6, 7.8, -1.4]}
+        intensity={12}
+        distance={10}
+        decay={1.65}
+        color="#ff78be"
+      />
+
+      <pointLight
+        position={[3.0, 4.0, -4.5]}
+        intensity={10}
+        distance={9}
+        decay={1.7}
+        color="#e86aaa"
+      />
+    </>
+  );
+}
 
 const PROJECT_CASE_STUDIES: Record<ProjectId, ProjectCaseStudy> = {
   "sigma-autonomous-car": {
@@ -601,25 +611,12 @@ function AdventureSceneContent({
 
     timeline.to(
       camera.position,
-      {
-        x: nextCamera[0],
-        y: nextCamera[1],
-        z: nextCamera[2],
-        duration,
-        ease: "power3.inOut",
-      },
+      { x: nextCamera[0], y: nextCamera[1], z: nextCamera[2], duration, ease: "power3.inOut" },
       0
     );
-
     timeline.to(
       controlsRef.current.target,
-      {
-        x: nextTarget[0],
-        y: nextTarget[1],
-        z: nextTarget[2],
-        duration,
-        ease: "power3.inOut",
-      },
+      { x: nextTarget[0], y: nextTarget[1], z: nextTarget[2], duration, ease: "power3.inOut" },
       0
     );
   };
@@ -641,64 +638,16 @@ function AdventureSceneContent({
       onComplete: () => setMoving(false),
     });
 
-    timeline.to(
-      camera.position,
-      {
-        x: 9.15,
-        y: 11.0,
-        z: -0.8,
-        duration: 0.9,
-        ease: "power2.inOut",
-      },
-      0
-    );
-
-    timeline.to(
-      controlsRef.current.target,
-      {
-        x: 1.5,
-        y: 9.9,
-        z: -2.85,
-        duration: 0.9,
-        ease: "power2.inOut",
-      },
-      0
-    );
-
-    timeline.to(
-      camera.position,
-      {
-        x: section.camera[0],
-        y: section.camera[1],
-        z: section.camera[2],
-        duration: 1.35,
-        ease: "power3.inOut",
-      },
-      0.9
-    );
-
-    timeline.to(
-      controlsRef.current.target,
-      {
-        x: section.focus[0],
-        y: section.focus[1],
-        z: section.focus[2],
-        duration: 1.35,
-        ease: "power3.inOut",
-      },
-      0.9
-    );
+    timeline.to(camera.position, { x: 9.15, y: 11.0, z: -0.8, duration: 0.9, ease: "power2.inOut" }, 0);
+    timeline.to(controlsRef.current.target, { x: 1.5, y: 9.9, z: -2.85, duration: 0.9, ease: "power2.inOut" }, 0);
+    timeline.to(camera.position, { x: section.camera[0], y: section.camera[1], z: section.camera[2], duration: 1.35, ease: "power3.inOut" }, 0.9);
+    timeline.to(controlsRef.current.target, { x: section.focus[0], y: section.focus[1], z: section.focus[2], duration: 1.35, ease: "power3.inOut" }, 0.9);
   };
 
   const selectSection = (section: PortfolioSection) => {
     if (moving) return;
     onActiveChange(section.id);
-
-    if (section.id === "credits") {
-      moveToCreditsRooftop(section);
-      return;
-    }
-
+    if (section.id === "credits") { moveToCreditsRooftop(section); return; }
     moveCamera(section.camera, section.focus);
   };
 
@@ -706,17 +655,10 @@ function AdventureSceneContent({
     const handleSelection = (event: Event) => {
       const customEvent = event as CustomEvent<{ id?: SectionId | "home" }>;
       const requestedId = customEvent.detail?.id;
-
-      if (requestedId === "home") {
-        onActiveChange(null);
-        moveCamera(homeCamera, HOME_TARGET);
-        return;
-      }
-
+      if (requestedId === "home") { onActiveChange(null); moveCamera(homeCamera, HOME_TARGET); return; }
       const section = SECTIONS.find((item) => item.id === requestedId);
       if (section) selectSection(section);
     };
-
     window.addEventListener("adventure:select", handleSelection);
     return () => window.removeEventListener("adventure:select", handleSelection);
   });
@@ -724,13 +666,11 @@ function AdventureSceneContent({
   useEffect(() => {
     const handleIntro = () => {
       if (!controlsRef.current) return;
-
       camera.position.set(...INTRO_CAMERA);
       controlsRef.current.target.set(...INTRO_TARGET);
       controlsRef.current.update();
       moveCamera(homeCamera, HOME_TARGET, 2.15);
     };
-
     window.addEventListener("adventure:intro", handleIntro);
     return () => window.removeEventListener("adventure:intro", handleIntro);
   }, [camera, homeCamera]);
@@ -738,10 +678,7 @@ function AdventureSceneContent({
   useEffect(() => {
     if (!controlsRef.current || readyRef.current) return;
     readyRef.current = true;
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => onSceneReady?.());
-    });
+    requestAnimationFrame(() => { requestAnimationFrame(() => onSceneReady?.()); });
   }, [onSceneReady]);
 
   return (
@@ -773,96 +710,30 @@ function AdventureSceneContent({
         decay={1.55}
       />
 
-      <pointLight
-        position={[2.5, 8.2, 1.7]}
-        intensity={1.7}
-        color="#ff7665"
-        distance={20}
-        decay={1.5}
-      />
+      <pointLight position={[2.5, 8.2, 1.7]} intensity={1.7} color="#ff7665" distance={20} decay={1.5} />
 
-      <Stars
-        radius={78}
-        depth={38}
-        count={900}
-        factor={2.35}
-        saturation={0}
-        fade
-        speed={0.22}
-      />
+      <Stars radius={78} depth={38} count={900} factor={2.35} saturation={0} fade speed={0.22} />
 
       <MysteriousAdventureModel />
+
+      {/* Street lamp cone near the cones — intensity lowered */}
       <TokyoStreetLampGlow />
 
+      {/* Right-side building wrap — same warm amber family as the street lamp */}
+      <pointLight position={[10, 12, 4]} intensity={5}  distance={28} decay={1.6}  color="#ffc87a" />
+      <pointLight position={[10, 7,  5]} intensity={6}  distance={24} decay={1.65} color="#ffbe72" />
+      <pointLight position={[9,  3.5, 6]} intensity={7} distance={22} decay={1.6}  color="#ffba68" />
+      <pointLight position={[8,  0.8, 8]} intensity={7} distance={20} decay={1.55} color="#ffb660" />
+      <pointLight position={[7,  0.5, 3]} intensity={6} distance={18} decay={1.6}  color="#ffc070" />
+      <pointLight position={[5,  2.5, 1]} intensity={5} distance={16} decay={1.7}  color="#ffbe74" />
+      <pointLight position={[9,  0.1, 6]} intensity={8} distance={22} decay={1.5}  color="#ffb258" />
+
       {/*
-        Right-side full street wrap — same warm amber/golden family as the
-        street lamp. Covers the road surface, ground-level storefronts, alley
-        walls, mid facades, and upper buildings all together so the entire
-        right side of the scene is evenly bathed.
+        Back-alley pink glow — lantern/neon-sign light contained behind the
+        buildings. Negative Z keeps all lights on the far side of the facade.
+        Short distance values prevent any bleed through to the front street.
       */}
-
-      {/* Upper facade — tops of buildings and roofline */}
-      <pointLight
-        position={[10, 12, 4]}
-        intensity={5}
-        distance={28}
-        decay={1.6}
-        color="#ffc87a"
-      />
-
-      {/* Mid-upper storefront — signs, awnings, second floor */}
-      <pointLight
-        position={[10, 7, 5]}
-        intensity={6}
-        distance={24}
-        decay={1.65}
-        color="#ffbe72"
-      />
-
-      {/* Mid-low — ground-floor storefronts, alley entrance */}
-      <pointLight
-        position={[9, 3.5, 6]}
-        intensity={7}
-        distance={22}
-        decay={1.6}
-        color="#ffba68"
-      />
-
-      {/* Street level front — road surface and base of buildings facing camera */}
-      <pointLight
-        position={[8, 0.8, 8]}
-        intensity={7}
-        distance={20}
-        decay={1.55}
-        color="#ffb660"
-      />
-
-      {/* Street level rear — road further back behind the alley */}
-      <pointLight
-        position={[7, 0.5, 3]}
-        intensity={6}
-        distance={18}
-        decay={1.6}
-        color="#ffc070"
-      />
-
-      {/* Deep alley fill — pushes light into the narrow passage */}
-      <pointLight
-        position={[5, 2.5, 1]}
-        intensity={5}
-        distance={16}
-        decay={1.7}
-        color="#ffbe74"
-      />
-
-      {/* Wide low ground wash — the broad amber pool across the whole road */}
-      <pointLight
-        position={[9, 0.1, 6]}
-        intensity={8}
-        distance={22}
-        decay={1.5}
-        color="#ffb258"
-      />
+      <BackAlleyPinkGlow />
 
       {SECTIONS.map((section) => (
         <NumberHotspot
@@ -886,12 +757,7 @@ function AdventureSceneContent({
           luminanceInfluence={0.52}
           resolutionScale={0.65}
         />
-        <Bloom
-          mipmapBlur
-          intensity={0.62}
-          luminanceThreshold={0.58}
-          luminanceSmoothing={0.24}
-        />
+        <Bloom mipmapBlur intensity={0.62} luminanceThreshold={0.58} luminanceSmoothing={0.24} />
         <Vignette eskil={false} offset={0.18} darkness={0.72} />
       </EffectComposer>
 
@@ -908,10 +774,7 @@ function AdventureSceneContent({
         maxPolarAngle={Math.PI / 2.05}
         zoomSpeed={compact ? 0.9 : 0.5}
         rotateSpeed={compact ? 0.38 : 0.48}
-        touches={{
-          ONE: TOUCH.ROTATE,
-          TWO: TOUCH.DOLLY_ROTATE,
-        }}
+        touches={{ ONE: TOUCH.ROTATE, TWO: TOUCH.DOLLY_ROTATE }}
         enableDamping
         dampingFactor={0.08}
       />
