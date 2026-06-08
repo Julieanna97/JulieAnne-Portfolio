@@ -1,17 +1,12 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useThree, type ThreeEvent } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import { Html, OrbitControls, Stars } from "@react-three/drei";
 import { Bloom, EffectComposer, SSAO, Vignette } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import type { Object3D, PerspectiveCamera, SpotLight } from "three";
-import {
-  ACESFilmicToneMapping,
-  SRGBColorSpace,
-  TOUCH,
-  Vector3,
-} from "three";
+import { ACESFilmicToneMapping, SRGBColorSpace, TOUCH } from "three";
 import gsap from "gsap";
 import MysteriousAdventureModel from "../models/MysteriousAdventureModel";
 
@@ -173,6 +168,13 @@ function BackAlleyPinkGlow() {
         color="#ff78be"
       />
 
+      <pointLight
+        position={[3.0, 4.0, -4.5]}
+        intensity={10}
+        distance={9}
+        decay={1.7}
+        color="#e86aaa"
+      />
     </>
   );
 }
@@ -577,170 +579,10 @@ function AdventureSceneContent({
   onProjectSelect: (id: ProjectId) => void;
   onSceneReady?: () => void;
 }) {
-  const { camera, scene } = useThree();
+  const { camera } = useThree();
   const controlsRef = useRef<any>(null);
   const readyRef = useRef(false);
   const [moving, setMoving] = useState(false);
-
-  /*
-    PURPLE SPOT DEBUG
-
-    Temporary coordinate debugger for the concentrated purple circle.
-
-    Click any visible surface on the 3D model.
-    A cyan marker appears at the clicked location.
-    The browser console prints the exact world-space coordinates,
-    the clicked mesh name, and the surface normal.
-
-    Remove this block after the purple reflection has been adjusted.
-  */
-  const [debugClickPoint, setDebugClickPoint] = useState<
-    [number, number, number] | null
-  >(null);
-
-  const handlePurpleSpotDebugClick = (
-    event: ThreeEvent<MouseEvent>
-  ) => {
-    event.stopPropagation();
-
-    const { x, y, z } = event.point;
-
-    const clickedPosition: [number, number, number] = [
-      Number(x.toFixed(3)),
-      Number(y.toFixed(3)),
-      Number(z.toFixed(3)),
-    ];
-
-    const worldNormal = event.face?.normal?.clone();
-
-    if (worldNormal) {
-      worldNormal.transformDirection(event.object.matrixWorld);
-    }
-
-    setDebugClickPoint(clickedPosition);
-
-    console.group(
-      "%cPURPLE SPOT DEBUG",
-      "color: #ff70c8; font-weight: 800;"
-    );
-
-    console.log(
-      "Clicked mesh:",
-      event.object.name || "(unnamed mesh)"
-    );
-
-    console.log("World position:", clickedPosition);
-
-    if (worldNormal) {
-      console.log("World normal:", [
-        Number(worldNormal.x.toFixed(3)),
-        Number(worldNormal.y.toFixed(3)),
-        Number(worldNormal.z.toFixed(3)),
-      ]);
-    }
-
-    /*
-      Log nearby lights, including any lights imported inside the GLB model.
-    */
-    const nearbyLights: Array<{
-      name: string;
-      type: string;
-      color: string;
-      intensity: number | string;
-      range: number | string;
-      distanceFromClick: number;
-      worldPosition: string;
-    }> = [];
-
-    scene.traverse((object) => {
-      const possibleLight = object as typeof object & {
-        isLight?: boolean;
-        color?: { getHexString?: () => string };
-        intensity?: number;
-        distance?: number;
-      };
-
-      if (!possibleLight.isLight) return;
-
-      const lightPosition = new Vector3();
-      possibleLight.getWorldPosition(lightPosition);
-
-      nearbyLights.push({
-        name: possibleLight.name || "(unnamed light)",
-        type: possibleLight.type,
-        color: possibleLight.color?.getHexString
-          ? `#${possibleLight.color.getHexString()}`
-          : "(no color)",
-        intensity:
-          typeof possibleLight.intensity === "number"
-            ? Number(possibleLight.intensity.toFixed(3))
-            : "(not available)",
-        range:
-          typeof possibleLight.distance === "number"
-            ? Number(possibleLight.distance.toFixed(3))
-            : "(not available)",
-        distanceFromClick: Number(
-          lightPosition.distanceTo(event.point).toFixed(3)
-        ),
-        worldPosition: `[${lightPosition.x.toFixed(3)}, ${lightPosition.y.toFixed(
-          3
-        )}, ${lightPosition.z.toFixed(3)}]`,
-      });
-    });
-
-    nearbyLights.sort(
-      (first, second) =>
-        first.distanceFromClick - second.distanceFromClick
-    );
-
-    console.log("Nearby scene lights, closest first:");
-    console.table(nearbyLights.slice(0, 15));
-
-    /*
-      Log the clicked wall material.
-
-      This tells us whether the purple color comes from the wall material itself
-      or from an external light source.
-    */
-    const clickedObject = event.object as typeof event.object & {
-      material?: any;
-    };
-
-    const clickedMaterials = Array.isArray(clickedObject.material)
-      ? clickedObject.material
-      : [clickedObject.material];
-
-    const materialRows = clickedMaterials
-      .filter(Boolean)
-      .map((material: any) => ({
-        name: material.name || "(unnamed material)",
-        type: material.type || "(unknown type)",
-        color: material.color?.getHexString
-          ? `#${material.color.getHexString()}`
-          : "(no color)",
-        emissive: material.emissive?.getHexString
-          ? `#${material.emissive.getHexString()}`
-          : "(no emissive color)",
-        emissiveIntensity:
-          typeof material.emissiveIntensity === "number"
-            ? Number(material.emissiveIntensity.toFixed(3))
-            : "(not available)",
-        transparent: Boolean(material.transparent),
-        opacity:
-          typeof material.opacity === "number"
-            ? Number(material.opacity.toFixed(3))
-            : "(not available)",
-      }));
-
-    console.log("Clicked wall material:");
-    console.table(materialRows);
-
-    console.log(
-      `Copy position: [${clickedPosition[0]}, ${clickedPosition[1]}, ${clickedPosition[2]}]`
-    );
-
-    console.groupEnd();
-  };
 
   const compact = viewportWidth < 768;
   const homeCamera = compact ? HOME_CAMERA_MOBILE : HOME_CAMERA_DESKTOP;
@@ -872,22 +714,9 @@ function AdventureSceneContent({
 
       <Stars radius={78} depth={38} count={900} factor={2.35} saturation={0} fade speed={0.22} />
 
-      <group onClick={handlePurpleSpotDebugClick}>
-        <MysteriousAdventureModel />
-      </group>
+      <MysteriousAdventureModel />
 
-      {debugClickPoint && (
-        <mesh position={debugClickPoint} renderOrder={999}>
-          <sphereGeometry args={[0.11, 18, 18]} />
-          <meshBasicMaterial
-            color="#00ffff"
-            toneMapped={false}
-            depthTest={false}
-            depthWrite={false}
-          />
-        </mesh>
-      )}
-
+      {/* Street lamp cone near the cones — intensity lowered */}
       <TokyoStreetLampGlow />
 
       {/* Right-side building wrap — same warm amber family as the street lamp */}
