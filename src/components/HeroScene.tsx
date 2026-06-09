@@ -32,6 +32,7 @@ import type {
 } from "three";
 import {
   ACESFilmicToneMapping,
+  MOUSE,
   SRGBColorSpace,
   TOUCH,
   Vector3,
@@ -1384,12 +1385,63 @@ function AdventureSceneContent({
   );
 
   /*
-    Closing a popup only closes its text card.
-    It does not reset the camera.
+    Keep OrbitControls centered on the full 3D model during manual navigation.
+
+    This preserves the current camera angle and zoom distance while switching
+    the orbit pivot back to the center of the building.
+  */
+  const centerNavigationTarget = useCallback(() => {
+    const controls = controlsRef.current;
+
+    if (!controls || moving) return;
+
+    const centeredTarget = new Vector3(
+      HOME_TARGET[0],
+      HOME_TARGET[1],
+      HOME_TARGET[2]
+    );
+
+    if (
+      controls.target.distanceToSquared(
+        centeredTarget
+      ) < 0.0001
+    ) {
+      return;
+    }
+
+    const cameraOffset = camera.position
+      .clone()
+      .sub(controls.target);
+
+    camera.position.copy(
+      centeredTarget
+        .clone()
+        .add(cameraOffset)
+    );
+
+    controls.target.copy(centeredTarget);
+    controls.update();
+  }, [
+    camera,
+    moving,
+  ]);
+
+  /*
+    Closing a popup returns to the complete centered model view.
   */
   const closeAnnotation = useCallback(() => {
     onActiveChange(null);
-  }, [onActiveChange]);
+
+    moveCamera(
+      homeCamera,
+      HOME_TARGET,
+      1.35
+    );
+  }, [
+    homeCamera,
+    moveCamera,
+    onActiveChange,
+  ]);
 
   /*
     One continuous sideways movement for About Me.
@@ -1940,21 +1992,44 @@ function AdventureSceneContent({
       <OrbitControls
         ref={controlsRef}
         makeDefault
-        target={HOME_TARGET}
         enabled={!moving}
-        enablePan={false}
+
+        /*
+          Allow the camera to slide horizontally and vertically.
+          This makes the model feel draggable without changing its world position.
+        */
+        enablePan
+        screenSpacePanning
+
         enableZoom
         enableRotate
+
+        /*
+          Left mouse: move the model around the screen.
+          Right mouse: rotate around the model.
+          Middle mouse or wheel: zoom.
+        */
+        mouseButtons={{
+          LEFT: MOUSE.PAN,
+          MIDDLE: MOUSE.DOLLY,
+          RIGHT: MOUSE.ROTATE,
+        }}
+
         minDistance={compact ? 8.5 : 7.2}
         maxDistance={compact ? 42 : 34}
+
         minPolarAngle={Math.PI / 7}
         maxPolarAngle={Math.PI / 2.05}
+
         zoomSpeed={compact ? 0.9 : 0.5}
         rotateSpeed={compact ? 0.38 : 0.48}
+        panSpeed={compact ? 0.72 : 0.58}
+
         touches={{
-          ONE: TOUCH.ROTATE,
+          ONE: TOUCH.PAN,
           TWO: TOUCH.DOLLY_ROTATE,
         }}
+
         enableDamping={!moving}
         dampingFactor={0.08}
       />
