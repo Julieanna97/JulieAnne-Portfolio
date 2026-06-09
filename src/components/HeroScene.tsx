@@ -1,8 +1,23 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useThree, type ThreeEvent } from "@react-three/fiber";
-import { Html, OrbitControls, Stars } from "@react-three/drei";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  Canvas,
+  useThree,
+  type ThreeEvent,
+} from "@react-three/fiber";
+import {
+  Html,
+  OrbitControls,
+  Stars,
+} from "@react-three/drei";
 import {
   Bloom,
   EffectComposer,
@@ -10,7 +25,11 @@ import {
   Vignette,
 } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
-import type { Object3D, PerspectiveCamera, SpotLight } from "three";
+import type {
+  Object3D,
+  PerspectiveCamera,
+  SpotLight,
+} from "three";
 import {
   ACESFilmicToneMapping,
   SRGBColorSpace,
@@ -21,7 +40,11 @@ import gsap from "gsap";
 import MysteriousAdventureModel from "../models/MysteriousAdventureModel";
 
 type SectionId = "about" | "projects" | "credits";
-type ProjectId = "sigma-autonomous-car" | "podmanager" | "practicepal";
+
+type ProjectId =
+  | "sigma-autonomous-car"
+  | "podmanager"
+  | "practicepal";
 
 type ProjectCaseStudy = {
   id: ProjectId;
@@ -47,65 +70,143 @@ type PortfolioSection = {
   focus: [number, number, number];
 };
 
-const HOME_CAMERA_DESKTOP: [number, number, number] = [19.4, 10.45, 24.6];
-const HOME_CAMERA_MOBILE: [number, number, number] = [24.8, 13.8, 31.4];
-const HOME_TARGET: [number, number, number] = [0, 4.18, 0];
-const INTRO_CAMERA: [number, number, number] = [-25, 17.5, 29];
-const INTRO_TARGET: [number, number, number] = [0, 5.2, 0];
+/*
+  Set this to true temporarily when you need to click surfaces and print
+  model coordinates. Keep it false for the finished website.
+*/
+const ENABLE_LIGHT_DEBUGGER = false;
 
-/* Existing front-right street lamp near the traffic cones. */
+/* -------------------------------------------------------------------------- */
+/* Camera positions                                                           */
+/* -------------------------------------------------------------------------- */
+
+/*
+  Stable centered navigation view.
+
+  This is where the intro settles after showing the bicycle-side close-up.
+  It is also the destination of the new Home button.
+*/
+const HOME_CAMERA_DESKTOP: [number, number, number] = [
+  19.4,
+  10.45,
+  24.6,
+];
+
+const HOME_CAMERA_MOBILE: [number, number, number] = [
+  24.8,
+  13.8,
+  31.4,
+];
+
+const HOME_TARGET: [number, number, number] = [
+  0,
+  4.18,
+  0,
+];
+
+/*
+  Wide first-entry establishing view.
+*/
+const INTRO_CAMERA: [number, number, number] = [
+  -25,
+  17.5,
+  29,
+];
+
+const INTRO_TARGET: [number, number, number] = [
+  0,
+  5.2,
+  0,
+];
+
+/*
+  Intermediate position used while rotating toward the bicycle-side area.
+*/
+const INTRO_STREET_MID_CAMERA_DESKTOP: [
+  number,
+  number,
+  number
+] = [
+  17.4,
+  6.1,
+  5.2,
+];
+
+const INTRO_STREET_MID_CAMERA_MOBILE: [
+  number,
+  number,
+  number
+] = [
+  21.1,
+  7.9,
+  7.1,
+];
+
+const INTRO_STREET_MID_TARGET: [
+  number,
+  number,
+  number
+] = [
+  4.15,
+  2.35,
+  0.7,
+];
+
+/*
+  Bicycle, 50-sign, arrow-sign, and alley close-up.
+
+  The camera and target share the same z coordinate to keep the view
+  front-facing rather than showing the train tracks from a side angle.
+*/
+const INTRO_STREET_TARGET: [
+  number,
+  number,
+  number
+] = [
+  5,
+  1.62,
+  1.25,
+];
+
+const INTRO_STREET_CAMERA_DESKTOP: [
+  number,
+  number,
+  number
+] = [
+  11.75,
+  2.72,
+  1.25,
+];
+
+const INTRO_STREET_CAMERA_MOBILE: [
+  number,
+  number,
+  number
+] = [
+  14.4,
+  3.85,
+  1.25,
+];
+
+/* -------------------------------------------------------------------------- */
+/* Front-right street lamp near the orange cones                              */
+/* -------------------------------------------------------------------------- */
+
 const STREET_LAMP_BULB_POSITION: [number, number, number] = [
   6.58,
   4.586,
   7.331,
 ];
 
-const STREET_LAMP_SPILL_TARGET_POSITION: [number, number, number] = [
+const STREET_LAMP_SPILL_TARGET_POSITION: [
+  number,
+  number,
+  number
+] = [
   4.55,
   0.08,
   6.94,
 ];
-
-/*
-  New train-side street lamp.
-
-  The bulb coordinate comes directly from your clicked model position:
-  [-3.362, 4.727, -7.83]
-*/
-const TRAIN_LAMP_BULB_POSITION: [number, number, number] = [
-  -3.362,
-  4.727,
-  -7.83,
-];
-
-const TRAIN_LAMP_CENTER_TRACK_TARGET: [number, number, number] = [
-  0.15,
-  0.419,
-  -5.15,
-];
-
-const TRAIN_LAMP_LEFT_TRACK_TARGET: [number, number, number] = [
-  -4.823,
-  0.419,
-  -3.795,
-];
-
-const TRAIN_LAMP_RIGHT_TRACK_TARGET: [number, number, number] = [
-  4.987,
-  0.419,
-  -6.605,
-];
-
-
-const TRAIN_LAMP_SPILL_TARGET_POSITION: [number, number, number] = [
-  -3.85,
-  0.08,
-  -6.95,
-];
-
-/* -------------------------------------------------------------------------- */
-/* Existing front-right street lamp                                           */
-/* -------------------------------------------------------------------------- */
 
 function TokyoStreetLampGlow() {
   const spillLightRef = useRef<SpotLight>(null);
@@ -128,6 +229,7 @@ function TokyoStreetLampGlow() {
       <group position={STREET_LAMP_BULB_POSITION}>
         <mesh position={[0, 0.18, -0.03]}>
           <cylinderGeometry args={[0.014, 0.014, 0.24, 10]} />
+
           <meshStandardMaterial
             color="#252a31"
             metalness={0.82}
@@ -137,6 +239,7 @@ function TokyoStreetLampGlow() {
 
         <mesh position={[0, 0.035, 0]}>
           <boxGeometry args={[0.17, 0.22, 0.17]} />
+
           <meshStandardMaterial
             color="#231912"
             metalness={0.28}
@@ -148,6 +251,7 @@ function TokyoStreetLampGlow() {
 
         <mesh position={[0, 0.02, 0]}>
           <boxGeometry args={[0.105, 0.145, 0.105]} />
+
           <meshStandardMaterial
             color="#ffd9a2"
             emissive="#ffbd6d"
@@ -218,7 +322,7 @@ function TokyoStreetLampGlow() {
 
       <pointLight
         name="frontStreetLampCanopyBounce"
-        position={[5.2, 1.2, 7.0]}
+        position={[5.2, 1.2, 7]}
         intensity={1.5}
         distance={6}
         decay={2}
@@ -229,8 +333,44 @@ function TokyoStreetLampGlow() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* New train-side street lamp                                                 */
+/* Train-side street lamp                                                     */
 /* -------------------------------------------------------------------------- */
+
+const TRAIN_LAMP_BULB_POSITION: [number, number, number] = [
+  -3.362,
+  4.727,
+  -7.83,
+];
+
+const TRAIN_LAMP_CENTER_TRACK_TARGET: [
+  number,
+  number,
+  number
+] = [
+  0.15,
+  0.419,
+  -5.15,
+];
+
+const TRAIN_LAMP_LEFT_TRACK_TARGET: [
+  number,
+  number,
+  number
+] = [
+  -4.823,
+  0.419,
+  -3.795,
+];
+
+const TRAIN_LAMP_RIGHT_TRACK_TARGET: [
+  number,
+  number,
+  number
+] = [
+  4.987,
+  0.419,
+  -6.605,
+];
 
 function TrainStreetLampGlow() {
   const leftSpillRef = useRef<SpotLight>(null);
@@ -260,15 +400,21 @@ function TrainStreetLampGlow() {
 
   return (
     <>
-      {/* invisible targets across the train-track area */}
-      <object3D ref={leftTargetRef} position={TRAIN_LAMP_LEFT_TRACK_TARGET} />
-      <object3D ref={centerTargetRef} position={TRAIN_LAMP_CENTER_TRACK_TARGET} />
-      <object3D ref={rightTargetRef} position={TRAIN_LAMP_RIGHT_TRACK_TARGET} />
+      <object3D
+        ref={leftTargetRef}
+        position={TRAIN_LAMP_LEFT_TRACK_TARGET}
+      />
 
-      {/*
-        Small bulb glow only at the actual train-side lamp.
-        Slightly stronger than before, but still subtle enough to avoid blobs.
-      */}
+      <object3D
+        ref={centerTargetRef}
+        position={TRAIN_LAMP_CENTER_TRACK_TARGET}
+      />
+
+      <object3D
+        ref={rightTargetRef}
+        position={TRAIN_LAMP_RIGHT_TRACK_TARGET}
+      />
+
       <pointLight
         name="trainStreetLampBulb"
         position={TRAIN_LAMP_BULB_POSITION}
@@ -278,9 +424,6 @@ function TrainStreetLampGlow() {
         color="#f4c48d"
       />
 
-      {/*
-        Left spill - reaches the left/front clicked track area.
-      */}
       <spotLight
         name="trainStreetLampLeftSoftSpill"
         ref={leftSpillRef}
@@ -293,9 +436,6 @@ function TrainStreetLampGlow() {
         color="#ea9958"
       />
 
-      {/*
-        Main center spill - strongest beam, covers the main train-track path.
-      */}
       <spotLight
         name="trainStreetLampCenterSoftSpill"
         ref={centerSpillRef}
@@ -308,9 +448,6 @@ function TrainStreetLampGlow() {
         color="#f0a260"
       />
 
-      {/*
-        Right spill - spreads toward the tram-side track area.
-      */}
       <spotLight
         name="trainStreetLampRightSoftSpill"
         ref={rightSpillRef}
@@ -327,16 +464,9 @@ function TrainStreetLampGlow() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Existing rear-alley pink reflections                                       */
+/* Rear-alley pink reflections                                                */
 /* -------------------------------------------------------------------------- */
 
-/*
-  The former point light at [3, 4, -4.5] has been removed.
-
-  That was the source of the concentrated purple circle on the wall beside
-  the watermelon poster because it was only around 0.18 units away from the
-  clicked wall surface.
-*/
 function BackAlleyPinkGlow() {
   return (
     <>
@@ -360,7 +490,7 @@ function BackAlleyPinkGlow() {
 
       <pointLight
         name="backAlleyLowerPinkFill"
-        position={[2.0, 0.6, -2.2]}
+        position={[2, 0.6, -2.2]}
         intensity={14}
         distance={10}
         decay={1.6}
@@ -383,7 +513,10 @@ function BackAlleyPinkGlow() {
 /* Portfolio content                                                          */
 /* -------------------------------------------------------------------------- */
 
-const PROJECT_CASE_STUDIES: Record<ProjectId, ProjectCaseStudy> = {
+const PROJECT_CASE_STUDIES: Record<
+  ProjectId,
+  ProjectCaseStudy
+> = {
   "sigma-autonomous-car": {
     id: "sigma-autonomous-car",
     title: "Sigma Autonomous Car",
@@ -480,7 +613,7 @@ const SECTIONS: PortfolioSection[] = [
     eyebrow: "Fullstack · Embedded · Software Developer",
     hotspot: [-6.2, 7.48, 3.4],
     camera: [-11.7, 8.75, 11.25],
-    focus: [-6.0, 6.95, 3.0],
+    focus: [-6, 6.95, 3],
   },
 
   {
@@ -793,7 +926,9 @@ function NumberHotspot({
       position={section.hotspot}
       center
       zIndexRange={[40, 0]}
-      style={{ pointerEvents: "auto" }}
+      style={{
+        pointerEvents: "auto",
+      }}
     >
       <div className={`adventure-annotation-wrap ${selected ? "is-open" : ""}`}>
         <button
@@ -866,23 +1001,26 @@ function AdventureSceneContent({
   onSceneReady?: () => void;
 }) {
   const { camera, scene } = useThree();
+
   const controlsRef = useRef<any>(null);
   const readyRef = useRef(false);
+  const introTimelineRef = useRef<gsap.core.Timeline | null>(null);
+
   const [moving, setMoving] = useState(false);
 
-  /*
-    Temporary debugger.
-
-    Click any visible model surface.
-    A cyan marker appears at the clicked location.
-    The console prints the clicked coordinate, the mesh, its material,
-    and the nearest lights.
-  */
   const [debugClickPoint, setDebugClickPoint] = useState<
     [number, number, number] | null
   >(null);
 
-  const handlePurpleSpotDebugClick = (event: ThreeEvent<MouseEvent>) => {
+  const compact = viewportWidth < 768;
+
+  const homeCamera = compact
+    ? HOME_CAMERA_MOBILE
+    : HOME_CAMERA_DESKTOP;
+
+  const handleDebugClick = (event: ThreeEvent<MouseEvent>) => {
+    if (!ENABLE_LIGHT_DEBUGGER) return;
+
     event.stopPropagation();
 
     const { x, y, z } = event.point;
@@ -893,12 +1031,6 @@ function AdventureSceneContent({
       Number(z.toFixed(3)),
     ];
 
-    const worldNormal = event.face?.normal?.clone();
-
-    if (worldNormal) {
-      worldNormal.transformDirection(event.object.matrixWorld);
-    }
-
     setDebugClickPoint(clickedPosition);
 
     console.group(
@@ -908,14 +1040,6 @@ function AdventureSceneContent({
 
     console.log("Clicked mesh:", event.object.name || "(unnamed mesh)");
     console.log("World position:", clickedPosition);
-
-    if (worldNormal) {
-      console.log("World normal:", [
-        Number(worldNormal.x.toFixed(3)),
-        Number(worldNormal.y.toFixed(3)),
-        Number(worldNormal.z.toFixed(3)),
-      ]);
-    }
 
     const nearbyLights: Array<{
       name: string;
@@ -930,9 +1054,11 @@ function AdventureSceneContent({
     scene.traverse((object) => {
       const possibleLight = object as typeof object & {
         isLight?: boolean;
+
         color?: {
           getHexString?: () => string;
         };
+
         intensity?: number;
         distance?: number;
       };
@@ -940,6 +1066,7 @@ function AdventureSceneContent({
       if (!possibleLight.isLight) return;
 
       const lightPosition = new Vector3();
+
       possibleLight.getWorldPosition(lightPosition);
 
       nearbyLights.push({
@@ -977,44 +1104,6 @@ function AdventureSceneContent({
     console.log("Nearby scene lights, closest first:");
     console.table(nearbyLights.slice(0, 20));
 
-    const clickedObject = event.object as typeof event.object & {
-      material?: any;
-    };
-
-    const clickedMaterials = Array.isArray(clickedObject.material)
-      ? clickedObject.material
-      : [clickedObject.material];
-
-    const materialRows = clickedMaterials
-      .filter(Boolean)
-      .map((material: any) => ({
-        name: material.name || "(unnamed material)",
-        type: material.type || "(unknown type)",
-
-        color: material.color?.getHexString
-          ? `#${material.color.getHexString()}`
-          : "(no color)",
-
-        emissive: material.emissive?.getHexString
-          ? `#${material.emissive.getHexString()}`
-          : "(no emissive color)",
-
-        emissiveIntensity:
-          typeof material.emissiveIntensity === "number"
-            ? Number(material.emissiveIntensity.toFixed(3))
-            : "(not available)",
-
-        transparent: Boolean(material.transparent),
-
-        opacity:
-          typeof material.opacity === "number"
-            ? Number(material.opacity.toFixed(3))
-            : "(not available)",
-      }));
-
-    console.log("Clicked material:");
-    console.table(materialRows);
-
     console.log(
       `Copy position: [${clickedPosition[0]}, ${clickedPosition[1]}, ${clickedPosition[2]}]`
     );
@@ -1022,8 +1111,33 @@ function AdventureSceneContent({
     console.groupEnd();
   };
 
-  const compact = viewportWidth < 768;
-  const homeCamera = compact ? HOME_CAMERA_MOBILE : HOME_CAMERA_DESKTOP;
+  const lockCamera = useCallback(
+    (
+      nextCamera: [number, number, number],
+      nextTarget: [number, number, number]
+    ) => {
+      const controls = controlsRef.current;
+
+      if (!controls) return;
+
+      camera.position.set(...nextCamera);
+      controls.target.set(...nextTarget);
+      controls.update();
+    },
+    [camera]
+  );
+
+  const stopCameraTweens = useCallback(() => {
+    introTimelineRef.current?.kill();
+    introTimelineRef.current = null;
+
+    gsap.killTweensOf(camera.position);
+
+    if (controlsRef.current) {
+      gsap.killTweensOf(controlsRef.current.target);
+      controlsRef.current.update();
+    }
+  }, [camera]);
 
   useEffect(() => {
     const perspectiveCamera = camera as PerspectiveCamera;
@@ -1032,127 +1146,179 @@ function AdventureSceneContent({
     perspectiveCamera.updateProjectionMatrix();
   }, [camera, compact]);
 
-  const moveCamera = (
-    nextCamera: [number, number, number],
-    nextTarget: [number, number, number],
-    duration = 1.35
-  ) => {
-    if (!controlsRef.current) return;
+  const moveCamera = useCallback(
+    (
+      nextCamera: [number, number, number],
+      nextTarget: [number, number, number],
+      duration = 1.35
+    ) => {
+      const controls = controlsRef.current;
 
-    setMoving(true);
+      if (!controls) return;
 
-    gsap.killTweensOf(camera.position);
-    gsap.killTweensOf(controlsRef.current.target);
+      stopCameraTweens();
 
-    const timeline = gsap.timeline({
-      onUpdate: () => controlsRef.current?.update(),
-      onComplete: () => setMoving(false),
-    });
+      setMoving(true);
 
-    timeline.to(
-      camera.position,
-      {
-        x: nextCamera[0],
-        y: nextCamera[1],
-        z: nextCamera[2],
-        duration,
-        ease: "power3.inOut",
-      },
-      0
-    );
+      const timeline = gsap.timeline({
+        onUpdate: () => {
+          controls.update();
+        },
 
-    timeline.to(
-      controlsRef.current.target,
-      {
-        x: nextTarget[0],
-        y: nextTarget[1],
-        z: nextTarget[2],
-        duration,
-        ease: "power3.inOut",
-      },
-      0
-    );
-  };
+        onComplete: () => {
+          lockCamera(nextCamera, nextTarget);
+          setMoving(false);
+        },
+      });
 
-  const closeAnnotation = () => {
+      timeline.to(
+        camera.position,
+        {
+          x: nextCamera[0],
+          y: nextCamera[1],
+          z: nextCamera[2],
+          duration,
+          ease: "power3.inOut",
+        },
+        0
+      );
+
+      timeline.to(
+        controls.target,
+        {
+          x: nextTarget[0],
+          y: nextTarget[1],
+          z: nextTarget[2],
+          duration,
+          ease: "power3.inOut",
+        },
+        0
+      );
+    },
+    [
+      camera,
+      lockCamera,
+      stopCameraTweens,
+    ]
+  );
+
+  const moveHome = useCallback(() => {
     onActiveChange(null);
-    moveCamera(homeCamera, HOME_TARGET, 1.35);
-  };
 
-  const moveToCreditsRooftop = (section: PortfolioSection) => {
-    if (!controlsRef.current) return;
-
-    setMoving(true);
-
-    gsap.killTweensOf(camera.position);
-    gsap.killTweensOf(controlsRef.current.target);
-
-    const timeline = gsap.timeline({
-      onUpdate: () => controlsRef.current?.update(),
-      onComplete: () => setMoving(false),
-    });
-
-    timeline.to(
-      camera.position,
-      {
-        x: 9.15,
-        y: 11.0,
-        z: -0.8,
-        duration: 0.9,
-        ease: "power2.inOut",
-      },
-      0
+    moveCamera(
+      homeCamera,
+      HOME_TARGET,
+      1.35
     );
+  }, [
+    homeCamera,
+    moveCamera,
+    onActiveChange,
+  ]);
 
-    timeline.to(
-      controlsRef.current.target,
-      {
-        x: 1.5,
-        y: 9.9,
-        z: -2.85,
-        duration: 0.9,
-        ease: "power2.inOut",
-      },
-      0
-    );
+  const moveToCreditsRooftop = useCallback(
+    (section: PortfolioSection) => {
+      const controls = controlsRef.current;
 
-    timeline.to(
-      camera.position,
-      {
-        x: section.camera[0],
-        y: section.camera[1],
-        z: section.camera[2],
-        duration: 1.35,
-        ease: "power3.inOut",
-      },
-      0.9
-    );
+      if (!controls) return;
 
-    timeline.to(
-      controlsRef.current.target,
-      {
-        x: section.focus[0],
-        y: section.focus[1],
-        z: section.focus[2],
-        duration: 1.35,
-        ease: "power3.inOut",
-      },
-      0.9
-    );
-  };
+      stopCameraTweens();
 
-  const selectSection = (section: PortfolioSection) => {
-    if (moving) return;
+      setMoving(true);
 
-    onActiveChange(section.id);
+      const timeline = gsap.timeline({
+        onUpdate: () => {
+          controls.update();
+        },
 
-    if (section.id === "credits") {
-      moveToCreditsRooftop(section);
-      return;
-    }
+        onComplete: () => {
+          lockCamera(
+            section.camera,
+            section.focus
+          );
 
-    moveCamera(section.camera, section.focus);
-  };
+          setMoving(false);
+        },
+      });
+
+      timeline.to(
+        camera.position,
+        {
+          x: 9.15,
+          y: 11,
+          z: -0.8,
+          duration: 0.9,
+          ease: "power2.inOut",
+        },
+        0
+      );
+
+      timeline.to(
+        controls.target,
+        {
+          x: 1.5,
+          y: 9.9,
+          z: -2.85,
+          duration: 0.9,
+          ease: "power2.inOut",
+        },
+        0
+      );
+
+      timeline.to(
+        camera.position,
+        {
+          x: section.camera[0],
+          y: section.camera[1],
+          z: section.camera[2],
+          duration: 1.35,
+          ease: "power3.inOut",
+        },
+        0.9
+      );
+
+      timeline.to(
+        controls.target,
+        {
+          x: section.focus[0],
+          y: section.focus[1],
+          z: section.focus[2],
+          duration: 1.35,
+          ease: "power3.inOut",
+        },
+        0.9
+      );
+    },
+    [
+      camera,
+      lockCamera,
+      stopCameraTweens,
+    ]
+  );
+
+  const selectSection = useCallback(
+    (section: PortfolioSection) => {
+      if (moving) return;
+
+      onActiveChange(section.id);
+
+      if (section.id === "credits") {
+        moveToCreditsRooftop(section);
+        return;
+      }
+
+      moveCamera(
+        section.camera,
+        section.focus
+      );
+    },
+    [
+      moveCamera,
+      moveToCreditsRooftop,
+      moving,
+      onActiveChange,
+    ]
+  );
 
   useEffect(() => {
     const handleSelection = (event: Event) => {
@@ -1163,54 +1329,184 @@ function AdventureSceneContent({
       const requestedId = customEvent.detail?.id;
 
       if (requestedId === "home") {
-        onActiveChange(null);
-        moveCamera(homeCamera, HOME_TARGET);
+        moveHome();
         return;
       }
 
-      const section = SECTIONS.find((item) => item.id === requestedId);
+      const section = SECTIONS.find(
+        (item) => item.id === requestedId
+      );
 
       if (section) {
         selectSection(section);
       }
     };
 
-    window.addEventListener("adventure:select", handleSelection);
+    window.addEventListener(
+      "adventure:select",
+      handleSelection
+    );
 
     return () => {
-      window.removeEventListener("adventure:select", handleSelection);
+      window.removeEventListener(
+        "adventure:select",
+        handleSelection
+      );
     };
-  });
+  }, [
+    moveHome,
+    selectSection,
+  ]);
 
+  /*
+    First-entry cinematic sequence:
+
+    1. Wide full-model establishing shot.
+    2. Rotate toward the bicycle and road-sign area.
+    3. Hold the close-up briefly.
+    4. Settle into a centered navigation view.
+  */
   useEffect(() => {
     const handleIntro = () => {
-      if (!controlsRef.current) return;
+      const controls = controlsRef.current;
 
-      camera.position.set(...INTRO_CAMERA);
-      controlsRef.current.target.set(...INTRO_TARGET);
-      controlsRef.current.update();
+      if (!controls) return;
 
-      moveCamera(homeCamera, HOME_TARGET, 2.15);
+      const middleCamera = compact
+        ? INTRO_STREET_MID_CAMERA_MOBILE
+        : INTRO_STREET_MID_CAMERA_DESKTOP;
+
+      const closeupCamera = compact
+        ? INTRO_STREET_CAMERA_MOBILE
+        : INTRO_STREET_CAMERA_DESKTOP;
+
+      stopCameraTweens();
+
+      setMoving(true);
+
+      lockCamera(
+        INTRO_CAMERA,
+        INTRO_TARGET
+      );
+
+      const timeline = gsap.timeline({
+        onUpdate: () => {
+          controls.update();
+        },
+
+        onComplete: () => {
+          /*
+            Stay on the close-up after the intro.
+            Do not return to HOME_CAMERA.
+          */
+          lockCamera(
+            closeupCamera,
+            INTRO_STREET_TARGET
+          );
+
+          introTimelineRef.current = null;
+          setMoving(false);
+        },
+      });
+
+      introTimelineRef.current = timeline;
+
+      /*
+        Phase 1:
+        Rotate smoothly toward the bicycle and road-sign area.
+      */
+      timeline.to(
+        camera.position,
+        {
+          x: middleCamera[0],
+          y: middleCamera[1],
+          z: middleCamera[2],
+          duration: 1.5,
+          ease: "power2.inOut",
+        },
+        0
+      );
+
+      timeline.to(
+        controls.target,
+        {
+          x: INTRO_STREET_MID_TARGET[0],
+          y: INTRO_STREET_MID_TARGET[1],
+          z: INTRO_STREET_MID_TARGET[2],
+          duration: 1.5,
+          ease: "power2.inOut",
+        },
+        0
+      );
+
+      /*
+        Phase 2:
+        Finish on the close-up and remain there.
+      */
+      timeline.to(
+        camera.position,
+        {
+          x: closeupCamera[0],
+          y: closeupCamera[1],
+          z: closeupCamera[2],
+          duration: 1.65,
+          ease: "power3.inOut",
+        },
+        1
+      );
+
+      timeline.to(
+        controls.target,
+        {
+          x: INTRO_STREET_TARGET[0],
+          y: INTRO_STREET_TARGET[1],
+          z: INTRO_STREET_TARGET[2],
+          duration: 1.65,
+          ease: "power3.inOut",
+        },
+        1
+      );
     };
 
-    window.addEventListener("adventure:intro", handleIntro);
+    window.addEventListener(
+      "adventure:intro",
+      handleIntro
+    );
 
     return () => {
-      window.removeEventListener("adventure:intro", handleIntro);
+      window.removeEventListener(
+        "adventure:intro",
+        handleIntro
+      );
+
+      stopCameraTweens();
     };
-  }, [camera, homeCamera]);
+  }, [
+    compact,
+    lockCamera,
+    stopCameraTweens,
+  ]);
 
   useEffect(() => {
     if (!controlsRef.current || readyRef.current) return;
 
     readyRef.current = true;
 
+    lockCamera(
+      homeCamera,
+      HOME_TARGET
+    );
+
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         onSceneReady?.();
       });
     });
-  }, [onSceneReady]);
+  }, [
+    homeCamera,
+    lockCamera,
+    onSceneReady,
+  ]);
 
   return (
     <>
@@ -1260,11 +1556,11 @@ function AdventureSceneContent({
         speed={0.22}
       />
 
-      <group onClick={handlePurpleSpotDebugClick}>
+      <group onClick={handleDebugClick}>
         <MysteriousAdventureModel />
       </group>
 
-      {debugClickPoint && (
+      {ENABLE_LIGHT_DEBUGGER && debugClickPoint && (
         <mesh position={debugClickPoint} renderOrder={999}>
           <sphereGeometry args={[0.11, 18, 18]} />
 
@@ -1277,12 +1573,13 @@ function AdventureSceneContent({
         </mesh>
       )}
 
+      {/*
+        Restored original light stack.
+      */}
       <TokyoStreetLampGlow />
 
-      {/* New warm reflected light beside the moving train. */}
       <TrainStreetLampGlow />
 
-      {/* Existing right-side building wrap. */}
       <pointLight
         position={[10, 12, 4]}
         intensity={5}
@@ -1348,7 +1645,7 @@ function AdventureSceneContent({
           disabled={moving}
           selected={activeId === section.id}
           onSelect={selectSection}
-          onClose={closeAnnotation}
+          onClose={moveHome}
           onProjectSelect={onProjectSelect}
         />
       ))}
@@ -1371,13 +1668,18 @@ function AdventureSceneContent({
           luminanceSmoothing={0.24}
         />
 
-        <Vignette eskil={false} offset={0.18} darkness={0.72} />
+        <Vignette
+          eskil={false}
+          offset={0.18}
+          darkness={0.72}
+        />
       </EffectComposer>
 
       <OrbitControls
         ref={controlsRef}
         makeDefault
         target={HOME_TARGET}
+        enabled={!moving}
         enablePan={false}
         enableZoom
         enableRotate
@@ -1391,7 +1693,7 @@ function AdventureSceneContent({
           ONE: TOUCH.ROTATE,
           TWO: TOUCH.DOLLY_ROTATE,
         }}
-        enableDamping
+        enableDamping={!moving}
         dampingFactor={0.08}
       />
     </>
@@ -1428,7 +1730,9 @@ export default function HeroScene({
     };
   }, []);
 
-  const selectFromBottomNav = (id: SectionId) => {
+  const selectFromBottomNav = (
+    id: SectionId | "home"
+  ) => {
     window.dispatchEvent(
       new CustomEvent("adventure:select", {
         detail: {
@@ -1447,7 +1751,9 @@ export default function HeroScene({
         dpr={viewportWidth < 768 ? [1, 1.4] : [1, 1.85]}
         camera={{
           position:
-            viewportWidth < 768 ? HOME_CAMERA_MOBILE : HOME_CAMERA_DESKTOP,
+            viewportWidth < 768
+              ? HOME_CAMERA_MOBILE
+              : HOME_CAMERA_DESKTOP,
 
           fov: viewportWidth < 768 ? 43 : 36,
           near: 0.1,
@@ -1490,6 +1796,15 @@ export default function HeroScene({
       </div>
 
       <nav className="adventure-bottom-nav" aria-label="Portfolio sections">
+        <button
+          type="button"
+          onClick={() => selectFromBottomNav("home")}
+          className={!activeId ? "is-active" : ""}
+        >
+          <span>00</span>
+          Home
+        </button>
+
         {SECTIONS.map((section) => (
           <button
             type="button"
@@ -1823,14 +2138,6 @@ export default function HeroScene({
           color: white;
           cursor: pointer;
           font-size: 23px;
-          transition:
-            background 180ms ease,
-            transform 180ms ease;
-        }
-
-        .adventure-case-study-close:hover {
-          background: rgba(255, 255, 255, 0.16);
-          transform: rotate(6deg);
         }
 
         .adventure-case-study-header > p {
@@ -1904,16 +2211,6 @@ export default function HeroScene({
           text-align: center;
         }
 
-        .adventure-case-study-empty-gallery p {
-          margin: 0;
-          font-size: 12px;
-          line-height: 1.6;
-        }
-
-        .adventure-case-study-empty-gallery code {
-          color: #dbc7ff;
-        }
-
         .adventure-case-study-thumbnails {
           display: grid;
           grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1929,17 +2226,6 @@ export default function HeroScene({
           padding: 0;
           cursor: pointer;
           opacity: 0.58;
-          transition:
-            opacity 160ms ease,
-            border-color 160ms ease,
-            transform 160ms ease;
-        }
-
-        .adventure-case-study-thumbnails button:hover,
-        .adventure-case-study-thumbnails button.is-active {
-          opacity: 1;
-          border-color: rgba(219, 199, 255, 0.66);
-          transform: translateY(-2px);
         }
 
         .adventure-case-study-thumbnails img {
@@ -1952,7 +2238,6 @@ export default function HeroScene({
         .adventure-case-study-video {
           width: 100%;
           margin-top: 14px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
           border-radius: 16px;
           background: #05060a;
         }
@@ -1964,27 +2249,6 @@ export default function HeroScene({
           color: rgba(255, 255, 255, 0.76);
           font-size: 13px;
           line-height: 1.68;
-        }
-
-        .adventure-case-study-summary {
-          margin: 0;
-        }
-
-        .adventure-case-study-content h3 {
-          margin: 0 0 8px;
-          color: white;
-          font-size: 15px;
-        }
-
-        .adventure-case-study-content ul {
-          display: grid;
-          gap: 7px;
-          margin: 0;
-          padding-left: 18px;
-        }
-
-        .adventure-case-study-content li::marker {
-          color: #dbc7ff;
         }
 
         .adventure-case-study-tags {
@@ -2005,28 +2269,6 @@ export default function HeroScene({
           text-transform: uppercase;
         }
 
-        @keyframes adventure-modal-fade-in {
-          from {
-            opacity: 0;
-          }
-
-          to {
-            opacity: 1;
-          }
-        }
-
-        @keyframes adventure-modal-enter {
-          from {
-            opacity: 0;
-            transform: translateY(10px) scale(0.98);
-          }
-
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-
         @media (max-width: 767px) {
           .adventure-intro-copy {
             top: 20px;
@@ -2035,11 +2277,6 @@ export default function HeroScene({
 
           .adventure-intro-copy h1 {
             font-size: 2.85rem;
-          }
-
-          .adventure-intro-copy > p:last-child {
-            max-width: 245px;
-            font-size: 12px;
           }
 
           .adventure-bottom-nav {
@@ -2055,24 +2292,9 @@ export default function HeroScene({
             letter-spacing: 0.1em;
           }
 
-          .adventure-case-study-backdrop {
-            padding: 12px;
-          }
-
-          .adventure-case-study-modal {
-            max-height: calc(100dvh - 24px);
-            border-radius: 18px;
-            padding: 17px;
-          }
-
           .adventure-case-study-grid {
             grid-template-columns: 1fr;
             gap: 16px;
-            margin-top: 18px;
-          }
-
-          .adventure-case-study-header h2 {
-            font-size: 2.15rem;
           }
 
           .adventure-annotation-card {
@@ -2080,19 +2302,6 @@ export default function HeroScene({
             top: 48px;
             width: min(290px, 82vw);
             transform: translateX(-50%);
-            animation: adventure-card-enter-mobile 220ms ease both;
-          }
-
-          @keyframes adventure-card-enter-mobile {
-            from {
-              opacity: 0;
-              transform: translateX(-50%) translateY(-6px) scale(0.97);
-            }
-
-            to {
-              opacity: 1;
-              transform: translateX(-50%) translateY(0) scale(1);
-            }
           }
         }
       `}</style>

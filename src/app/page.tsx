@@ -4,7 +4,10 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import Preloader from "@/components/Preloader";
-import { getAmbientAudioMuted, setAmbientAudioMuted } from "@/lib/ambientAudio";
+import {
+  getAmbientAudioMuted,
+  setAmbientAudioMuted,
+} from "@/lib/ambientAudio";
 
 const HeroScene = dynamic(() => import("@/components/HeroScene"), {
   ssr: false,
@@ -26,57 +29,76 @@ export default function HomePage() {
     document.documentElement.dataset.theme = "twilight";
     document.documentElement.style.colorScheme = "dark";
 
-    const alreadyEntered = sessionStorage.getItem(PRELOADER_STORAGE_KEY) === "true";
+    const alreadyEntered =
+      sessionStorage.getItem(PRELOADER_STORAGE_KEY) === "true";
+
     setSceneMounted(alreadyEntered);
     setShowPreloader(!alreadyEntered);
     setBootChecked(true);
   }, []);
 
+  /*
+    Start the camera animation only after:
+    - the scene has mounted,
+    - Three.js controls are ready,
+    - the preloader has disappeared.
+  */
   useEffect(() => {
-    if (!sceneMounted || !sceneReady) return;
+    if (!sceneMounted || !sceneReady || showPreloader) return;
 
     if (!shouldPlayIntro) {
       setSceneVisible(true);
       return;
     }
 
-    window.dispatchEvent(new CustomEvent("adventure:intro"));
+    setSceneVisible(true);
 
-    let revealFrame = 0;
-    const prepareFrame = window.requestAnimationFrame(() => {
-      revealFrame = window.requestAnimationFrame(() => {
-        setSceneVisible(true);
-        setShouldPlayIntro(false);
-      });
+    const introFrame = window.requestAnimationFrame(() => {
+      window.dispatchEvent(new CustomEvent("adventure:intro"));
+      setShouldPlayIntro(false);
     });
 
     return () => {
-      window.cancelAnimationFrame(prepareFrame);
-      if (revealFrame) window.cancelAnimationFrame(revealFrame);
+      window.cancelAnimationFrame(introFrame);
     };
-  }, [sceneMounted, sceneReady, shouldPlayIntro]);
+  }, [
+    sceneMounted,
+    sceneReady,
+    showPreloader,
+    shouldPlayIntro,
+  ]);
 
   useEffect(() => {
     setMusicMuted(getAmbientAudioMuted());
 
     const handleMute = (event: Event) => {
-      const customEvent = event as CustomEvent<{ muted?: boolean }>;
+      const customEvent = event as CustomEvent<{
+        muted?: boolean;
+      }>;
+
       const nextMuted = customEvent.detail?.muted ?? true;
+
       setAmbientAudioMuted(nextMuted);
       setMusicMuted(nextMuted);
     };
 
     window.addEventListener("ambient:set-muted", handleMute);
-    return () => window.removeEventListener("ambient:set-muted", handleMute);
+
+    return () => {
+      window.removeEventListener("ambient:set-muted", handleMute);
+    };
   }, []);
 
   const handleEntered = () => {
     sessionStorage.setItem(PRELOADER_STORAGE_KEY, "true");
+
     setSceneVisible(false);
     setShouldPlayIntro(true);
     setSceneMounted(true);
 
-    window.setTimeout(() => setShowPreloader(false), 1050);
+    window.setTimeout(() => {
+      setShowPreloader(false);
+    }, 1050);
   };
 
   return (
@@ -86,18 +108,30 @@ export default function HomePage() {
           type="button"
           onClick={() => {
             const nextMuted = !musicMuted;
+
             setAmbientAudioMuted(nextMuted);
             setMusicMuted(nextMuted);
           }}
           className="fixed bottom-4 right-4 z-[120] inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-[#0d1020]/70 text-white shadow-lg backdrop-blur-xl transition hover:-translate-y-0.5"
-          aria-label={musicMuted ? "Unmute background music" : "Mute background music"}
+          aria-label={
+            musicMuted
+              ? "Unmute background music"
+              : "Mute background music"
+          }
         >
-          {musicMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          {musicMuted ? (
+            <VolumeX className="h-4 w-4" />
+          ) : (
+            <Volume2 className="h-4 w-4" />
+          )}
         </button>
       )}
 
       {bootChecked && showPreloader && (
-        <Preloader onEnter={handleEntered} musicSrc="/music/ambient.mp3" />
+        <Preloader
+          onEnter={handleEntered}
+          musicSrc="/music/ambient.mp3"
+        />
       )}
 
       {bootChecked && sceneMounted && (
@@ -106,7 +140,11 @@ export default function HomePage() {
             sceneVisible ? "opacity-100" : "opacity-0"
           }`}
         >
-          <HeroScene onSceneReady={() => setSceneReady(true)} />
+          <HeroScene
+            onSceneReady={() => {
+              setSceneReady(true);
+            }}
+          />
         </main>
       )}
     </>
