@@ -71,8 +71,9 @@ type PortfolioSection = {
 };
 
 /*
-  The glowing-sign hotspot has already been fixed.
-  Turn this back to true only when diagnosing another light or material.
+  Keep this enabled while selecting new hotspot coordinates.
+
+  Change it to false when the hotspot setup is finished.
 */
 const ENABLE_LIGHT_DEBUGGER = true;
 
@@ -99,7 +100,7 @@ const HOME_TARGET: [number, number, number] = [
 ];
 
 /*
-  Initial wide shot used at the beginning of the intro animation.
+  Initial wide shot shown when the intro starts.
 */
 const INTRO_CAMERA: [number, number, number] = [
   -25,
@@ -114,43 +115,10 @@ const INTRO_TARGET: [number, number, number] = [
 ];
 
 /*
-  Midpoint used during the intro.
-*/
-const INTRO_STREET_MID_CAMERA_DESKTOP: [
-  number,
-  number,
-  number
-] = [
-  17.4,
-  6.1,
-  5.2,
-];
-
-const INTRO_STREET_MID_CAMERA_MOBILE: [
-  number,
-  number,
-  number
-] = [
-  21.1,
-  7.9,
-  7.1,
-];
-
-const INTRO_STREET_MID_TARGET: [
-  number,
-  number,
-  number
-] = [
-  4.15,
-  2.35,
-  0.7,
-];
-
-/*
   Final intro view.
 
-  The intro remains here after the first-entry animation.
-  There is no automatic zoom-out.
+  The camera moves directly here without an intermediate waypoint.
+  It remains here after the intro finishes.
 */
 const INTRO_STREET_TARGET: [
   number,
@@ -182,13 +150,17 @@ const INTRO_STREET_CAMERA_MOBILE: [
   1.25,
 ];
 
+/*
+  A short direct movement makes the zoom start immediately.
+  Increase this slightly for a calmer animation or decrease it for a faster
+  transition.
+*/
+const INTRO_ZOOM_DURATION = 2;
+
 /* -------------------------------------------------------------------------- */
 /* About Me doorway camera                                                    */
 /* -------------------------------------------------------------------------- */
 
-/*
-  Hotspot 01 remains attached to the doorway surface you clicked.
-*/
 const ABOUT_HOTSPOT: [
   number,
   number,
@@ -199,14 +171,6 @@ const ABOUT_HOTSPOT: [
   -1.46,
 ];
 
-/*
-  This camera physically moves farther toward the train-track side.
-
-  The y value matches the completed intro height.
-  The distance remains close to the intro distance, avoiding a noticeable
-  zoom-out. The more-negative z coordinate slides the camera around the
-  doorway and reveals more of the curved track and train area.
-*/
 const ABOUT_CAMERA_DESKTOP: [
   number,
   number,
@@ -241,10 +205,6 @@ const ABOUT_FOCUS: [
 /* Projects storefront camera                                                 */
 /* -------------------------------------------------------------------------- */
 
-/*
-  Hotspot 02 is attached to the storefront glass surface you clicked:
-  [-3.221, 2.232, 4.528]
-*/
 const PROJECTS_HOTSPOT: [
   number,
   number,
@@ -255,13 +215,6 @@ const PROJECTS_HOTSPOT: [
   4.528,
 ];
 
-/*
-  Keep the Projects camera at the same low height as the About Me view.
-
-  The camera is positioned slightly to the right of the hotspot rather than
-  directly in front of it. This keeps the storefront centered while adding a
-  gentle right-hand perspective.
-*/
 const PROJECTS_CAMERA_DESKTOP: [
   number,
   number,
@@ -290,6 +243,50 @@ const PROJECTS_FOCUS: [
   -3.221,
   1.82,
   4.528,
+];
+
+/* -------------------------------------------------------------------------- */
+/* Credits rooftop cat camera                                                 */
+/* -------------------------------------------------------------------------- */
+
+const CREDITS_HOTSPOT: [
+  number,
+  number,
+  number
+] = [
+  -0.408,
+  11.768,
+  -3.875,
+];
+
+const CREDITS_FOCUS: [
+  number,
+  number,
+  number
+] = [
+  0.55,
+  12.55,
+  5.1,
+];
+
+const CREDITS_CAMERA_DESKTOP: [
+  number,
+  number,
+  number
+] = [
+  0.2,
+  13.65,
+  6.95,
+];
+
+const CREDITS_CAMERA_MOBILE: [
+  number,
+  number,
+  number
+] = [
+  1,
+  15.1,
+  8.95,
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -738,9 +735,9 @@ const SECTIONS: PortfolioSection[] = [
     markerNumber: "3",
     title: "Credits",
     eyebrow: "Attribution and tools",
-    hotspot: [1.48, 10.48, -3.42],
-    camera: [-5.45, 11.62, -10.7],
-    focus: [1.12, 9.72, -3.06],
+    hotspot: CREDITS_HOTSPOT,
+    camera: CREDITS_CAMERA_DESKTOP,
+    focus: CREDITS_FOCUS,
   },
 ];
 
@@ -1387,9 +1384,8 @@ function AdventureSceneContent({
   );
 
   /*
-    Closing a popup only closes the text card.
-
-    It does not rotate, zoom, or move the camera.
+    Closing a popup only closes its text card.
+    It does not reset the camera.
   */
   const closeAnnotation = useCallback(() => {
     onActiveChange(null);
@@ -1397,9 +1393,6 @@ function AdventureSceneContent({
 
   /*
     One continuous sideways movement for About Me.
-
-    There is no intermediate waypoint and no automatic return animation.
-    The camera physically slides toward the curved tracks and train side.
   */
   const moveToAboutDoor = useCallback(
     (section: PortfolioSection) => {
@@ -1412,7 +1405,6 @@ function AdventureSceneContent({
         : section.camera;
 
       stopCameraTweens();
-
       setMoving(true);
 
       const timeline = gsap.timeline({
@@ -1463,10 +1455,7 @@ function AdventureSceneContent({
   );
 
   /*
-    One continuous low storefront move for Projects.
-
-    There is no intermediate zoom-out waypoint. The camera moves directly
-    toward the shop window and settles at a subtle right-hand angle.
+    One continuous low storefront movement for Projects.
   */
   const moveToProjectsStorefront = useCallback(
     (section: PortfolioSection) => {
@@ -1479,7 +1468,6 @@ function AdventureSceneContent({
         : section.camera;
 
       stopCameraTweens();
-
       setMoving(true);
 
       const timeline = gsap.timeline({
@@ -1529,14 +1517,20 @@ function AdventureSceneContent({
     ]
   );
 
+  /*
+    Direct Credits rooftop movement.
+  */
   const moveToCreditsRooftop = useCallback(
     (section: PortfolioSection) => {
       const controls = controlsRef.current;
 
       if (!controls) return;
 
-      stopCameraTweens();
+      const finalCamera = compact
+        ? CREDITS_CAMERA_MOBILE
+        : section.camera;
 
+      stopCameraTweens();
       setMoving(true);
 
       const timeline = gsap.timeline({
@@ -1546,48 +1540,32 @@ function AdventureSceneContent({
 
         onComplete: () => {
           lockCamera(
-            section.camera,
+            finalCamera,
             section.focus
           );
 
+          introTimelineRef.current = null;
+          setMoving(false);
+        },
+
+        onInterrupt: () => {
+          introTimelineRef.current = null;
           setMoving(false);
         },
       });
 
-      timeline.to(
-        camera.position,
-        {
-          x: 9.15,
-          y: 11,
-          z: -0.8,
-          duration: 0.9,
-          ease: "power2.inOut",
-        },
-        0
-      );
-
-      timeline.to(
-        controls.target,
-        {
-          x: 1.5,
-          y: 9.9,
-          z: -2.85,
-          duration: 0.9,
-          ease: "power2.inOut",
-        },
-        0
-      );
+      introTimelineRef.current = timeline;
 
       timeline.to(
         camera.position,
         {
-          x: section.camera[0],
-          y: section.camera[1],
-          z: section.camera[2],
+          x: finalCamera[0],
+          y: finalCamera[1],
+          z: finalCamera[2],
           duration: 1.35,
           ease: "power3.inOut",
         },
-        0.9
+        0
       );
 
       timeline.to(
@@ -1599,11 +1577,12 @@ function AdventureSceneContent({
           duration: 1.35,
           ease: "power3.inOut",
         },
-        0.9
+        0
       );
     },
     [
       camera,
+      compact,
       lockCamera,
       stopCameraTweens,
     ]
@@ -1680,8 +1659,12 @@ function AdventureSceneContent({
   /*
     First-entry intro animation.
 
-    It finishes on the low bicycle-and-road-sign close-up.
-    There is no automatic zoom-out afterward.
+    This is now one direct movement:
+    - start at the wide view,
+    - immediately zoom into the final bicycle-and-road-sign view,
+    - remain at the final position.
+
+    There is no midpoint, overlap, pause, or automatic zoom-out.
   */
   useEffect(() => {
     const handleIntro = () => {
@@ -1689,16 +1672,11 @@ function AdventureSceneContent({
 
       if (!controls) return;
 
-      const middleCamera = compact
-        ? INTRO_STREET_MID_CAMERA_MOBILE
-        : INTRO_STREET_MID_CAMERA_DESKTOP;
-
       const closeupCamera = compact
         ? INTRO_STREET_CAMERA_MOBILE
         : INTRO_STREET_CAMERA_DESKTOP;
 
       stopCameraTweens();
-
       setMoving(true);
 
       lockCamera(
@@ -1720,6 +1698,11 @@ function AdventureSceneContent({
           introTimelineRef.current = null;
           setMoving(false);
         },
+
+        onInterrupt: () => {
+          introTimelineRef.current = null;
+          setMoving(false);
+        },
       });
 
       introTimelineRef.current = timeline;
@@ -1727,37 +1710,13 @@ function AdventureSceneContent({
       timeline.to(
         camera.position,
         {
-          x: middleCamera[0],
-          y: middleCamera[1],
-          z: middleCamera[2],
-          duration: 1.5,
-          ease: "power2.inOut",
-        },
-        0
-      );
-
-      timeline.to(
-        controls.target,
-        {
-          x: INTRO_STREET_MID_TARGET[0],
-          y: INTRO_STREET_MID_TARGET[1],
-          z: INTRO_STREET_MID_TARGET[2],
-          duration: 1.5,
-          ease: "power2.inOut",
-        },
-        0
-      );
-
-      timeline.to(
-        camera.position,
-        {
           x: closeupCamera[0],
           y: closeupCamera[1],
           z: closeupCamera[2],
-          duration: 1.65,
-          ease: "power3.inOut",
+          duration: INTRO_ZOOM_DURATION,
+          ease: "power2.out",
         },
-        1
+        0
       );
 
       timeline.to(
@@ -1766,10 +1725,10 @@ function AdventureSceneContent({
           x: INTRO_STREET_TARGET[0],
           y: INTRO_STREET_TARGET[1],
           z: INTRO_STREET_TARGET[2],
-          duration: 1.65,
-          ease: "power3.inOut",
+          duration: INTRO_ZOOM_DURATION,
+          ease: "power2.out",
         },
-        1
+        0
       );
     };
 
@@ -1787,6 +1746,7 @@ function AdventureSceneContent({
       stopCameraTweens();
     };
   }, [
+    camera,
     compact,
     lockCamera,
     stopCameraTweens,
