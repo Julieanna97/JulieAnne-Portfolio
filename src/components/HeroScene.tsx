@@ -71,21 +71,17 @@ type PortfolioSection = {
 };
 
 /*
-  Set this to true temporarily when you need to click surfaces and print
-  model coordinates. Keep it false for the finished website.
+  Temporary light debugger.
+
+  Keep this true while diagnosing the glowing sign.
+  Change it back to false after the sign hotspot has been fixed.
 */
-const ENABLE_LIGHT_DEBUGGER = false;
+const ENABLE_LIGHT_DEBUGGER = true;
 
 /* -------------------------------------------------------------------------- */
 /* Camera positions                                                           */
 /* -------------------------------------------------------------------------- */
 
-/*
-  Stable centered navigation view.
-
-  This is where the intro settles after showing the bicycle-side close-up.
-  It is also the destination of the new Home button.
-*/
 const HOME_CAMERA_DESKTOP: [number, number, number] = [
   19.4,
   10.45,
@@ -104,9 +100,6 @@ const HOME_TARGET: [number, number, number] = [
   0,
 ];
 
-/*
-  Wide first-entry establishing view.
-*/
 const INTRO_CAMERA: [number, number, number] = [
   -25,
   17.5,
@@ -119,9 +112,6 @@ const INTRO_TARGET: [number, number, number] = [
   0,
 ];
 
-/*
-  Intermediate position used while rotating toward the bicycle-side area.
-*/
 const INTRO_STREET_MID_CAMERA_DESKTOP: [
   number,
   number,
@@ -153,10 +143,10 @@ const INTRO_STREET_MID_TARGET: [
 ];
 
 /*
-  Bicycle, 50-sign, arrow-sign, and alley close-up.
+  Final bicycle-side close-up.
 
-  The camera and target share the same z coordinate to keep the view
-  front-facing rather than showing the train tracks from a side angle.
+  The camera and target use the same z value so the final view remains
+  front-facing and avoids showing too much of the train-track side.
 */
 const INTRO_STREET_TARGET: [
   number,
@@ -1018,7 +1008,15 @@ function AdventureSceneContent({
     ? HOME_CAMERA_MOBILE
     : HOME_CAMERA_DESKTOP;
 
-  const handleDebugClick = (event: ThreeEvent<MouseEvent>) => {
+  /*
+    Temporary debugger.
+
+    Click the glowing area on the sign after the intro finishes.
+    A cyan dot will appear at the exact clicked coordinate.
+  */
+  const handleLightDebugClick = (
+    event: ThreeEvent<MouseEvent>
+  ) => {
     if (!ENABLE_LIGHT_DEBUGGER) return;
 
     event.stopPropagation();
@@ -1031,6 +1029,12 @@ function AdventureSceneContent({
       Number(z.toFixed(3)),
     ];
 
+    const worldNormal = event.face?.normal?.clone();
+
+    if (worldNormal) {
+      worldNormal.transformDirection(event.object.matrixWorld);
+    }
+
     setDebugClickPoint(clickedPosition);
 
     console.group(
@@ -1038,8 +1042,20 @@ function AdventureSceneContent({
       "color: #ff70c8; font-weight: 800;"
     );
 
-    console.log("Clicked mesh:", event.object.name || "(unnamed mesh)");
+    console.log(
+      "Clicked mesh:",
+      event.object.name || "(unnamed mesh)"
+    );
+
     console.log("World position:", clickedPosition);
+
+    if (worldNormal) {
+      console.log("World normal:", [
+        Number(worldNormal.x.toFixed(3)),
+        Number(worldNormal.y.toFixed(3)),
+        Number(worldNormal.z.toFixed(3)),
+      ]);
+    }
 
     const nearbyLights: Array<{
       name: string;
@@ -1070,12 +1086,16 @@ function AdventureSceneContent({
       possibleLight.getWorldPosition(lightPosition);
 
       nearbyLights.push({
-        name: possibleLight.name || "(unnamed light)",
+        name:
+          possibleLight.name ||
+          "(unnamed light)",
+
         type: possibleLight.type,
 
-        color: possibleLight.color?.getHexString
-          ? `#${possibleLight.color.getHexString()}`
-          : "(no color)",
+        color:
+          possibleLight.color?.getHexString
+            ? `#${possibleLight.color.getHexString()}`
+            : "(no color)",
 
         intensity:
           typeof possibleLight.intensity === "number"
@@ -1088,21 +1108,75 @@ function AdventureSceneContent({
             : "(not available)",
 
         distanceFromClick: Number(
-          lightPosition.distanceTo(event.point).toFixed(3)
+          lightPosition
+            .distanceTo(event.point)
+            .toFixed(3)
         ),
 
         worldPosition: `[${lightPosition.x.toFixed(
           3
-        )}, ${lightPosition.y.toFixed(3)}, ${lightPosition.z.toFixed(3)}]`,
+        )}, ${lightPosition.y.toFixed(
+          3
+        )}, ${lightPosition.z.toFixed(3)}]`,
       });
     });
 
     nearbyLights.sort(
-      (first, second) => first.distanceFromClick - second.distanceFromClick
+      (first, second) =>
+        first.distanceFromClick -
+        second.distanceFromClick
     );
 
     console.log("Nearby scene lights, closest first:");
     console.table(nearbyLights.slice(0, 20));
+
+    const clickedObject =
+      event.object as typeof event.object & {
+        material?: any;
+      };
+
+    const clickedMaterials = Array.isArray(
+      clickedObject.material
+    )
+      ? clickedObject.material
+      : [clickedObject.material];
+
+    const materialRows = clickedMaterials
+      .filter(Boolean)
+      .map((material: any) => ({
+        name:
+          material.name ||
+          "(unnamed material)",
+
+        type:
+          material.type ||
+          "(unknown type)",
+
+        color:
+          material.color?.getHexString
+            ? `#${material.color.getHexString()}`
+            : "(no color)",
+
+        emissive:
+          material.emissive?.getHexString
+            ? `#${material.emissive.getHexString()}`
+            : "(no emissive color)",
+
+        emissiveIntensity:
+          typeof material.emissiveIntensity === "number"
+            ? Number(material.emissiveIntensity.toFixed(3))
+            : "(not available)",
+
+        transparent: Boolean(material.transparent),
+
+        opacity:
+          typeof material.opacity === "number"
+            ? Number(material.opacity.toFixed(3))
+            : "(not available)",
+      }));
+
+    console.log("Clicked material:");
+    console.table(materialRows);
 
     console.log(
       `Copy position: [${clickedPosition[0]}, ${clickedPosition[1]}, ${clickedPosition[2]}]`
@@ -1359,12 +1433,10 @@ function AdventureSceneContent({
   ]);
 
   /*
-    First-entry cinematic sequence:
+    First-entry cinematic sequence.
 
-    1. Wide full-model establishing shot.
-    2. Rotate toward the bicycle and road-sign area.
-    3. Hold the close-up briefly.
-    4. Settle into a centered navigation view.
+    The animation finishes on the close-up and remains there.
+    There is no automatic zoom-out.
   */
   useEffect(() => {
     const handleIntro = () => {
@@ -1395,10 +1467,6 @@ function AdventureSceneContent({
         },
 
         onComplete: () => {
-          /*
-            Stay on the close-up after the intro.
-            Do not return to HOME_CAMERA.
-          */
           lockCamera(
             closeupCamera,
             INTRO_STREET_TARGET
@@ -1411,10 +1479,6 @@ function AdventureSceneContent({
 
       introTimelineRef.current = timeline;
 
-      /*
-        Phase 1:
-        Rotate smoothly toward the bicycle and road-sign area.
-      */
       timeline.to(
         camera.position,
         {
@@ -1439,10 +1503,6 @@ function AdventureSceneContent({
         0
       );
 
-      /*
-        Phase 2:
-        Finish on the close-up and remain there.
-      */
       timeline.to(
         camera.position,
         {
@@ -1556,7 +1616,7 @@ function AdventureSceneContent({
         speed={0.22}
       />
 
-      <group onClick={handleDebugClick}>
+      <group onClick={handleLightDebugClick}>
         <MysteriousAdventureModel />
       </group>
 
@@ -1573,9 +1633,6 @@ function AdventureSceneContent({
         </mesh>
       )}
 
-      {/*
-        Restored original light stack.
-      */}
       <TokyoStreetLampGlow />
 
       <TrainStreetLampGlow />
@@ -1612,27 +1669,31 @@ function AdventureSceneContent({
         color="#ffb660"
       />
 
+      {/*
+        Reduced slightly so the close-up keeps its warm reflection without
+        creating a broad orange haze around the bicycles and stairwell.
+      */}
       <pointLight
         position={[7, 0.5, 3]}
-        intensity={6}
-        distance={18}
-        decay={1.6}
+        intensity={3.4}
+        distance={13}
+        decay={1.85}
         color="#ffc070"
       />
 
       <pointLight
         position={[5, 2.5, 1]}
-        intensity={5}
-        distance={16}
-        decay={1.7}
+        intensity={2.8}
+        distance={12}
+        decay={1.9}
         color="#ffbe74"
       />
 
       <pointLight
         position={[9, 0.1, 6]}
-        intensity={8}
-        distance={22}
-        decay={1.5}
+        intensity={4.2}
+        distance={15}
+        decay={1.8}
         color="#ffb258"
       />
 
@@ -1663,9 +1724,9 @@ function AdventureSceneContent({
 
         <Bloom
           mipmapBlur
-          intensity={0.62}
-          luminanceThreshold={0.58}
-          luminanceSmoothing={0.24}
+          intensity={0.5}
+          luminanceThreshold={0.68}
+          luminanceSmoothing={0.2}
         />
 
         <Vignette
@@ -2102,7 +2163,6 @@ export default function HeroScene({
           background: rgba(3, 5, 12, 0.66);
           padding: 22px;
           backdrop-filter: blur(12px);
-          animation: adventure-modal-fade-in 180ms ease both;
         }
 
         .adventure-case-study-modal {
@@ -2120,7 +2180,6 @@ export default function HeroScene({
           box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
           color: white;
           padding: 24px;
-          animation: adventure-modal-enter 220ms ease both;
         }
 
         .adventure-case-study-close {
@@ -2211,6 +2270,12 @@ export default function HeroScene({
           text-align: center;
         }
 
+        .adventure-case-study-empty-gallery p {
+          margin: 0;
+          font-size: 12px;
+          line-height: 1.6;
+        }
+
         .adventure-case-study-thumbnails {
           display: grid;
           grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -2226,6 +2291,11 @@ export default function HeroScene({
           padding: 0;
           cursor: pointer;
           opacity: 0.58;
+        }
+
+        .adventure-case-study-thumbnails button.is-active,
+        .adventure-case-study-thumbnails button:hover {
+          opacity: 1;
         }
 
         .adventure-case-study-thumbnails img {
@@ -2249,6 +2319,23 @@ export default function HeroScene({
           color: rgba(255, 255, 255, 0.76);
           font-size: 13px;
           line-height: 1.68;
+        }
+
+        .adventure-case-study-summary {
+          margin: 0;
+        }
+
+        .adventure-case-study-content h3 {
+          margin: 0 0 8px;
+          color: white;
+          font-size: 15px;
+        }
+
+        .adventure-case-study-content ul {
+          display: grid;
+          gap: 7px;
+          margin: 0;
+          padding-left: 18px;
         }
 
         .adventure-case-study-tags {
@@ -2290,6 +2377,16 @@ export default function HeroScene({
             padding: 9px;
             font-size: 8px;
             letter-spacing: 0.1em;
+          }
+
+          .adventure-case-study-backdrop {
+            padding: 12px;
+          }
+
+          .adventure-case-study-modal {
+            max-height: calc(100dvh - 24px);
+            border-radius: 18px;
+            padding: 17px;
           }
 
           .adventure-case-study-grid {
