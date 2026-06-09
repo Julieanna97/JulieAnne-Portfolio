@@ -1427,21 +1427,14 @@ function AdventureSceneContent({
   ]);
 
   /*
-    Closing a popup returns to the complete centered model view.
+    Closing a popup only hides the text card.
+
+    The camera stays exactly where it is.
+    There is no zoom-out, rotation, or return to the full-model view.
   */
   const closeAnnotation = useCallback(() => {
     onActiveChange(null);
-
-    moveCamera(
-      homeCamera,
-      HOME_TARGET,
-      1.35
-    );
-  }, [
-    homeCamera,
-    moveCamera,
-    onActiveChange,
-  ]);
+  }, [onActiveChange]);
 
   /*
     One continuous sideways movement for About Me.
