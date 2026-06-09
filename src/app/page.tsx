@@ -37,12 +37,6 @@ export default function HomePage() {
     setBootChecked(true);
   }, []);
 
-  /*
-    Start the camera animation only after:
-    - the scene has mounted,
-    - Three.js controls are ready,
-    - the preloader has disappeared.
-  */
   useEffect(() => {
     if (!sceneMounted || !sceneReady || showPreloader) return;
 

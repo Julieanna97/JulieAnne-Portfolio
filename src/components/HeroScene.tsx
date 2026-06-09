@@ -71,10 +71,8 @@ type PortfolioSection = {
 };
 
 /*
-  Temporary light debugger.
-
-  Keep this true while diagnosing the glowing sign.
-  Change it back to false after the sign hotspot has been fixed.
+  The glowing-sign hotspot has already been fixed.
+  Turn this back to true only when diagnosing another light or material.
 */
 const ENABLE_LIGHT_DEBUGGER = true;
 
@@ -100,6 +98,9 @@ const HOME_TARGET: [number, number, number] = [
   0,
 ];
 
+/*
+  Initial wide shot used at the beginning of the intro animation.
+*/
 const INTRO_CAMERA: [number, number, number] = [
   -25,
   17.5,
@@ -112,6 +113,9 @@ const INTRO_TARGET: [number, number, number] = [
   0,
 ];
 
+/*
+  Midpoint used during the intro.
+*/
 const INTRO_STREET_MID_CAMERA_DESKTOP: [
   number,
   number,
@@ -143,10 +147,10 @@ const INTRO_STREET_MID_TARGET: [
 ];
 
 /*
-  Final bicycle-side close-up.
+  Final intro view.
 
-  The camera and target use the same z value so the final view remains
-  front-facing and avoids showing too much of the train-track side.
+  The intro remains here after the first-entry animation.
+  There is no automatic zoom-out.
 */
 const INTRO_STREET_TARGET: [
   number,
@@ -176,6 +180,116 @@ const INTRO_STREET_CAMERA_MOBILE: [
   14.4,
   3.85,
   1.25,
+];
+
+/* -------------------------------------------------------------------------- */
+/* About Me doorway camera                                                    */
+/* -------------------------------------------------------------------------- */
+
+/*
+  Hotspot 01 remains attached to the doorway surface you clicked.
+*/
+const ABOUT_HOTSPOT: [
+  number,
+  number,
+  number
+] = [
+  4.545,
+  2.672,
+  -1.46,
+];
+
+/*
+  This camera physically moves farther toward the train-track side.
+
+  The y value matches the completed intro height.
+  The distance remains close to the intro distance, avoiding a noticeable
+  zoom-out. The more-negative z coordinate slides the camera around the
+  doorway and reveals more of the curved track and train area.
+*/
+const ABOUT_CAMERA_DESKTOP: [
+  number,
+  number,
+  number
+] = [
+  8.3,
+  2.72,
+  -8.4,
+];
+
+const ABOUT_CAMERA_MOBILE: [
+  number,
+  number,
+  number
+] = [
+  10.7,
+  3.85,
+  -9.5,
+];
+
+const ABOUT_FOCUS: [
+  number,
+  number,
+  number
+] = [
+  4.35,
+  1.62,
+  -3,
+];
+
+/* -------------------------------------------------------------------------- */
+/* Projects storefront camera                                                 */
+/* -------------------------------------------------------------------------- */
+
+/*
+  Hotspot 02 is attached to the storefront glass surface you clicked:
+  [-3.221, 2.232, 4.528]
+*/
+const PROJECTS_HOTSPOT: [
+  number,
+  number,
+  number
+] = [
+  -3.221,
+  2.232,
+  4.528,
+];
+
+/*
+  Keep the Projects camera at the same low height as the About Me view.
+
+  The camera is positioned slightly to the right of the hotspot rather than
+  directly in front of it. This keeps the storefront centered while adding a
+  gentle right-hand perspective.
+*/
+const PROJECTS_CAMERA_DESKTOP: [
+  number,
+  number,
+  number
+] = [
+  -1.45,
+  2.72,
+  12.65,
+];
+
+const PROJECTS_CAMERA_MOBILE: [
+  number,
+  number,
+  number
+] = [
+  -0.65,
+  3.85,
+  15.7,
+];
+
+const PROJECTS_FOCUS: [
+  number,
+  number,
+  number
+] = [
+  -3.221,
+  1.82,
+  4.528,
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -599,21 +713,23 @@ const SECTIONS: PortfolioSection[] = [
   {
     id: "about",
     number: "01",
+    markerNumber: "1",
     title: "About Me",
     eyebrow: "Fullstack · Embedded · Software Developer",
-    hotspot: [-6.2, 7.48, 3.4],
-    camera: [-11.7, 8.75, 11.25],
-    focus: [-6, 6.95, 3],
+    hotspot: ABOUT_HOTSPOT,
+    camera: ABOUT_CAMERA_DESKTOP,
+    focus: ABOUT_FOCUS,
   },
 
   {
     id: "projects",
     number: "02",
+    markerNumber: "2",
     title: "Projects",
     eyebrow: "Selected development work",
-    hotspot: [-1.35, 4.42, 5.32],
-    camera: [-1.05, 6.95, 13.7],
-    focus: [-1.45, 4.2, 4.88],
+    hotspot: PROJECTS_HOTSPOT,
+    camera: PROJECTS_CAMERA_DESKTOP,
+    focus: PROJECTS_FOCUS,
   },
 
   {
@@ -1008,12 +1124,6 @@ function AdventureSceneContent({
     ? HOME_CAMERA_MOBILE
     : HOME_CAMERA_DESKTOP;
 
-  /*
-    Temporary debugger.
-
-    Click the glowing area on the sign after the intro finishes.
-    A cyan dot will appear at the exact clicked coordinate.
-  */
   const handleLightDebugClick = (
     event: ThreeEvent<MouseEvent>
   ) => {
@@ -1276,19 +1386,148 @@ function AdventureSceneContent({
     ]
   );
 
-  const moveHome = useCallback(() => {
-    onActiveChange(null);
+  /*
+    Closing a popup only closes the text card.
 
-    moveCamera(
-      homeCamera,
-      HOME_TARGET,
-      1.35
-    );
-  }, [
-    homeCamera,
-    moveCamera,
-    onActiveChange,
-  ]);
+    It does not rotate, zoom, or move the camera.
+  */
+  const closeAnnotation = useCallback(() => {
+    onActiveChange(null);
+  }, [onActiveChange]);
+
+  /*
+    One continuous sideways movement for About Me.
+
+    There is no intermediate waypoint and no automatic return animation.
+    The camera physically slides toward the curved tracks and train side.
+  */
+  const moveToAboutDoor = useCallback(
+    (section: PortfolioSection) => {
+      const controls = controlsRef.current;
+
+      if (!controls) return;
+
+      const finalCamera = compact
+        ? ABOUT_CAMERA_MOBILE
+        : section.camera;
+
+      stopCameraTweens();
+
+      setMoving(true);
+
+      const timeline = gsap.timeline({
+        onUpdate: () => {
+          controls.update();
+        },
+
+        onComplete: () => {
+          lockCamera(
+            finalCamera,
+            section.focus
+          );
+
+          setMoving(false);
+        },
+      });
+
+      timeline.to(
+        camera.position,
+        {
+          x: finalCamera[0],
+          y: finalCamera[1],
+          z: finalCamera[2],
+          duration: 1.65,
+          ease: "power3.inOut",
+        },
+        0
+      );
+
+      timeline.to(
+        controls.target,
+        {
+          x: section.focus[0],
+          y: section.focus[1],
+          z: section.focus[2],
+          duration: 1.65,
+          ease: "power3.inOut",
+        },
+        0
+      );
+    },
+    [
+      camera,
+      compact,
+      lockCamera,
+      stopCameraTweens,
+    ]
+  );
+
+  /*
+    One continuous low storefront move for Projects.
+
+    There is no intermediate zoom-out waypoint. The camera moves directly
+    toward the shop window and settles at a subtle right-hand angle.
+  */
+  const moveToProjectsStorefront = useCallback(
+    (section: PortfolioSection) => {
+      const controls = controlsRef.current;
+
+      if (!controls) return;
+
+      const finalCamera = compact
+        ? PROJECTS_CAMERA_MOBILE
+        : section.camera;
+
+      stopCameraTweens();
+
+      setMoving(true);
+
+      const timeline = gsap.timeline({
+        onUpdate: () => {
+          controls.update();
+        },
+
+        onComplete: () => {
+          lockCamera(
+            finalCamera,
+            section.focus
+          );
+
+          setMoving(false);
+        },
+      });
+
+      timeline.to(
+        camera.position,
+        {
+          x: finalCamera[0],
+          y: finalCamera[1],
+          z: finalCamera[2],
+          duration: 1.55,
+          ease: "power3.inOut",
+        },
+        0
+      );
+
+      timeline.to(
+        controls.target,
+        {
+          x: section.focus[0],
+          y: section.focus[1],
+          z: section.focus[2],
+          duration: 1.55,
+          ease: "power3.inOut",
+        },
+        0
+      );
+    },
+    [
+      camera,
+      compact,
+      lockCamera,
+      stopCameraTweens,
+    ]
+  );
 
   const moveToCreditsRooftop = useCallback(
     (section: PortfolioSection) => {
@@ -1376,6 +1615,16 @@ function AdventureSceneContent({
 
       onActiveChange(section.id);
 
+      if (section.id === "about") {
+        moveToAboutDoor(section);
+        return;
+      }
+
+      if (section.id === "projects") {
+        moveToProjectsStorefront(section);
+        return;
+      }
+
       if (section.id === "credits") {
         moveToCreditsRooftop(section);
         return;
@@ -1388,6 +1637,8 @@ function AdventureSceneContent({
     },
     [
       moveCamera,
+      moveToAboutDoor,
+      moveToProjectsStorefront,
       moveToCreditsRooftop,
       moving,
       onActiveChange,
@@ -1397,15 +1648,10 @@ function AdventureSceneContent({
   useEffect(() => {
     const handleSelection = (event: Event) => {
       const customEvent = event as CustomEvent<{
-        id?: SectionId | "home";
+        id?: SectionId;
       }>;
 
       const requestedId = customEvent.detail?.id;
-
-      if (requestedId === "home") {
-        moveHome();
-        return;
-      }
 
       const section = SECTIONS.find(
         (item) => item.id === requestedId
@@ -1428,15 +1674,14 @@ function AdventureSceneContent({
       );
     };
   }, [
-    moveHome,
     selectSection,
   ]);
 
   /*
-    First-entry cinematic sequence.
+    First-entry intro animation.
 
-    The animation finishes on the close-up and remains there.
-    There is no automatic zoom-out.
+    It finishes on the low bicycle-and-road-sign close-up.
+    There is no automatic zoom-out afterward.
   */
   useEffect(() => {
     const handleIntro = () => {
@@ -1669,10 +1914,6 @@ function AdventureSceneContent({
         color="#ffb660"
       />
 
-      {/*
-        Reduced slightly so the close-up keeps its warm reflection without
-        creating a broad orange haze around the bicycles and stairwell.
-      */}
       <pointLight
         position={[7, 0.5, 3]}
         intensity={3.4}
@@ -1706,7 +1947,7 @@ function AdventureSceneContent({
           disabled={moving}
           selected={activeId === section.id}
           onSelect={selectSection}
-          onClose={moveHome}
+          onClose={closeAnnotation}
           onProjectSelect={onProjectSelect}
         />
       ))}
@@ -1792,7 +2033,7 @@ export default function HeroScene({
   }, []);
 
   const selectFromBottomNav = (
-    id: SectionId | "home"
+    id: SectionId
   ) => {
     window.dispatchEvent(
       new CustomEvent("adventure:select", {
@@ -1857,15 +2098,6 @@ export default function HeroScene({
       </div>
 
       <nav className="adventure-bottom-nav" aria-label="Portfolio sections">
-        <button
-          type="button"
-          onClick={() => selectFromBottomNav("home")}
-          className={!activeId ? "is-active" : ""}
-        >
-          <span>00</span>
-          Home
-        </button>
-
         {SECTIONS.map((section) => (
           <button
             type="button"
