@@ -3,7 +3,12 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useThree, type ThreeEvent } from "@react-three/fiber";
 import { Html, OrbitControls, Stars } from "@react-three/drei";
-import { Bloom, EffectComposer, SSAO, Vignette } from "@react-three/postprocessing";
+import {
+  Bloom,
+  EffectComposer,
+  SSAO,
+  Vignette,
+} from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import type { Object3D, PerspectiveCamera, SpotLight } from "three";
 import {
@@ -48,8 +53,59 @@ const HOME_TARGET: [number, number, number] = [0, 4.18, 0];
 const INTRO_CAMERA: [number, number, number] = [-25, 17.5, 29];
 const INTRO_TARGET: [number, number, number] = [0, 5.2, 0];
 
-const STREET_LAMP_BULB_POSITION: [number, number, number] = [6.58, 4.586, 7.331];
-const STREET_LAMP_SPILL_TARGET_POSITION: [number, number, number] = [4.55, 0.08, 6.94];
+/* Existing front-right street lamp near the traffic cones. */
+const STREET_LAMP_BULB_POSITION: [number, number, number] = [
+  6.58,
+  4.586,
+  7.331,
+];
+
+const STREET_LAMP_SPILL_TARGET_POSITION: [number, number, number] = [
+  4.55,
+  0.08,
+  6.94,
+];
+
+/*
+  New train-side street lamp.
+
+  The bulb coordinate comes directly from your clicked model position:
+  [-3.362, 4.727, -7.83]
+*/
+const TRAIN_LAMP_BULB_POSITION: [number, number, number] = [
+  -3.362,
+  4.727,
+  -7.83,
+];
+
+const TRAIN_LAMP_CENTER_TRACK_TARGET: [number, number, number] = [
+  0.15,
+  0.419,
+  -5.15,
+];
+
+const TRAIN_LAMP_LEFT_TRACK_TARGET: [number, number, number] = [
+  -4.823,
+  0.419,
+  -3.795,
+];
+
+const TRAIN_LAMP_RIGHT_TRACK_TARGET: [number, number, number] = [
+  4.987,
+  0.419,
+  -6.605,
+];
+
+
+const TRAIN_LAMP_SPILL_TARGET_POSITION: [number, number, number] = [
+  -3.85,
+  0.08,
+  -6.95,
+];
+
+/* -------------------------------------------------------------------------- */
+/* Existing front-right street lamp                                           */
+/* -------------------------------------------------------------------------- */
 
 function TokyoStreetLampGlow() {
   const spillLightRef = useRef<SpotLight>(null);
@@ -57,18 +113,26 @@ function TokyoStreetLampGlow() {
 
   useEffect(() => {
     if (!spillLightRef.current || !spillTargetRef.current) return;
+
     spillLightRef.current.target = spillTargetRef.current;
     spillLightRef.current.target.updateMatrixWorld();
   }, []);
 
   return (
     <>
-      <object3D ref={spillTargetRef} position={STREET_LAMP_SPILL_TARGET_POSITION} />
+      <object3D
+        ref={spillTargetRef}
+        position={STREET_LAMP_SPILL_TARGET_POSITION}
+      />
 
       <group position={STREET_LAMP_BULB_POSITION}>
         <mesh position={[0, 0.18, -0.03]}>
           <cylinderGeometry args={[0.014, 0.014, 0.24, 10]} />
-          <meshStandardMaterial color="#252a31" metalness={0.82} roughness={0.32} />
+          <meshStandardMaterial
+            color="#252a31"
+            metalness={0.82}
+            roughness={0.32}
+          />
         </mesh>
 
         <mesh position={[0, 0.035, 0]}>
@@ -94,18 +158,18 @@ function TokyoStreetLampGlow() {
           />
         </mesh>
 
-        {/* Bulb — softened further */}
         <pointLight
+          name="frontStreetLampBulb"
           position={[0, 0.02, 0]}
           intensity={4}
           distance={7}
-          decay={2.0}
+          decay={2}
           color="#ffcc88"
         />
       </group>
 
-      {/* Wide spill — softened further */}
       <spotLight
+        name="frontStreetLampSpill"
         ref={spillLightRef}
         position={STREET_LAMP_BULB_POSITION}
         angle={1.45}
@@ -116,32 +180,168 @@ function TokyoStreetLampGlow() {
         color="#ffb86a"
       />
 
-      {/* Ground fills — softened further */}
-      <pointLight position={[3.8, 0.18, 7.1]}  intensity={2.5} distance={10} decay={1.9} color="#ffb05a" />
-      <pointLight position={[5.72, 0.18, 7.08]} intensity={2}   distance={8}  decay={1.9} color="#ffc878" />
-      <pointLight position={[7.4, 0.18, 7.2]}   intensity={1.5} distance={7}  decay={2.0} color="#ffd090" />
-      <pointLight position={[5.5, 0.08, 8.5]}   intensity={2.5} distance={10} decay={1.8} color="#ffa840" />
-      <pointLight position={[5.2, 1.2, 7.0]}    intensity={1.5} distance={6}  decay={2.0} color="#ffbe6e" />
+      <pointLight
+        name="frontStreetLampLeftGroundFill"
+        position={[3.8, 0.18, 7.1]}
+        intensity={2.5}
+        distance={10}
+        decay={1.9}
+        color="#ffb05a"
+      />
+
+      <pointLight
+        name="frontStreetLampCenterGroundFill"
+        position={[5.72, 0.18, 7.08]}
+        intensity={2}
+        distance={8}
+        decay={1.9}
+        color="#ffc878"
+      />
+
+      <pointLight
+        name="frontStreetLampRightGroundFill"
+        position={[7.4, 0.18, 7.2]}
+        intensity={1.5}
+        distance={7}
+        decay={2}
+        color="#ffd090"
+      />
+
+      <pointLight
+        name="frontStreetLampWideGroundFill"
+        position={[5.5, 0.08, 8.5]}
+        intensity={2.5}
+        distance={10}
+        decay={1.8}
+        color="#ffa840"
+      />
+
+      <pointLight
+        name="frontStreetLampCanopyBounce"
+        position={[5.2, 1.2, 7.0]}
+        intensity={1.5}
+        distance={6}
+        decay={2}
+        color="#ffbe6e"
+      />
     </>
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* New train-side street lamp                                                 */
+/* -------------------------------------------------------------------------- */
+
+function TrainStreetLampGlow() {
+  const leftSpillRef = useRef<SpotLight>(null);
+  const centerSpillRef = useRef<SpotLight>(null);
+  const rightSpillRef = useRef<SpotLight>(null);
+
+  const leftTargetRef = useRef<Object3D>(null);
+  const centerTargetRef = useRef<Object3D>(null);
+  const rightTargetRef = useRef<Object3D>(null);
+
+  useEffect(() => {
+    if (leftSpillRef.current && leftTargetRef.current) {
+      leftSpillRef.current.target = leftTargetRef.current;
+      leftSpillRef.current.target.updateMatrixWorld();
+    }
+
+    if (centerSpillRef.current && centerTargetRef.current) {
+      centerSpillRef.current.target = centerTargetRef.current;
+      centerSpillRef.current.target.updateMatrixWorld();
+    }
+
+    if (rightSpillRef.current && rightTargetRef.current) {
+      rightSpillRef.current.target = rightTargetRef.current;
+      rightSpillRef.current.target.updateMatrixWorld();
+    }
+  }, []);
+
+  return (
+    <>
+      {/* invisible targets across the train-track area */}
+      <object3D ref={leftTargetRef} position={TRAIN_LAMP_LEFT_TRACK_TARGET} />
+      <object3D ref={centerTargetRef} position={TRAIN_LAMP_CENTER_TRACK_TARGET} />
+      <object3D ref={rightTargetRef} position={TRAIN_LAMP_RIGHT_TRACK_TARGET} />
+
+      {/*
+        Small bulb glow only at the actual train-side lamp.
+        Slightly stronger than before, but still subtle enough to avoid blobs.
+      */}
+      <pointLight
+        name="trainStreetLampBulb"
+        position={TRAIN_LAMP_BULB_POSITION}
+        intensity={3.1}
+        distance={6.5}
+        decay={2.1}
+        color="#f4c48d"
+      />
+
+      {/*
+        Left spill - reaches the left/front clicked track area.
+      */}
+      <spotLight
+        name="trainStreetLampLeftSoftSpill"
+        ref={leftSpillRef}
+        position={TRAIN_LAMP_BULB_POSITION}
+        angle={1.52}
+        penumbra={1}
+        intensity={13}
+        distance={31}
+        decay={1.58}
+        color="#ea9958"
+      />
+
+      {/*
+        Main center spill - strongest beam, covers the main train-track path.
+      */}
+      <spotLight
+        name="trainStreetLampCenterSoftSpill"
+        ref={centerSpillRef}
+        position={TRAIN_LAMP_BULB_POSITION}
+        angle={1.56}
+        penumbra={1}
+        intensity={17}
+        distance={35}
+        decay={1.52}
+        color="#f0a260"
+      />
+
+      {/*
+        Right spill - spreads toward the tram-side track area.
+      */}
+      <spotLight
+        name="trainStreetLampRightSoftSpill"
+        ref={rightSpillRef}
+        position={TRAIN_LAMP_BULB_POSITION}
+        angle={1.54}
+        penumbra={1}
+        intensity={12.5}
+        distance={35}
+        decay={1.58}
+        color="#f2af70"
+      />
+    </>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Existing rear-alley pink reflections                                       */
+/* -------------------------------------------------------------------------- */
+
 /*
-  BackAlleyPinkGlow — mimics a pink/magenta neon sign or lantern string
-  tucked in the back alley behind the buildings. All lights sit at negative
-  Z values (behind the front facade) with short distance so they can't
-  bleed through to the street. The color matches the warm-pink lantern
-  reflections visible in the reference screenshot.
+  The former point light at [3, 4, -4.5] has been removed.
+
+  That was the source of the concentrated purple circle on the wall beside
+  the watermelon poster because it was only around 0.18 units away from the
+  clicked wall surface.
 */
 function BackAlleyPinkGlow() {
   return (
     <>
-      {/*
-        Primary neon source — imagined sign mounted mid-height on the alley's
-        back wall. Pink-magenta, tight distance so it only paints the
-        immediate wall surfaces around the lanterns.
-      */}
       <pointLight
+        name="backAlleyUpperPinkFill"
         position={[1.8, 5.2, -1.8]}
         intensity={22}
         distance={12}
@@ -150,6 +350,7 @@ function BackAlleyPinkGlow() {
       />
 
       <pointLight
+        name="backAlleyMiddlePinkFill"
         position={[2.4, 3.2, -2.6]}
         intensity={18}
         distance={11}
@@ -158,6 +359,7 @@ function BackAlleyPinkGlow() {
       />
 
       <pointLight
+        name="backAlleyLowerPinkFill"
         position={[2.0, 0.6, -2.2]}
         intensity={14}
         distance={10}
@@ -166,16 +368,20 @@ function BackAlleyPinkGlow() {
       />
 
       <pointLight
+        name="backAlleyHighPinkFill"
         position={[1.6, 7.8, -1.4]}
         intensity={12}
         distance={10}
         decay={1.65}
         color="#ff78be"
       />
-
     </>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* Portfolio content                                                          */
+/* -------------------------------------------------------------------------- */
 
 const PROJECT_CASE_STUDIES: Record<ProjectId, ProjectCaseStudy> = {
   "sigma-autonomous-car": {
@@ -186,7 +392,15 @@ const PROJECT_CASE_STUDIES: Record<ProjectId, ProjectCaseStudy> = {
     period: "September 2023 – October 2023",
     summary:
       "A team-built autonomous-car project focused on real-time perception, obstacle detection, and navigation. I helped lead the team while contributing to the software implementation and testing process.",
-    technologies: ["Python", "C++", "ROS", "OpenCV", "YOLOv8", "LiDAR", "Computer Vision"],
+    technologies: [
+      "Python",
+      "C++",
+      "ROS",
+      "OpenCV",
+      "YOLOv8",
+      "LiDAR",
+      "Computer Vision",
+    ],
     contributions: [
       "Worked on real-time object and obstacle detection for autonomous navigation.",
       "Used camera and LiDAR input to support environmental awareness.",
@@ -201,6 +415,7 @@ const PROJECT_CASE_STUDIES: Record<ProjectId, ProjectCaseStudy> = {
     ],
     video: "/projects/sigma-autonomous-car/demo.mp4",
   },
+
   podmanager: {
     id: "podmanager",
     title: "PodManager.ai",
@@ -209,7 +424,14 @@ const PROJECT_CASE_STUDIES: Record<ProjectId, ProjectCaseStudy> = {
     period: "2025 – 2026",
     summary:
       "During my internship, I worked inside a real production codebase for a podcast SaaS platform. I contributed to recording, editing, publishing, and AI-assisted workflow features while following team conventions and code-review practices.",
-    technologies: ["Next.js", "TypeScript", "FastAPI", "Python", "AI Workflows", "Production Codebase"],
+    technologies: [
+      "Next.js",
+      "TypeScript",
+      "FastAPI",
+      "Python",
+      "AI Workflows",
+      "Production Codebase",
+    ],
     contributions: [
       "Implemented waveform visualization to make podcast audio easier to navigate and edit.",
       "Worked on the video-track strip for a clearer visual editing experience.",
@@ -223,6 +445,7 @@ const PROJECT_CASE_STUDIES: Record<ProjectId, ProjectCaseStudy> = {
       "/projects/podmanager/image-2.png",
     ],
   },
+
   practicepal: {
     id: "practicepal",
     title: "PracticePal",
@@ -231,7 +454,14 @@ const PROJECT_CASE_STUDIES: Record<ProjectId, ProjectCaseStudy> = {
     period: "Degree Project",
     summary:
       "A music-practice tracking platform designed to help musicians plan sessions, stay consistent, and review their progress. The application includes authentication, practice planning, statistics, and a subscription flow.",
-    technologies: ["Next.js", "TypeScript", "MongoDB", "NextAuth", "Stripe", "Recharts"],
+    technologies: [
+      "Next.js",
+      "TypeScript",
+      "MongoDB",
+      "NextAuth",
+      "Stripe",
+      "Recharts",
+    ],
     contributions: [
       "Built authentication with credentials and social-login options.",
       "Created practice-session tracking, planning, and progress-statistics features.",
@@ -252,6 +482,7 @@ const SECTIONS: PortfolioSection[] = [
     camera: [-11.7, 8.75, 11.25],
     focus: [-6.0, 6.95, 3.0],
   },
+
   {
     id: "projects",
     number: "02",
@@ -261,6 +492,7 @@ const SECTIONS: PortfolioSection[] = [
     camera: [-1.05, 6.95, 13.7],
     focus: [-1.45, 4.2, 4.88],
   },
+
   {
     id: "credits",
     number: "03",
@@ -273,9 +505,16 @@ const SECTIONS: PortfolioSection[] = [
   },
 ];
 
+/* -------------------------------------------------------------------------- */
+/* Background                                                                 */
+/* -------------------------------------------------------------------------- */
+
 function NightBackdrop() {
   return (
-    <div className="adventure-backdrop adventure-backdrop--original" aria-hidden="true">
+    <div
+      className="adventure-backdrop adventure-backdrop--original"
+      aria-hidden="true"
+    >
       <span className="adventure-original-glow original-glow-left" />
       <span className="adventure-original-glow original-glow-right" />
       <span className="adventure-original-glow original-glow-bottom" />
@@ -319,6 +558,10 @@ function FullscreenNightStars() {
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* Annotation content                                                         */
+/* -------------------------------------------------------------------------- */
+
 function AnnotationContent({
   id,
   onProjectSelect,
@@ -330,13 +573,16 @@ function AnnotationContent({
     return (
       <>
         <p>
-          Hi, I&apos;m Julie Anne. I build playful, polished digital experiences
-          with thoughtful details, warm visuals, and a little bit of wonder.
+          Hi, I&apos;m Julie Anne. I build playful, polished digital
+          experiences with thoughtful details, warm visuals, and a little bit
+          of wonder.
         </p>
+
         <p>
           I recently graduated from a two-year Fullstack Development program at
           Medieinstitutet in Sweden.
         </p>
+
         <p>
           React · Next.js · TypeScript · Node.js · Python · FastAPI · MongoDB
         </p>
@@ -347,21 +593,23 @@ function AnnotationContent({
   if (id === "projects") {
     return (
       <>
-        {(Object.values(PROJECT_CASE_STUDIES) as ProjectCaseStudy[]).map((project) => (
-          <button
-            key={project.id}
-            type="button"
-            className="adventure-project-card-button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onProjectSelect(project.id);
-            }}
-          >
-            <strong>{project.title}</strong>
-            <span>{project.technologies.slice(0, 5).join(" · ")}</span>
-            <em>Open case study →</em>
-          </button>
-        ))}
+        {(Object.values(PROJECT_CASE_STUDIES) as ProjectCaseStudy[]).map(
+          (project) => (
+            <button
+              key={project.id}
+              type="button"
+              className="adventure-project-card-button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onProjectSelect(project.id);
+              }}
+            >
+              <strong>{project.title}</strong>
+              <span>{project.technologies.slice(0, 5).join(" · ")}</span>
+              <em>Open case study →</em>
+            </button>
+          )
+        )}
       </>
     );
   }
@@ -369,14 +617,23 @@ function AnnotationContent({
   return (
     <>
       <p>Portfolio concept and implementation by Julie Anne Cantillep.</p>
+
       <p>
-        3D scene: "A Mysterious Adventure - 3D Editor Challenge" by Diosmel,
-        used under the Creative Commons Attribution 4.0 license.
+        3D scene: &quot;A Mysterious Adventure - 3D Editor Challenge&quot; by
+        Diosmel, used under the Creative Commons Attribution 4.0 license.
       </p>
-      <p>Built with Next.js, TypeScript, React Three Fiber, Drei, Three.js, and GSAP.</p>
+
+      <p>
+        Built with Next.js, TypeScript, React Three Fiber, Drei, Three.js, and
+        GSAP.
+      </p>
     </>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* Project modal                                                              */
+/* -------------------------------------------------------------------------- */
 
 function ProjectCaseStudyModal({
   projectId,
@@ -421,9 +678,17 @@ function ProjectCaseStudyModal({
         <header className="adventure-case-study-header">
           <p>{project.type}</p>
           <h2>{project.title}</h2>
+
           <div className="adventure-case-study-meta">
-            <span><b>Role</b>{project.role}</span>
-            <span><b>Period</b>{project.period}</span>
+            <span>
+              <b>Role</b>
+              {project.role}
+            </span>
+
+            <span>
+              <b>Period</b>
+              {project.period}
+            </span>
           </div>
         </header>
 
@@ -438,7 +703,11 @@ function ProjectCaseStudyModal({
             ) : (
               <div className="adventure-case-study-empty-gallery">
                 <strong>Screenshots coming soon</strong>
-                <p>Add PracticePal screenshots inside <code>public/projects/practicepal</code> when they are ready.</p>
+
+                <p>
+                  Add PracticePal screenshots inside{" "}
+                  <code>public/projects/practicepal</code> when they are ready.
+                </p>
               </div>
             )}
 
@@ -476,6 +745,7 @@ function ProjectCaseStudyModal({
 
             <div>
               <h3>What I worked on</h3>
+
               <ul>
                 {project.contributions.map((contribution) => (
                   <li key={contribution}>{contribution}</li>
@@ -485,6 +755,7 @@ function ProjectCaseStudyModal({
 
             <div>
               <h3>Technologies</h3>
+
               <div className="adventure-case-study-tags">
                 {project.technologies.map((technology) => (
                   <span key={technology}>{technology}</span>
@@ -497,6 +768,10 @@ function ProjectCaseStudyModal({
     </div>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* Number hotspots                                                            */
+/* -------------------------------------------------------------------------- */
 
 function NumberHotspot({
   section,
@@ -533,7 +808,10 @@ function NumberHotspot({
         >
           <span className="adventure-number-ripple" />
           <span className="adventure-number-ripple ripple-two" />
-          <span className="adventure-number-core">{section.markerNumber ?? section.number}</span>
+
+          <span className="adventure-number-core">
+            {section.markerNumber ?? section.number}
+          </span>
         </button>
 
         {selected && (
@@ -552,10 +830,16 @@ function NumberHotspot({
 
             <p className="adventure-annotation-card-number">{section.number}</p>
             <h2>{section.title}</h2>
-            <p className="adventure-annotation-card-eyebrow">{section.eyebrow}</p>
+
+            <p className="adventure-annotation-card-eyebrow">
+              {section.eyebrow}
+            </p>
 
             <div className={`adventure-annotation-card-copy is-${section.id}`}>
-              <AnnotationContent id={section.id} onProjectSelect={onProjectSelect} />
+              <AnnotationContent
+                id={section.id}
+                onProjectSelect={onProjectSelect}
+              />
             </div>
           </section>
         )}
@@ -563,6 +847,10 @@ function NumberHotspot({
     </Html>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* 3D scene                                                                   */
+/* -------------------------------------------------------------------------- */
 
 function AdventureSceneContent({
   viewportWidth,
@@ -583,24 +871,18 @@ function AdventureSceneContent({
   const [moving, setMoving] = useState(false);
 
   /*
-    PURPLE SPOT DEBUG
+    Temporary debugger.
 
-    Temporary coordinate debugger for the concentrated purple circle.
-
-    Click any visible surface on the 3D model.
+    Click any visible model surface.
     A cyan marker appears at the clicked location.
-    The browser console prints the exact world-space coordinates,
-    the clicked mesh name, and the surface normal.
-
-    Remove this block after the purple reflection has been adjusted.
+    The console prints the clicked coordinate, the mesh, its material,
+    and the nearest lights.
   */
   const [debugClickPoint, setDebugClickPoint] = useState<
     [number, number, number] | null
   >(null);
 
-  const handlePurpleSpotDebugClick = (
-    event: ThreeEvent<MouseEvent>
-  ) => {
+  const handlePurpleSpotDebugClick = (event: ThreeEvent<MouseEvent>) => {
     event.stopPropagation();
 
     const { x, y, z } = event.point;
@@ -620,15 +902,11 @@ function AdventureSceneContent({
     setDebugClickPoint(clickedPosition);
 
     console.group(
-      "%cPURPLE SPOT DEBUG",
+      "%cLIGHT POSITION DEBUG",
       "color: #ff70c8; font-weight: 800;"
     );
 
-    console.log(
-      "Clicked mesh:",
-      event.object.name || "(unnamed mesh)"
-    );
-
+    console.log("Clicked mesh:", event.object.name || "(unnamed mesh)");
     console.log("World position:", clickedPosition);
 
     if (worldNormal) {
@@ -639,9 +917,6 @@ function AdventureSceneContent({
       ]);
     }
 
-    /*
-      Log nearby lights, including any lights imported inside the GLB model.
-    */
     const nearbyLights: Array<{
       name: string;
       type: string;
@@ -655,7 +930,9 @@ function AdventureSceneContent({
     scene.traverse((object) => {
       const possibleLight = object as typeof object & {
         isLight?: boolean;
-        color?: { getHexString?: () => string };
+        color?: {
+          getHexString?: () => string;
+        };
         intensity?: number;
         distance?: number;
       };
@@ -668,40 +945,38 @@ function AdventureSceneContent({
       nearbyLights.push({
         name: possibleLight.name || "(unnamed light)",
         type: possibleLight.type,
+
         color: possibleLight.color?.getHexString
           ? `#${possibleLight.color.getHexString()}`
           : "(no color)",
+
         intensity:
           typeof possibleLight.intensity === "number"
             ? Number(possibleLight.intensity.toFixed(3))
             : "(not available)",
+
         range:
           typeof possibleLight.distance === "number"
             ? Number(possibleLight.distance.toFixed(3))
             : "(not available)",
+
         distanceFromClick: Number(
           lightPosition.distanceTo(event.point).toFixed(3)
         ),
-        worldPosition: `[${lightPosition.x.toFixed(3)}, ${lightPosition.y.toFixed(
+
+        worldPosition: `[${lightPosition.x.toFixed(
           3
-        )}, ${lightPosition.z.toFixed(3)}]`,
+        )}, ${lightPosition.y.toFixed(3)}, ${lightPosition.z.toFixed(3)}]`,
       });
     });
 
     nearbyLights.sort(
-      (first, second) =>
-        first.distanceFromClick - second.distanceFromClick
+      (first, second) => first.distanceFromClick - second.distanceFromClick
     );
 
     console.log("Nearby scene lights, closest first:");
-    console.table(nearbyLights.slice(0, 15));
+    console.table(nearbyLights.slice(0, 20));
 
-    /*
-      Log the clicked wall material.
-
-      This tells us whether the purple color comes from the wall material itself
-      or from an external light source.
-    */
     const clickedObject = event.object as typeof event.object & {
       material?: any;
     };
@@ -715,24 +990,29 @@ function AdventureSceneContent({
       .map((material: any) => ({
         name: material.name || "(unnamed material)",
         type: material.type || "(unknown type)",
+
         color: material.color?.getHexString
           ? `#${material.color.getHexString()}`
           : "(no color)",
+
         emissive: material.emissive?.getHexString
           ? `#${material.emissive.getHexString()}`
           : "(no emissive color)",
+
         emissiveIntensity:
           typeof material.emissiveIntensity === "number"
             ? Number(material.emissiveIntensity.toFixed(3))
             : "(not available)",
+
         transparent: Boolean(material.transparent),
+
         opacity:
           typeof material.opacity === "number"
             ? Number(material.opacity.toFixed(3))
             : "(not available)",
       }));
 
-    console.log("Clicked wall material:");
+    console.log("Clicked material:");
     console.table(materialRows);
 
     console.log(
@@ -747,6 +1027,7 @@ function AdventureSceneContent({
 
   useEffect(() => {
     const perspectiveCamera = camera as PerspectiveCamera;
+
     perspectiveCamera.fov = compact ? 43 : 36;
     perspectiveCamera.updateProjectionMatrix();
   }, [camera, compact]);
@@ -759,6 +1040,7 @@ function AdventureSceneContent({
     if (!controlsRef.current) return;
 
     setMoving(true);
+
     gsap.killTweensOf(camera.position);
     gsap.killTweensOf(controlsRef.current.target);
 
@@ -769,12 +1051,25 @@ function AdventureSceneContent({
 
     timeline.to(
       camera.position,
-      { x: nextCamera[0], y: nextCamera[1], z: nextCamera[2], duration, ease: "power3.inOut" },
+      {
+        x: nextCamera[0],
+        y: nextCamera[1],
+        z: nextCamera[2],
+        duration,
+        ease: "power3.inOut",
+      },
       0
     );
+
     timeline.to(
       controlsRef.current.target,
-      { x: nextTarget[0], y: nextTarget[1], z: nextTarget[2], duration, ease: "power3.inOut" },
+      {
+        x: nextTarget[0],
+        y: nextTarget[1],
+        z: nextTarget[2],
+        duration,
+        ease: "power3.inOut",
+      },
       0
     );
   };
@@ -788,6 +1083,7 @@ function AdventureSceneContent({
     if (!controlsRef.current) return;
 
     setMoving(true);
+
     gsap.killTweensOf(camera.position);
     gsap.killTweensOf(controlsRef.current.target);
 
@@ -796,53 +1092,131 @@ function AdventureSceneContent({
       onComplete: () => setMoving(false),
     });
 
-    timeline.to(camera.position, { x: 9.15, y: 11.0, z: -0.8, duration: 0.9, ease: "power2.inOut" }, 0);
-    timeline.to(controlsRef.current.target, { x: 1.5, y: 9.9, z: -2.85, duration: 0.9, ease: "power2.inOut" }, 0);
-    timeline.to(camera.position, { x: section.camera[0], y: section.camera[1], z: section.camera[2], duration: 1.35, ease: "power3.inOut" }, 0.9);
-    timeline.to(controlsRef.current.target, { x: section.focus[0], y: section.focus[1], z: section.focus[2], duration: 1.35, ease: "power3.inOut" }, 0.9);
+    timeline.to(
+      camera.position,
+      {
+        x: 9.15,
+        y: 11.0,
+        z: -0.8,
+        duration: 0.9,
+        ease: "power2.inOut",
+      },
+      0
+    );
+
+    timeline.to(
+      controlsRef.current.target,
+      {
+        x: 1.5,
+        y: 9.9,
+        z: -2.85,
+        duration: 0.9,
+        ease: "power2.inOut",
+      },
+      0
+    );
+
+    timeline.to(
+      camera.position,
+      {
+        x: section.camera[0],
+        y: section.camera[1],
+        z: section.camera[2],
+        duration: 1.35,
+        ease: "power3.inOut",
+      },
+      0.9
+    );
+
+    timeline.to(
+      controlsRef.current.target,
+      {
+        x: section.focus[0],
+        y: section.focus[1],
+        z: section.focus[2],
+        duration: 1.35,
+        ease: "power3.inOut",
+      },
+      0.9
+    );
   };
 
   const selectSection = (section: PortfolioSection) => {
     if (moving) return;
+
     onActiveChange(section.id);
-    if (section.id === "credits") { moveToCreditsRooftop(section); return; }
+
+    if (section.id === "credits") {
+      moveToCreditsRooftop(section);
+      return;
+    }
+
     moveCamera(section.camera, section.focus);
   };
 
   useEffect(() => {
     const handleSelection = (event: Event) => {
-      const customEvent = event as CustomEvent<{ id?: SectionId | "home" }>;
+      const customEvent = event as CustomEvent<{
+        id?: SectionId | "home";
+      }>;
+
       const requestedId = customEvent.detail?.id;
-      if (requestedId === "home") { onActiveChange(null); moveCamera(homeCamera, HOME_TARGET); return; }
+
+      if (requestedId === "home") {
+        onActiveChange(null);
+        moveCamera(homeCamera, HOME_TARGET);
+        return;
+      }
+
       const section = SECTIONS.find((item) => item.id === requestedId);
-      if (section) selectSection(section);
+
+      if (section) {
+        selectSection(section);
+      }
     };
+
     window.addEventListener("adventure:select", handleSelection);
-    return () => window.removeEventListener("adventure:select", handleSelection);
+
+    return () => {
+      window.removeEventListener("adventure:select", handleSelection);
+    };
   });
 
   useEffect(() => {
     const handleIntro = () => {
       if (!controlsRef.current) return;
+
       camera.position.set(...INTRO_CAMERA);
       controlsRef.current.target.set(...INTRO_TARGET);
       controlsRef.current.update();
+
       moveCamera(homeCamera, HOME_TARGET, 2.15);
     };
+
     window.addEventListener("adventure:intro", handleIntro);
-    return () => window.removeEventListener("adventure:intro", handleIntro);
+
+    return () => {
+      window.removeEventListener("adventure:intro", handleIntro);
+    };
   }, [camera, homeCamera]);
 
   useEffect(() => {
     if (!controlsRef.current || readyRef.current) return;
+
     readyRef.current = true;
-    requestAnimationFrame(() => { requestAnimationFrame(() => onSceneReady?.()); });
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        onSceneReady?.();
+      });
+    });
   }, [onSceneReady]);
 
   return (
     <>
       <color attach="background" args={["#010106"]} />
       <fog attach="fog" args={["#010106", 30, 74]} />
+
       <ambientLight intensity={0.12} />
 
       <spotLight
@@ -868,9 +1242,23 @@ function AdventureSceneContent({
         decay={1.55}
       />
 
-      <pointLight position={[2.5, 8.2, 1.7]} intensity={1.7} color="#ff7665" distance={20} decay={1.5} />
+      <pointLight
+        position={[2.5, 8.2, 1.7]}
+        intensity={1.7}
+        color="#ff7665"
+        distance={20}
+        decay={1.5}
+      />
 
-      <Stars radius={78} depth={38} count={900} factor={2.35} saturation={0} fade speed={0.22} />
+      <Stars
+        radius={78}
+        depth={38}
+        count={900}
+        factor={2.35}
+        saturation={0}
+        fade
+        speed={0.22}
+      />
 
       <group onClick={handlePurpleSpotDebugClick}>
         <MysteriousAdventureModel />
@@ -879,6 +1267,7 @@ function AdventureSceneContent({
       {debugClickPoint && (
         <mesh position={debugClickPoint} renderOrder={999}>
           <sphereGeometry args={[0.11, 18, 18]} />
+
           <meshBasicMaterial
             color="#00ffff"
             toneMapped={false}
@@ -890,20 +1279,66 @@ function AdventureSceneContent({
 
       <TokyoStreetLampGlow />
 
-      {/* Right-side building wrap — same warm amber family as the street lamp */}
-      <pointLight position={[10, 12, 4]} intensity={5}  distance={28} decay={1.6}  color="#ffc87a" />
-      <pointLight position={[10, 7,  5]} intensity={6}  distance={24} decay={1.65} color="#ffbe72" />
-      <pointLight position={[9,  3.5, 6]} intensity={7} distance={22} decay={1.6}  color="#ffba68" />
-      <pointLight position={[8,  0.8, 8]} intensity={7} distance={20} decay={1.55} color="#ffb660" />
-      <pointLight position={[7,  0.5, 3]} intensity={6} distance={18} decay={1.6}  color="#ffc070" />
-      <pointLight position={[5,  2.5, 1]} intensity={5} distance={16} decay={1.7}  color="#ffbe74" />
-      <pointLight position={[9,  0.1, 6]} intensity={8} distance={22} decay={1.5}  color="#ffb258" />
+      {/* New warm reflected light beside the moving train. */}
+      <TrainStreetLampGlow />
 
-      {/*
-        Back-alley pink glow — lantern/neon-sign light contained behind the
-        buildings. Negative Z keeps all lights on the far side of the facade.
-        Short distance values prevent any bleed through to the front street.
-      */}
+      {/* Existing right-side building wrap. */}
+      <pointLight
+        position={[10, 12, 4]}
+        intensity={5}
+        distance={28}
+        decay={1.6}
+        color="#ffc87a"
+      />
+
+      <pointLight
+        position={[10, 7, 5]}
+        intensity={6}
+        distance={24}
+        decay={1.65}
+        color="#ffbe72"
+      />
+
+      <pointLight
+        position={[9, 3.5, 6]}
+        intensity={7}
+        distance={22}
+        decay={1.6}
+        color="#ffba68"
+      />
+
+      <pointLight
+        position={[8, 0.8, 8]}
+        intensity={7}
+        distance={20}
+        decay={1.55}
+        color="#ffb660"
+      />
+
+      <pointLight
+        position={[7, 0.5, 3]}
+        intensity={6}
+        distance={18}
+        decay={1.6}
+        color="#ffc070"
+      />
+
+      <pointLight
+        position={[5, 2.5, 1]}
+        intensity={5}
+        distance={16}
+        decay={1.7}
+        color="#ffbe74"
+      />
+
+      <pointLight
+        position={[9, 0.1, 6]}
+        intensity={8}
+        distance={22}
+        decay={1.5}
+        color="#ffb258"
+      />
+
       <BackAlleyPinkGlow />
 
       {SECTIONS.map((section) => (
@@ -928,7 +1363,14 @@ function AdventureSceneContent({
           luminanceInfluence={0.52}
           resolutionScale={0.65}
         />
-        <Bloom mipmapBlur intensity={0.62} luminanceThreshold={0.58} luminanceSmoothing={0.24} />
+
+        <Bloom
+          mipmapBlur
+          intensity={0.62}
+          luminanceThreshold={0.58}
+          luminanceSmoothing={0.24}
+        />
+
         <Vignette eskil={false} offset={0.18} darkness={0.72} />
       </EffectComposer>
 
@@ -945,7 +1387,10 @@ function AdventureSceneContent({
         maxPolarAngle={Math.PI / 2.05}
         zoomSpeed={compact ? 0.9 : 0.5}
         rotateSpeed={compact ? 0.38 : 0.48}
-        touches={{ ONE: TOUCH.ROTATE, TWO: TOUCH.DOLLY_ROTATE }}
+        touches={{
+          ONE: TOUCH.ROTATE,
+          TWO: TOUCH.DOLLY_ROTATE,
+        }}
         enableDamping
         dampingFactor={0.08}
       />
@@ -953,21 +1398,44 @@ function AdventureSceneContent({
   );
 }
 
-export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void }) {
+/* -------------------------------------------------------------------------- */
+/* Main component                                                             */
+/* -------------------------------------------------------------------------- */
+
+export default function HeroScene({
+  onSceneReady,
+}: {
+  onSceneReady?: () => void;
+}) {
   const [viewportWidth, setViewportWidth] = useState(() =>
     typeof window === "undefined" ? 1440 : window.innerWidth
   );
+
   const [activeId, setActiveId] = useState<SectionId | null>(null);
-  const [selectedProjectId, setSelectedProjectId] = useState<ProjectId | null>(null);
+
+  const [selectedProjectId, setSelectedProjectId] =
+    useState<ProjectId | null>(null);
 
   useEffect(() => {
-    const handleResize = () => setViewportWidth(window.innerWidth);
+    const handleResize = () => {
+      setViewportWidth(window.innerWidth);
+    };
+
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   const selectFromBottomNav = (id: SectionId) => {
-    window.dispatchEvent(new CustomEvent("adventure:select", { detail: { id } }));
+    window.dispatchEvent(
+      new CustomEvent("adventure:select", {
+        detail: {
+          id,
+        },
+      })
+    );
   };
 
   return (
@@ -978,18 +1446,28 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
         shadows
         dpr={viewportWidth < 768 ? [1, 1.4] : [1, 1.85]}
         camera={{
-          position: viewportWidth < 768 ? HOME_CAMERA_MOBILE : HOME_CAMERA_DESKTOP,
+          position:
+            viewportWidth < 768 ? HOME_CAMERA_MOBILE : HOME_CAMERA_DESKTOP,
+
           fov: viewportWidth < 768 ? 43 : 36,
           near: 0.1,
           far: 300,
         }}
-        gl={{ antialias: false, alpha: true, powerPreference: "high-performance" }}
+        gl={{
+          antialias: false,
+          alpha: true,
+          powerPreference: "high-performance",
+        }}
         onCreated={({ gl }) => {
           gl.outputColorSpace = SRGBColorSpace;
           gl.toneMapping = ACESFilmicToneMapping;
           gl.toneMappingExposure = 0.92;
         }}
-        style={{ touchAction: "none", position: "relative", zIndex: 2 }}
+        style={{
+          touchAction: "none",
+          position: "relative",
+          zIndex: 2,
+        }}
       >
         <Suspense fallback={null}>
           <AdventureSceneContent
@@ -1005,7 +1483,10 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
       <div className="adventure-intro-copy">
         <p className="adventure-kicker">Fullstack Developer</p>
         <h1>Julie Anne Cantillep</h1>
-        <p>Click a numbered marker. Drag to rotate and scroll or pinch to zoom.</p>
+
+        <p>
+          Click a numbered marker. Drag to rotate and scroll or pinch to zoom.
+        </p>
       </div>
 
       <nav className="adventure-bottom-nav" aria-label="Portfolio sections">
@@ -1024,7 +1505,9 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
 
       <ProjectCaseStudyModal
         projectId={selectedProjectId}
-        onClose={() => setSelectedProjectId(null)}
+        onClose={() => {
+          setSelectedProjectId(null);
+        }}
       />
 
       <style jsx global>{`
@@ -1040,13 +1523,18 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
           width: 32px;
           height: 32px;
           place-items: center;
-          border: 1px solid rgba(255,255,255,0.45);
+          border: 1px solid rgba(255, 255, 255, 0.45);
           border-radius: 999px;
           background: rgba(6, 7, 11, 0.8);
-          box-shadow: 0 0 0 1px rgba(0,0,0,0.28), 0 0 13px rgba(255,255,255,0.1);
-          color: rgba(255,255,255,0.96);
+          box-shadow:
+            0 0 0 1px rgba(0, 0, 0, 0.28),
+            0 0 13px rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.96);
           cursor: pointer;
-          transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+          transition:
+            transform 180ms ease,
+            background 180ms ease,
+            border-color 180ms ease;
         }
 
         .adventure-number-core {
@@ -1060,24 +1548,36 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
         .adventure-number-ripple {
           position: absolute;
           inset: -1px;
-          border: 1px solid rgba(255,255,255,0.44);
+          border: 1px solid rgba(255, 255, 255, 0.44);
           border-radius: inherit;
           animation: adventure-annotation-ripple 2.25s ease-out infinite;
         }
 
-        .adventure-number-ripple.ripple-two { animation-delay: 1.12s; }
+        .adventure-number-ripple.ripple-two {
+          animation-delay: 1.12s;
+        }
 
         .adventure-number:hover,
         .adventure-number.is-selected {
           transform: scale(1.16);
-          border-color: rgba(255,255,255,0.92);
+          border-color: rgba(255, 255, 255, 0.92);
           background: rgba(17, 14, 23, 0.96);
         }
 
         @keyframes adventure-annotation-ripple {
-          0% { transform: scale(0.82); opacity: 0; }
-          22% { opacity: 0.62; }
-          100% { transform: scale(1.9); opacity: 0; }
+          0% {
+            transform: scale(0.82);
+            opacity: 0;
+          }
+
+          22% {
+            opacity: 0.62;
+          }
+
+          100% {
+            transform: scale(1.9);
+            opacity: 0;
+          }
         }
 
         .adventure-annotation-card {
@@ -1087,10 +1587,10 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
           width: min(310px, 76vw);
           max-height: min(390px, 70vh);
           overflow-y: auto;
-          border: 1px solid rgba(255,255,255,0.18);
+          border: 1px solid rgba(255, 255, 255, 0.18);
           border-radius: 16px;
           background: rgba(6, 7, 12, 0.82);
-          box-shadow: 0 18px 44px rgba(0,0,0,0.42);
+          box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
           padding: 16px;
           color: #fff;
           backdrop-filter: blur(15px);
@@ -1105,9 +1605,9 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
           width: 26px;
           height: 26px;
           place-items: center;
-          border: 1px solid rgba(255,255,255,0.16);
+          border: 1px solid rgba(255, 255, 255, 0.16);
           border-radius: 999px;
-          background: rgba(255,255,255,0.07);
+          background: rgba(255, 255, 255, 0.07);
           color: #fff;
           cursor: pointer;
           font-size: 16px;
@@ -1135,34 +1635,25 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
           display: grid;
           gap: 10px;
           margin-top: 14px;
-          color: rgba(255,255,255,0.78);
+          color: rgba(255, 255, 255, 0.78);
           font-size: 12px;
           line-height: 1.58;
         }
 
-        .adventure-annotation-card-copy p { margin: 0; }
-
-        .adventure-annotation-card-copy article {
-          display: grid;
-          gap: 4px;
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 11px;
-          background: rgba(255,255,255,0.045);
-          padding: 10px;
-        }
-
-        .adventure-annotation-card-copy article span {
-          color: #dac7ff;
-          font-size: 9px;
-          font-weight: 800;
-          letter-spacing: 0.09em;
-          line-height: 1.45;
-          text-transform: uppercase;
+        .adventure-annotation-card-copy p {
+          margin: 0;
         }
 
         @keyframes adventure-card-enter {
-          from { opacity: 0; transform: translateX(-8px) translateY(4px) scale(0.97); }
-          to { opacity: 1; transform: translateX(0) translateY(0) scale(1); }
+          from {
+            opacity: 0;
+            transform: translateX(-8px) translateY(4px) scale(0.97);
+          }
+
+          to {
+            opacity: 1;
+            transform: translateX(0) translateY(0) scale(1);
+          }
         }
 
         .adventure-intro-copy {
@@ -1188,7 +1679,7 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
         .adventure-intro-copy > p:last-child {
           margin: 0;
           max-width: 285px;
-          color: rgba(255,255,255,0.78);
+          color: rgba(255, 255, 255, 0.78);
           font-size: 13px;
           line-height: 1.6;
         }
@@ -1203,10 +1694,10 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
           transform: translateX(-50%);
           gap: 6px;
           padding: 7px;
-          border: 1px solid rgba(255,255,255,0.18);
+          border: 1px solid rgba(255, 255, 255, 0.18);
           border-radius: 999px;
           background: rgba(10, 9, 16, 0.72);
-          box-shadow: 0 12px 34px rgba(0,0,0,0.32);
+          box-shadow: 0 12px 34px rgba(0, 0, 0, 0.32);
           backdrop-filter: blur(16px);
         }
 
@@ -1217,46 +1708,56 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
           border: 0;
           border-radius: 999px;
           background: transparent;
-          color: rgba(255,255,255,0.82);
+          color: rgba(255, 255, 255, 0.82);
           cursor: pointer;
           padding: 11px 14px;
           font-size: 10px;
           font-weight: 900;
           letter-spacing: 0.15em;
           text-transform: uppercase;
-          transition: background 180ms ease, color 180ms ease;
+          transition:
+            background 180ms ease,
+            color 180ms ease;
           white-space: nowrap;
         }
 
         .adventure-bottom-nav button:hover,
         .adventure-bottom-nav button.is-active {
-          background: rgba(255,255,255,0.92);
+          background: rgba(255, 255, 255, 0.92);
           color: #17121e;
         }
 
-        .adventure-bottom-nav span { opacity: 0.72; }
+        .adventure-bottom-nav span {
+          opacity: 0.72;
+        }
 
         .adventure-project-card-button {
           display: grid;
           width: 100%;
           gap: 4px;
-          border: 1px solid rgba(255,255,255,0.1);
+          border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 11px;
-          background: rgba(255,255,255,0.045);
+          background: rgba(255, 255, 255, 0.045);
           padding: 10px;
-          color: rgba(255,255,255,0.92);
+          color: rgba(255, 255, 255, 0.92);
           cursor: pointer;
           text-align: left;
-          transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+          transition:
+            transform 180ms ease,
+            border-color 180ms ease,
+            background 180ms ease;
         }
 
         .adventure-project-card-button:hover {
           transform: translateY(-2px);
-          border-color: rgba(219,199,255,0.42);
-          background: rgba(255,255,255,0.095);
+          border-color: rgba(219, 199, 255, 0.42);
+          background: rgba(255, 255, 255, 0.095);
         }
 
-        .adventure-project-card-button strong { font-size: 12px; }
+        .adventure-project-card-button strong {
+          font-size: 12px;
+        }
+
         .adventure-project-card-button span {
           color: #dac7ff;
           font-size: 9px;
@@ -1265,9 +1766,10 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
           line-height: 1.45;
           text-transform: uppercase;
         }
+
         .adventure-project-card-button em {
           margin-top: 3px;
-          color: rgba(255,255,255,0.58);
+          color: rgba(255, 255, 255, 0.58);
           font-size: 9px;
           font-style: normal;
           font-weight: 800;
@@ -1293,10 +1795,14 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
           width: min(1080px, 100%);
           max-height: min(900px, calc(100dvh - 44px));
           overflow-y: auto;
-          border: 1px solid rgba(255,255,255,0.18);
+          border: 1px solid rgba(255, 255, 255, 0.18);
           border-radius: 24px;
-          background: linear-gradient(145deg, rgba(13,15,28,0.97), rgba(26,18,39,0.95));
-          box-shadow: 0 30px 90px rgba(0,0,0,0.55);
+          background: linear-gradient(
+            145deg,
+            rgba(13, 15, 28, 0.97),
+            rgba(26, 18, 39, 0.95)
+          );
+          box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
           color: white;
           padding: 24px;
           animation: adventure-modal-enter 220ms ease both;
@@ -1311,16 +1817,21 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
           width: 38px;
           height: 38px;
           place-items: center;
-          border: 1px solid rgba(255,255,255,0.17);
+          border: 1px solid rgba(255, 255, 255, 0.17);
           border-radius: 999px;
-          background: rgba(255,255,255,0.08);
+          background: rgba(255, 255, 255, 0.08);
           color: white;
           cursor: pointer;
           font-size: 23px;
-          transition: background 180ms ease, transform 180ms ease;
+          transition:
+            background 180ms ease,
+            transform 180ms ease;
         }
 
-        .adventure-case-study-close:hover { background: rgba(255,255,255,0.16); transform: rotate(6deg); }
+        .adventure-case-study-close:hover {
+          background: rgba(255, 255, 255, 0.16);
+          transform: rotate(6deg);
+        }
 
         .adventure-case-study-header > p {
           margin: 0;
@@ -1350,15 +1861,17 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
         .adventure-case-study-meta span {
           display: inline-flex;
           gap: 7px;
-          border: 1px solid rgba(255,255,255,0.1);
+          border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 999px;
-          background: rgba(255,255,255,0.055);
+          background: rgba(255, 255, 255, 0.055);
           padding: 7px 10px;
-          color: rgba(255,255,255,0.72);
+          color: rgba(255, 255, 255, 0.72);
           font-size: 11px;
         }
 
-        .adventure-case-study-meta b { color: #dbc7ff; }
+        .adventure-case-study-meta b {
+          color: #dbc7ff;
+        }
 
         .adventure-case-study-grid {
           display: grid;
@@ -1368,15 +1881,17 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
         }
 
         .adventure-case-study-gallery,
-        .adventure-case-study-content { min-width: 0; }
+        .adventure-case-study-content {
+          min-width: 0;
+        }
 
         .adventure-case-study-main-image,
         .adventure-case-study-empty-gallery {
           width: 100%;
           aspect-ratio: 16 / 10;
-          border: 1px solid rgba(255,255,255,0.13);
+          border: 1px solid rgba(255, 255, 255, 0.13);
           border-radius: 17px;
-          background: rgba(255,255,255,0.05);
+          background: rgba(255, 255, 255, 0.05);
           object-fit: contain;
         }
 
@@ -1385,11 +1900,19 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
           place-content: center;
           gap: 6px;
           padding: 24px;
-          color: rgba(255,255,255,0.76);
+          color: rgba(255, 255, 255, 0.76);
           text-align: center;
         }
-        .adventure-case-study-empty-gallery p { margin: 0; font-size: 12px; line-height: 1.6; }
-        .adventure-case-study-empty-gallery code { color: #dbc7ff; }
+
+        .adventure-case-study-empty-gallery p {
+          margin: 0;
+          font-size: 12px;
+          line-height: 1.6;
+        }
+
+        .adventure-case-study-empty-gallery code {
+          color: #dbc7ff;
+        }
 
         .adventure-case-study-thumbnails {
           display: grid;
@@ -1400,22 +1923,36 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
 
         .adventure-case-study-thumbnails button {
           overflow: hidden;
-          border: 1px solid rgba(255,255,255,0.1);
+          border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 11px;
-          background: rgba(255,255,255,0.05);
+          background: rgba(255, 255, 255, 0.05);
           padding: 0;
           cursor: pointer;
           opacity: 0.58;
-          transition: opacity 160ms ease, border-color 160ms ease, transform 160ms ease;
+          transition:
+            opacity 160ms ease,
+            border-color 160ms ease,
+            transform 160ms ease;
         }
+
         .adventure-case-study-thumbnails button:hover,
-        .adventure-case-study-thumbnails button.is-active { opacity: 1; border-color: rgba(219,199,255,0.66); transform: translateY(-2px); }
-        .adventure-case-study-thumbnails img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+        .adventure-case-study-thumbnails button.is-active {
+          opacity: 1;
+          border-color: rgba(219, 199, 255, 0.66);
+          transform: translateY(-2px);
+        }
+
+        .adventure-case-study-thumbnails img {
+          display: block;
+          width: 100%;
+          aspect-ratio: 16 / 10;
+          object-fit: cover;
+        }
 
         .adventure-case-study-video {
           width: 100%;
           margin-top: 14px;
-          border: 1px solid rgba(255,255,255,0.14);
+          border: 1px solid rgba(255, 255, 255, 0.14);
           border-radius: 16px;
           background: #05060a;
         }
@@ -1424,21 +1961,42 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
           display: grid;
           align-content: start;
           gap: 20px;
-          color: rgba(255,255,255,0.76);
+          color: rgba(255, 255, 255, 0.76);
           font-size: 13px;
           line-height: 1.68;
         }
 
-        .adventure-case-study-summary { margin: 0; }
-        .adventure-case-study-content h3 { margin: 0 0 8px; color: white; font-size: 15px; }
-        .adventure-case-study-content ul { display: grid; gap: 7px; margin: 0; padding-left: 18px; }
-        .adventure-case-study-content li::marker { color: #dbc7ff; }
+        .adventure-case-study-summary {
+          margin: 0;
+        }
 
-        .adventure-case-study-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+        .adventure-case-study-content h3 {
+          margin: 0 0 8px;
+          color: white;
+          font-size: 15px;
+        }
+
+        .adventure-case-study-content ul {
+          display: grid;
+          gap: 7px;
+          margin: 0;
+          padding-left: 18px;
+        }
+
+        .adventure-case-study-content li::marker {
+          color: #dbc7ff;
+        }
+
+        .adventure-case-study-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 7px;
+        }
+
         .adventure-case-study-tags span {
-          border: 1px solid rgba(219,199,255,0.19);
+          border: 1px solid rgba(219, 199, 255, 0.19);
           border-radius: 999px;
-          background: rgba(219,199,255,0.08);
+          background: rgba(219, 199, 255, 0.08);
           padding: 6px 9px;
           color: #dbc7ff;
           font-size: 10px;
@@ -1447,8 +2005,27 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
           text-transform: uppercase;
         }
 
-        @keyframes adventure-modal-fade-in { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes adventure-modal-enter { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes adventure-modal-fade-in {
+          from {
+            opacity: 0;
+          }
+
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes adventure-modal-enter {
+          from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.98);
+          }
+
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
 
         @media (max-width: 767px) {
           .adventure-intro-copy {
@@ -1456,8 +2033,14 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
             width: min(260px, 76vw);
           }
 
-          .adventure-intro-copy h1 { font-size: 2.85rem; }
-          .adventure-intro-copy > p:last-child { max-width: 245px; font-size: 12px; }
+          .adventure-intro-copy h1 {
+            font-size: 2.85rem;
+          }
+
+          .adventure-intro-copy > p:last-child {
+            max-width: 245px;
+            font-size: 12px;
+          }
 
           .adventure-bottom-nav {
             bottom: 13px;
@@ -1467,23 +2050,30 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
 
           .adventure-bottom-nav button {
             gap: 4px;
-            padding: 9px 9px;
+            padding: 9px;
             font-size: 8px;
             letter-spacing: 0.1em;
           }
 
-          .adventure-case-study-backdrop { padding: 12px; }
+          .adventure-case-study-backdrop {
+            padding: 12px;
+          }
+
           .adventure-case-study-modal {
             max-height: calc(100dvh - 24px);
             border-radius: 18px;
             padding: 17px;
           }
+
           .adventure-case-study-grid {
             grid-template-columns: 1fr;
             gap: 16px;
             margin-top: 18px;
           }
-          .adventure-case-study-header h2 { font-size: 2.15rem; }
+
+          .adventure-case-study-header h2 {
+            font-size: 2.15rem;
+          }
 
           .adventure-annotation-card {
             left: 50%;
@@ -1494,8 +2084,15 @@ export default function HeroScene({ onSceneReady }: { onSceneReady?: () => void 
           }
 
           @keyframes adventure-card-enter-mobile {
-            from { opacity: 0; transform: translateX(-50%) translateY(-6px) scale(0.97); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+            from {
+              opacity: 0;
+              transform: translateX(-50%) translateY(-6px) scale(0.97);
+            }
+
+            to {
+              opacity: 1;
+              transform: translateX(-50%) translateY(0) scale(1);
+            }
           }
         }
       `}</style>
