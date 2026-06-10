@@ -18,6 +18,7 @@ import {
   Html,
   OrbitControls,
   Stars,
+  Text,
 } from "@react-three/drei";
 import {
   Bloom,
@@ -41,7 +42,10 @@ import {
 import gsap from "gsap";
 import MysteriousAdventureModel from "../models/MysteriousAdventureModel";
 
-type SectionId = "about" | "projects" | "credits";
+type SectionId =
+  | "about"
+  | "projects"
+  | "credits";
 
 type ProjectId =
   | "sigma-autonomous-car"
@@ -67,9 +71,21 @@ type PortfolioSection = {
   markerNumber?: string;
   title: string;
   eyebrow: string;
-  hotspot: [number, number, number];
-  camera: [number, number, number];
-  focus: [number, number, number];
+  hotspot: [
+    number,
+    number,
+    number,
+  ];
+  camera: [
+    number,
+    number,
+    number,
+  ];
+  focus: [
+    number,
+    number,
+    number,
+  ];
 };
 
 /*
@@ -77,25 +93,38 @@ type PortfolioSection = {
 
   Change it to false when the hotspot setup is finished.
 */
-const ENABLE_LIGHT_DEBUGGER = true;
+const ENABLE_LIGHT_DEBUGGER =
+  true;
 
 /* -------------------------------------------------------------------------- */
 /* Camera positions                                                           */
 /* -------------------------------------------------------------------------- */
 
-const HOME_CAMERA_DESKTOP: [number, number, number] = [
+const HOME_CAMERA_DESKTOP: [
+  number,
+  number,
+  number,
+] = [
   19.4,
   10.45,
   24.6,
 ];
 
-const HOME_CAMERA_MOBILE: [number, number, number] = [
+const HOME_CAMERA_MOBILE: [
+  number,
+  number,
+  number,
+] = [
   24.8,
   13.8,
   31.4,
 ];
 
-const HOME_TARGET: [number, number, number] = [
+const HOME_TARGET: [
+  number,
+  number,
+  number,
+] = [
   0,
   4.18,
   0,
@@ -104,13 +133,21 @@ const HOME_TARGET: [number, number, number] = [
 /*
   Initial wide shot shown when the intro starts.
 */
-const INTRO_CAMERA: [number, number, number] = [
+const INTRO_CAMERA: [
+  number,
+  number,
+  number,
+] = [
   -25,
   17.5,
   29,
 ];
 
-const INTRO_TARGET: [number, number, number] = [
+const INTRO_TARGET: [
+  number,
+  number,
+  number,
+] = [
   0,
   5.2,
   0,
@@ -125,7 +162,7 @@ const INTRO_TARGET: [number, number, number] = [
 const INTRO_STREET_TARGET: [
   number,
   number,
-  number
+  number,
 ] = [
   5,
   1.62,
@@ -135,7 +172,7 @@ const INTRO_STREET_TARGET: [
 const INTRO_STREET_CAMERA_DESKTOP: [
   number,
   number,
-  number
+  number,
 ] = [
   11.75,
   2.72,
@@ -145,7 +182,7 @@ const INTRO_STREET_CAMERA_DESKTOP: [
 const INTRO_STREET_CAMERA_MOBILE: [
   number,
   number,
-  number
+  number,
 ] = [
   14.4,
   3.85,
@@ -154,10 +191,12 @@ const INTRO_STREET_CAMERA_MOBILE: [
 
 /*
   A short direct movement makes the zoom start immediately.
+
   Increase this slightly for a calmer animation or decrease it for a faster
   transition.
 */
-const INTRO_ZOOM_DURATION = 2;
+const INTRO_ZOOM_DURATION =
+  2;
 
 /* -------------------------------------------------------------------------- */
 /* About Me doorway camera                                                    */
@@ -166,7 +205,7 @@ const INTRO_ZOOM_DURATION = 2;
 const ABOUT_HOTSPOT: [
   number,
   number,
-  number
+  number,
 ] = [
   4.545,
   2.672,
@@ -176,7 +215,7 @@ const ABOUT_HOTSPOT: [
 const ABOUT_CAMERA_DESKTOP: [
   number,
   number,
-  number
+  number,
 ] = [
   8.3,
   2.72,
@@ -186,7 +225,7 @@ const ABOUT_CAMERA_DESKTOP: [
 const ABOUT_CAMERA_MOBILE: [
   number,
   number,
-  number
+  number,
 ] = [
   10.7,
   3.85,
@@ -196,7 +235,7 @@ const ABOUT_CAMERA_MOBILE: [
 const ABOUT_FOCUS: [
   number,
   number,
-  number
+  number,
 ] = [
   4.35,
   1.62,
@@ -210,7 +249,7 @@ const ABOUT_FOCUS: [
 const PROJECTS_HOTSPOT: [
   number,
   number,
-  number
+  number,
 ] = [
   -3.221,
   2.232,
@@ -220,7 +259,7 @@ const PROJECTS_HOTSPOT: [
 const PROJECTS_CAMERA_DESKTOP: [
   number,
   number,
-  number
+  number,
 ] = [
   -1.45,
   2.72,
@@ -230,7 +269,7 @@ const PROJECTS_CAMERA_DESKTOP: [
 const PROJECTS_CAMERA_MOBILE: [
   number,
   number,
-  number
+  number,
 ] = [
   -0.65,
   3.85,
@@ -240,7 +279,7 @@ const PROJECTS_CAMERA_MOBILE: [
 const PROJECTS_FOCUS: [
   number,
   number,
-  number
+  number,
 ] = [
   -3.221,
   1.82,
@@ -254,7 +293,7 @@ const PROJECTS_FOCUS: [
 const CREDITS_HOTSPOT: [
   number,
   number,
-  number
+  number,
 ] = [
   -0.408,
   11.768,
@@ -264,7 +303,7 @@ const CREDITS_HOTSPOT: [
 const CREDITS_FOCUS: [
   number,
   number,
-  number
+  number,
 ] = [
   0.55,
   12.55,
@@ -274,7 +313,7 @@ const CREDITS_FOCUS: [
 const CREDITS_CAMERA_DESKTOP: [
   number,
   number,
-  number
+  number,
 ] = [
   0.2,
   13.65,
@@ -284,7 +323,7 @@ const CREDITS_CAMERA_DESKTOP: [
 const CREDITS_CAMERA_MOBILE: [
   number,
   number,
-  number
+  number,
 ] = [
   1,
   15.1,
@@ -292,10 +331,149 @@ const CREDITS_CAMERA_MOBILE: [
 ];
 
 /* -------------------------------------------------------------------------- */
+/* Ground graffiti                                                            */
+/* -------------------------------------------------------------------------- */
+
+/*
+  The introductory portfolio copy now lives inside the 3D world instead of
+  floating in the upper-left corner.
+
+  The group is rotated flat against the concrete rooftop. Adjust the first
+  position array if you want to move the graffiti across the ground later.
+*/
+function GroundGraffiti() {
+  const name =
+    "JULIE ANNE\nCANTILLEP";
+
+  return (
+    <group
+      /*
+        Place the text on the empty black ground outside the model.
+
+        x: moves it farther away from the building toward the right-side
+           black ground near the final intro camera.
+        z: keeps it close to the final intro viewing area.
+      */
+      position={[
+        9,
+        0.045,
+        -2.5,
+      ]}
+      rotation={[
+        -Math.PI / 2,
+        0,
+        Math.PI / 2,
+      ]}
+    >
+      <Text
+        position={[
+          0.065,
+          -0.055,
+          0.004,
+        ]}
+        fontSize={0.7}
+        maxWidth={8}
+        lineHeight={0.9}
+        letterSpacing={-0.045}
+        anchorX="center"
+        anchorY="middle"
+        color="#ff609f"
+        fillOpacity={0.3}
+      >
+        {name}
+      </Text>
+
+      <Text
+        position={[
+          0,
+          0,
+          0.012,
+        ]}
+        fontSize={0.7}
+        maxWidth={8}
+        lineHeight={0.9}
+        letterSpacing={-0.045}
+        anchorX="center"
+        anchorY="middle"
+        color="#f7f1ed"
+        outlineWidth={0.018}
+        outlineColor="#260d18"
+        outlineOpacity={0.68}
+        fillOpacity={0.9}
+      >
+        {name}
+      </Text>
+
+      <mesh
+        position={[
+          0,
+          -1.02,
+          0.008,
+        ]}
+      >
+        <planeGeometry
+          args={[
+            4.6,
+            0.055,
+          ]}
+        />
+
+        <meshBasicMaterial
+          color="#ff79ad"
+          transparent
+          opacity={0.48}
+        />
+      </mesh>
+
+      <Text
+        position={[
+          0,
+          -1.26,
+          0.012,
+        ]}
+        fontSize={0.17}
+        maxWidth={8}
+        lineHeight={1}
+        letterSpacing={0.18}
+        anchorX="center"
+        anchorY="middle"
+        color="#f2d7ff"
+        fillOpacity={0.82}
+      >
+        FULLSTACK DEVELOPER
+      </Text>
+
+      <Text
+        position={[
+          0,
+          -1.59,
+          0.012,
+        ]}
+        fontSize={0.102}
+        maxWidth={7.2}
+        lineHeight={1.1}
+        letterSpacing={0.1}
+        anchorX="center"
+        anchorY="middle"
+        color="#ffe4bd"
+        fillOpacity={0.68}
+      >
+        CLICK A MARKER · LEFT-DRAG TO MOVE · RIGHT-DRAG TO ROTATE · SCROLL TO
+        ZOOM
+      </Text>
+    </group>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /* Front-right street lamp near the orange cones                              */
 /* -------------------------------------------------------------------------- */
 
-const STREET_LAMP_BULB_POSITION: [number, number, number] = [
+const STREET_LAMP_BULB_POSITION: [
+  number,
+  number,
+  number,
+] = [
   6.58,
   4.586,
   7.331,
@@ -304,7 +482,7 @@ const STREET_LAMP_BULB_POSITION: [number, number, number] = [
 const STREET_LAMP_SPILL_TARGET_POSITION: [
   number,
   number,
-  number
+  number,
 ] = [
   4.55,
   0.08,
@@ -312,123 +490,272 @@ const STREET_LAMP_SPILL_TARGET_POSITION: [
 ];
 
 function TokyoStreetLampGlow() {
-  const spillLightRef = useRef<SpotLight>(null);
-  const spillTargetRef = useRef<Object3D>(null);
+  const spillLightRef =
+    useRef<SpotLight>(
+      null
+    );
+
+  const spillTargetRef =
+    useRef<Object3D>(
+      null
+    );
 
   useEffect(() => {
-    if (!spillLightRef.current || !spillTargetRef.current) return;
+    if (
+      !spillLightRef.current ||
+      !spillTargetRef.current
+    ) {
+      return;
+    }
 
-    spillLightRef.current.target = spillTargetRef.current;
+    spillLightRef.current.target =
+      spillTargetRef.current;
+
     spillLightRef.current.target.updateMatrixWorld();
   }, []);
 
   return (
     <>
       <object3D
-        ref={spillTargetRef}
-        position={STREET_LAMP_SPILL_TARGET_POSITION}
+        ref={
+          spillTargetRef
+        }
+        position={
+          STREET_LAMP_SPILL_TARGET_POSITION
+        }
       />
 
-      <group position={STREET_LAMP_BULB_POSITION}>
-        <mesh position={[0, 0.18, -0.03]}>
-          <cylinderGeometry args={[0.014, 0.014, 0.24, 10]} />
+      <group
+        position={
+          STREET_LAMP_BULB_POSITION
+        }
+      >
+        <mesh
+          position={[
+            0,
+            0.18,
+            -0.03,
+          ]}
+        >
+          <cylinderGeometry
+            args={[
+              0.014,
+              0.014,
+              0.24,
+              10,
+            ]}
+          />
 
           <meshStandardMaterial
             color="#252a31"
-            metalness={0.82}
-            roughness={0.32}
+            metalness={
+              0.82
+            }
+            roughness={
+              0.32
+            }
           />
         </mesh>
 
-        <mesh position={[0, 0.035, 0]}>
-          <boxGeometry args={[0.17, 0.22, 0.17]} />
+        <mesh
+          position={[
+            0,
+            0.035,
+            0,
+          ]}
+        >
+          <boxGeometry
+            args={[
+              0.17,
+              0.22,
+              0.17,
+            ]}
+          />
 
           <meshStandardMaterial
             color="#231912"
-            metalness={0.28}
-            roughness={0.72}
+            metalness={
+              0.28
+            }
+            roughness={
+              0.72
+            }
             emissive="#2a170a"
-            emissiveIntensity={0.18}
+            emissiveIntensity={
+              0.18
+            }
           />
         </mesh>
 
-        <mesh position={[0, 0.02, 0]}>
-          <boxGeometry args={[0.105, 0.145, 0.105]} />
+        <mesh
+          position={[
+            0,
+            0.02,
+            0,
+          ]}
+        >
+          <boxGeometry
+            args={[
+              0.105,
+              0.145,
+              0.105,
+            ]}
+          />
 
           <meshStandardMaterial
             color="#ffd9a2"
             emissive="#ffbd6d"
-            emissiveIntensity={1.55}
+            emissiveIntensity={
+              1.55
+            }
             transparent
-            opacity={0.92}
-            toneMapped={false}
+            opacity={
+              0.92
+            }
+            toneMapped={
+              false
+            }
           />
         </mesh>
 
         <pointLight
           name="frontStreetLampBulb"
-          position={[0, 0.02, 0]}
-          intensity={4}
-          distance={7}
-          decay={2}
+          position={[
+            0,
+            0.02,
+            0,
+          ]}
+          intensity={
+            4
+          }
+          distance={
+            7
+          }
+          decay={
+            2
+          }
           color="#ffcc88"
         />
       </group>
 
       <spotLight
         name="frontStreetLampSpill"
-        ref={spillLightRef}
-        position={STREET_LAMP_BULB_POSITION}
-        angle={1.45}
-        penumbra={1}
-        intensity={6}
-        distance={15}
-        decay={1.8}
+        ref={
+          spillLightRef
+        }
+        position={
+          STREET_LAMP_BULB_POSITION
+        }
+        angle={
+          1.45
+        }
+        penumbra={
+          1
+        }
+        intensity={
+          6
+        }
+        distance={
+          15
+        }
+        decay={
+          1.8
+        }
         color="#ffb86a"
       />
 
       <pointLight
         name="frontStreetLampLeftGroundFill"
-        position={[3.8, 0.18, 7.1]}
-        intensity={2.5}
-        distance={10}
-        decay={1.9}
+        position={[
+          3.8,
+          0.18,
+          7.1,
+        ]}
+        intensity={
+          2.5
+        }
+        distance={
+          10
+        }
+        decay={
+          1.9
+        }
         color="#ffb05a"
       />
 
       <pointLight
         name="frontStreetLampCenterGroundFill"
-        position={[5.72, 0.18, 7.08]}
-        intensity={2}
-        distance={8}
-        decay={1.9}
+        position={[
+          5.72,
+          0.18,
+          7.08,
+        ]}
+        intensity={
+          2
+        }
+        distance={
+          8
+        }
+        decay={
+          1.9
+        }
         color="#ffc878"
       />
 
       <pointLight
         name="frontStreetLampRightGroundFill"
-        position={[7.4, 0.18, 7.2]}
-        intensity={1.5}
-        distance={7}
-        decay={2}
+        position={[
+          7.4,
+          0.18,
+          7.2,
+        ]}
+        intensity={
+          1.5
+        }
+        distance={
+          7
+        }
+        decay={
+          2
+        }
         color="#ffd090"
       />
 
       <pointLight
         name="frontStreetLampWideGroundFill"
-        position={[5.5, 0.08, 8.5]}
-        intensity={2.5}
-        distance={10}
-        decay={1.8}
+        position={[
+          5.5,
+          0.08,
+          8.5,
+        ]}
+        intensity={
+          2.5
+        }
+        distance={
+          10
+        }
+        decay={
+          1.8
+        }
         color="#ffa840"
       />
 
       <pointLight
         name="frontStreetLampCanopyBounce"
-        position={[5.2, 1.2, 7]}
-        intensity={1.5}
-        distance={6}
-        decay={2}
+        position={[
+          5.2,
+          1.2,
+          7,
+        ]}
+        intensity={
+          1.5
+        }
+        distance={
+          6
+        }
+        decay={
+          2
+        }
         color="#ffbe6e"
       />
     </>
@@ -439,7 +766,11 @@ function TokyoStreetLampGlow() {
 /* Train-side street lamp                                                     */
 /* -------------------------------------------------------------------------- */
 
-const TRAIN_LAMP_BULB_POSITION: [number, number, number] = [
+const TRAIN_LAMP_BULB_POSITION: [
+  number,
+  number,
+  number,
+] = [
   -3.362,
   4.727,
   -7.83,
@@ -448,7 +779,7 @@ const TRAIN_LAMP_BULB_POSITION: [number, number, number] = [
 const TRAIN_LAMP_CENTER_TRACK_TARGET: [
   number,
   number,
-  number
+  number,
 ] = [
   0.15,
   0.419,
@@ -458,7 +789,7 @@ const TRAIN_LAMP_CENTER_TRACK_TARGET: [
 const TRAIN_LAMP_LEFT_TRACK_TARGET: [
   number,
   number,
-  number
+  number,
 ] = [
   -4.823,
   0.419,
@@ -468,7 +799,7 @@ const TRAIN_LAMP_LEFT_TRACK_TARGET: [
 const TRAIN_LAMP_RIGHT_TRACK_TARGET: [
   number,
   number,
-  number
+  number,
 ] = [
   4.987,
   0.419,
@@ -476,27 +807,64 @@ const TRAIN_LAMP_RIGHT_TRACK_TARGET: [
 ];
 
 function TrainStreetLampGlow() {
-  const leftSpillRef = useRef<SpotLight>(null);
-  const centerSpillRef = useRef<SpotLight>(null);
-  const rightSpillRef = useRef<SpotLight>(null);
+  const leftSpillRef =
+    useRef<SpotLight>(
+      null
+    );
 
-  const leftTargetRef = useRef<Object3D>(null);
-  const centerTargetRef = useRef<Object3D>(null);
-  const rightTargetRef = useRef<Object3D>(null);
+  const centerSpillRef =
+    useRef<SpotLight>(
+      null
+    );
+
+  const rightSpillRef =
+    useRef<SpotLight>(
+      null
+    );
+
+  const leftTargetRef =
+    useRef<Object3D>(
+      null
+    );
+
+  const centerTargetRef =
+    useRef<Object3D>(
+      null
+    );
+
+  const rightTargetRef =
+    useRef<Object3D>(
+      null
+    );
 
   useEffect(() => {
-    if (leftSpillRef.current && leftTargetRef.current) {
-      leftSpillRef.current.target = leftTargetRef.current;
+    if (
+      leftSpillRef.current &&
+      leftTargetRef.current
+    ) {
+      leftSpillRef.current.target =
+        leftTargetRef.current;
+
       leftSpillRef.current.target.updateMatrixWorld();
     }
 
-    if (centerSpillRef.current && centerTargetRef.current) {
-      centerSpillRef.current.target = centerTargetRef.current;
+    if (
+      centerSpillRef.current &&
+      centerTargetRef.current
+    ) {
+      centerSpillRef.current.target =
+        centerTargetRef.current;
+
       centerSpillRef.current.target.updateMatrixWorld();
     }
 
-    if (rightSpillRef.current && rightTargetRef.current) {
-      rightSpillRef.current.target = rightTargetRef.current;
+    if (
+      rightSpillRef.current &&
+      rightTargetRef.current
+    ) {
+      rightSpillRef.current.target =
+        rightTargetRef.current;
+
       rightSpillRef.current.target.updateMatrixWorld();
     }
   }, []);
@@ -504,62 +872,124 @@ function TrainStreetLampGlow() {
   return (
     <>
       <object3D
-        ref={leftTargetRef}
-        position={TRAIN_LAMP_LEFT_TRACK_TARGET}
+        ref={
+          leftTargetRef
+        }
+        position={
+          TRAIN_LAMP_LEFT_TRACK_TARGET
+        }
       />
 
       <object3D
-        ref={centerTargetRef}
-        position={TRAIN_LAMP_CENTER_TRACK_TARGET}
+        ref={
+          centerTargetRef
+        }
+        position={
+          TRAIN_LAMP_CENTER_TRACK_TARGET
+        }
       />
 
       <object3D
-        ref={rightTargetRef}
-        position={TRAIN_LAMP_RIGHT_TRACK_TARGET}
+        ref={
+          rightTargetRef
+        }
+        position={
+          TRAIN_LAMP_RIGHT_TRACK_TARGET
+        }
       />
 
       <pointLight
         name="trainStreetLampBulb"
-        position={TRAIN_LAMP_BULB_POSITION}
-        intensity={3.1}
-        distance={6.5}
-        decay={2.1}
+        position={
+          TRAIN_LAMP_BULB_POSITION
+        }
+        intensity={
+          3.1
+        }
+        distance={
+          6.5
+        }
+        decay={
+          2.1
+        }
         color="#f4c48d"
       />
 
       <spotLight
         name="trainStreetLampLeftSoftSpill"
-        ref={leftSpillRef}
-        position={TRAIN_LAMP_BULB_POSITION}
-        angle={1.52}
-        penumbra={1}
-        intensity={13}
-        distance={31}
-        decay={1.58}
+        ref={
+          leftSpillRef
+        }
+        position={
+          TRAIN_LAMP_BULB_POSITION
+        }
+        angle={
+          1.52
+        }
+        penumbra={
+          1
+        }
+        intensity={
+          13
+        }
+        distance={
+          31
+        }
+        decay={
+          1.58
+        }
         color="#ea9958"
       />
 
       <spotLight
         name="trainStreetLampCenterSoftSpill"
-        ref={centerSpillRef}
-        position={TRAIN_LAMP_BULB_POSITION}
-        angle={1.56}
-        penumbra={1}
-        intensity={17}
-        distance={35}
-        decay={1.52}
+        ref={
+          centerSpillRef
+        }
+        position={
+          TRAIN_LAMP_BULB_POSITION
+        }
+        angle={
+          1.56
+        }
+        penumbra={
+          1
+        }
+        intensity={
+          17
+        }
+        distance={
+          35
+        }
+        decay={
+          1.52
+        }
         color="#f0a260"
       />
 
       <spotLight
         name="trainStreetLampRightSoftSpill"
-        ref={rightSpillRef}
-        position={TRAIN_LAMP_BULB_POSITION}
-        angle={1.54}
-        penumbra={1}
-        intensity={12.5}
-        distance={35}
-        decay={1.58}
+        ref={
+          rightSpillRef
+        }
+        position={
+          TRAIN_LAMP_BULB_POSITION
+        }
+        angle={
+          1.54
+        }
+        penumbra={
+          1
+        }
+        intensity={
+          12.5
+        }
+        distance={
+          35
+        }
+        decay={
+          1.58
+        }
         color="#f2af70"
       />
     </>
@@ -575,37 +1005,77 @@ function BackAlleyPinkGlow() {
     <>
       <pointLight
         name="backAlleyUpperPinkFill"
-        position={[1.8, 5.2, -1.8]}
-        intensity={22}
-        distance={12}
-        decay={1.5}
+        position={[
+          1.8,
+          5.2,
+          -1.8,
+        ]}
+        intensity={
+          22
+        }
+        distance={
+          12
+        }
+        decay={
+          1.5
+        }
         color="#ff6eb4"
       />
 
       <pointLight
         name="backAlleyMiddlePinkFill"
-        position={[2.4, 3.2, -2.6]}
-        intensity={18}
-        distance={11}
-        decay={1.55}
+        position={[
+          2.4,
+          3.2,
+          -2.6,
+        ]}
+        intensity={
+          18
+        }
+        distance={
+          11
+        }
+        decay={
+          1.55
+        }
         color="#ff82b8"
       />
 
       <pointLight
         name="backAlleyLowerPinkFill"
-        position={[2, 0.6, -2.2]}
-        intensity={14}
-        distance={10}
-        decay={1.6}
+        position={[
+          2,
+          0.6,
+          -2.2,
+        ]}
+        intensity={
+          14
+        }
+        distance={
+          10
+        }
+        decay={
+          1.6
+        }
         color="#ff90c0"
       />
 
       <pointLight
         name="backAlleyHighPinkFill"
-        position={[1.6, 7.8, -1.4]}
-        intensity={12}
-        distance={10}
-        decay={1.65}
+        position={[
+          1.6,
+          7.8,
+          -1.4,
+        ]}
+        intensity={
+          12
+        }
+        distance={
+          10
+        }
+        decay={
+          1.65
+        }
         color="#ff78be"
       />
     </>
@@ -621,13 +1091,24 @@ const PROJECT_CASE_STUDIES: Record<
   ProjectCaseStudy
 > = {
   "sigma-autonomous-car": {
-    id: "sigma-autonomous-car",
-    title: "Sigma Autonomous Car",
-    type: "Embedded / Software Project",
-    role: "Team Lead & Developer",
-    period: "September 2023 – October 2023",
+    id:
+      "sigma-autonomous-car",
+
+    title:
+      "Sigma Autonomous Car",
+
+    type:
+      "Embedded / Software Project",
+
+    role:
+      "Team Lead & Developer",
+
+    period:
+      "September 2023 – October 2023",
+
     summary:
       "A team-built autonomous-car project focused on real-time perception, obstacle detection, and navigation. I helped lead the team while contributing to the software implementation and testing process.",
+
     technologies: [
       "Python",
       "C++",
@@ -637,29 +1118,44 @@ const PROJECT_CASE_STUDIES: Record<
       "LiDAR",
       "Computer Vision",
     ],
+
     contributions: [
       "Worked on real-time object and obstacle detection for autonomous navigation.",
       "Used camera and LiDAR input to support environmental awareness.",
       "Helped test and iterate on the car's movement and perception behavior.",
       "Coordinated tasks as team lead and supported integration between different parts of the project.",
     ],
+
     images: [
       "/projects/sigma-autonomous-car/cover.jpg",
       "/projects/sigma-autonomous-car/image-1.jpg",
       "/projects/sigma-autonomous-car/image-2.jpg",
       "/projects/sigma-autonomous-car/image-3.jpg",
     ],
-    video: "/projects/sigma-autonomous-car/demo.mp4",
+
+    video:
+      "/projects/sigma-autonomous-car/demo.mp4",
   },
 
   podmanager: {
-    id: "podmanager",
-    title: "PodManager.ai",
-    type: "Production Internship · Fullstack Development",
-    role: "Fullstack Developer Intern",
-    period: "2025 – 2026",
+    id:
+      "podmanager",
+
+    title:
+      "PodManager.ai",
+
+    type:
+      "Production Internship · Fullstack Development",
+
+    role:
+      "Fullstack Developer Intern",
+
+    period:
+      "2025 – 2026",
+
     summary:
       "During my internship, I worked inside a real production codebase for a podcast SaaS platform. I contributed to recording, editing, publishing, and AI-assisted workflow features while following team conventions and code-review practices.",
+
     technologies: [
       "Next.js",
       "TypeScript",
@@ -668,6 +1164,7 @@ const PROJECT_CASE_STUDIES: Record<
       "AI Workflows",
       "Production Codebase",
     ],
+
     contributions: [
       "Implemented waveform visualization to make podcast audio easier to navigate and edit.",
       "Worked on the video-track strip for a clearer visual editing experience.",
@@ -675,6 +1172,7 @@ const PROJECT_CASE_STUDIES: Record<
       "Built publish-page toggles for optional intro, outro, and watermark settings.",
       "Refactored existing components to improve structure and maintainability.",
     ],
+
     images: [
       "/projects/podmanager/cover.png",
       "/projects/podmanager/image-1.png",
@@ -683,13 +1181,24 @@ const PROJECT_CASE_STUDIES: Record<
   },
 
   practicepal: {
-    id: "practicepal",
-    title: "PracticePal",
-    type: "Fullstack Web Application",
-    role: "Creator & Fullstack Developer",
-    period: "Degree Project",
+    id:
+      "practicepal",
+
+    title:
+      "PracticePal",
+
+    type:
+      "Fullstack Web Application",
+
+    role:
+      "Creator & Fullstack Developer",
+
+    period:
+      "Degree Project",
+
     summary:
       "A music-practice tracking platform designed to help musicians plan sessions, stay consistent, and review their progress. The application includes authentication, practice planning, statistics, and a subscription flow.",
+
     technologies: [
       "Next.js",
       "TypeScript",
@@ -698,48 +1207,96 @@ const PROJECT_CASE_STUDIES: Record<
       "Stripe",
       "Recharts",
     ],
+
     contributions: [
       "Built authentication with credentials and social-login options.",
       "Created practice-session tracking, planning, and progress-statistics features.",
       "Integrated Stripe subscriptions and webhook handling for the Pro plan.",
       "Used MongoDB for account, practice-session, and subscription data.",
     ],
-    images: [],
+
+    images:
+      [],
   },
 };
 
 const SECTIONS: PortfolioSection[] = [
   {
-    id: "about",
-    number: "01",
-    markerNumber: "1",
-    title: "About Me",
-    eyebrow: "Fullstack · Embedded · Software Developer",
-    hotspot: ABOUT_HOTSPOT,
-    camera: ABOUT_CAMERA_DESKTOP,
-    focus: ABOUT_FOCUS,
+    id:
+      "about",
+
+    number:
+      "01",
+
+    markerNumber:
+      "1",
+
+    title:
+      "About Me",
+
+    eyebrow:
+      "Fullstack · Embedded · Software Developer",
+
+    hotspot:
+      ABOUT_HOTSPOT,
+
+    camera:
+      ABOUT_CAMERA_DESKTOP,
+
+    focus:
+      ABOUT_FOCUS,
   },
 
   {
-    id: "projects",
-    number: "02",
-    markerNumber: "2",
-    title: "Projects",
-    eyebrow: "Selected development work",
-    hotspot: PROJECTS_HOTSPOT,
-    camera: PROJECTS_CAMERA_DESKTOP,
-    focus: PROJECTS_FOCUS,
+    id:
+      "projects",
+
+    number:
+      "02",
+
+    markerNumber:
+      "2",
+
+    title:
+      "Projects",
+
+    eyebrow:
+      "Selected development work",
+
+    hotspot:
+      PROJECTS_HOTSPOT,
+
+    camera:
+      PROJECTS_CAMERA_DESKTOP,
+
+    focus:
+      PROJECTS_FOCUS,
   },
 
   {
-    id: "credits",
-    number: "03",
-    markerNumber: "3",
-    title: "Credits",
-    eyebrow: "Attribution and tools",
-    hotspot: CREDITS_HOTSPOT,
-    camera: CREDITS_CAMERA_DESKTOP,
-    focus: CREDITS_FOCUS,
+    id:
+      "credits",
+
+    number:
+      "03",
+
+    markerNumber:
+      "3",
+
+    title:
+      "Credits",
+
+    eyebrow:
+      "Attribution and tools",
+
+    hotspot:
+      CREDITS_HOTSPOT,
+
+    camera:
+      CREDITS_CAMERA_DESKTOP,
+
+    focus:
+      CREDITS_FOCUS,
   },
 ];
 
@@ -768,25 +1325,55 @@ function ConcreteRooftopGround() {
   return (
     <>
       <mesh
-        position={[0, -0.055, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
+        position={[
+          0,
+          -0.055,
+          0,
+        ]}
+        rotation={[
+          -Math.PI /
+            2,
+          0,
+          0,
+        ]}
         receiveShadow
       >
-        <planeGeometry args={[90, 90]} />
+        <planeGeometry
+          args={[
+            90,
+            90,
+          ]}
+        />
 
         <meshStandardMaterial
           color="#030305"
-          roughness={0.96}
-          metalness={0.02}
+          roughness={
+            0.96
+          }
+          metalness={
+            0.02
+          }
         />
       </mesh>
 
       <ContactShadows
-        position={[0, -0.025, 0]}
-        opacity={0.24}
-        scale={38}
-        blur={4}
-        far={9}
+        position={[
+          0,
+          -0.025,
+          0,
+        ]}
+        opacity={
+          0.24
+        }
+        scale={
+          38
+        }
+        blur={
+          4
+        }
+        far={
+          9
+        }
         color="#000000"
       />
     </>
@@ -794,35 +1381,103 @@ function ConcreteRooftopGround() {
 }
 
 function FullscreenNightStars() {
-  const stars = useMemo(
-    () =>
-      Array.from({ length: 14 }, (_, index) => ({
-        id: index,
-        left: `${(index * 37 + 13) % 100}%`,
-        top: `${(index * 53 + 9) % 95}%`,
-        size: 4 + ((index * 11) % 10),
-        delay: `${-((index * 0.43) % 5.8)}s`,
-        duration: `${2.8 + ((index * 7) % 22) / 10}s`,
-      })),
-    []
-  );
+  const stars =
+    useMemo(
+      () =>
+        Array.from(
+          {
+            length:
+              14,
+          },
+
+          (
+            _,
+            index
+          ) => ({
+            id:
+              index,
+
+            left:
+              `${
+                (
+                  index *
+                    37 +
+                  13
+                ) %
+                100
+              }%`,
+
+            top:
+              `${
+                (
+                  index *
+                    53 +
+                  9
+                ) %
+                95
+              }%`,
+
+            size:
+              4 +
+              (index *
+                11) %
+                10,
+
+            delay:
+              `-${
+                (
+                  index *
+                  0.43
+                ) %
+                5.8
+              }s`,
+
+            duration:
+              `${
+                2.8 +
+                ((index *
+                  7) %
+                  22) /
+                  10
+              }s`,
+          })
+        ),
+      []
+    );
 
   return (
     <div className="adventure-stars">
-      {stars.map((star) => (
-        <span
-          key={star.id}
-          className="adventure-star"
-          style={{
-            left: star.left,
-            top: star.top,
-            width: `${star.size}px`,
-            height: `${star.size}px`,
-            animationDelay: star.delay,
-            animationDuration: star.duration,
-          }}
-        />
-      ))}
+      {stars.map(
+        (
+          star
+        ) => (
+          <span
+            key={
+              star.id
+            }
+            className="adventure-star"
+            style={{
+              left:
+                star.left,
+
+              top:
+                star.top,
+
+              width:
+                `${star.size}px`,
+
+              height:
+                `${star.size}px`,
+
+              animationDelay:
+                star.delay,
+
+              animationDuration:
+                star.duration,
+            }}
+          />
+        )
+      )}
     </div>
   );
 }
@@ -835,10 +1490,18 @@ function AnnotationContent({
   id,
   onProjectSelect,
 }: {
-  id: SectionId;
-  onProjectSelect: (id: ProjectId) => void;
+  id:
+    SectionId;
+
+  onProjectSelect: (
+    id:
+      ProjectId
+  ) => void;
 }) {
-  if (id === "about") {
+  if (
+    id ===
+    "about"
+  ) {
     return (
       <>
         <p>
@@ -859,23 +1522,58 @@ function AnnotationContent({
     );
   }
 
-  if (id === "projects") {
+  if (
+    id ===
+    "projects"
+  ) {
     return (
       <>
-        {(Object.values(PROJECT_CASE_STUDIES) as ProjectCaseStudy[]).map(
-          (project) => (
+        {(
+          Object.values(
+            PROJECT_CASE_STUDIES
+          ) as ProjectCaseStudy[]
+        ).map(
+          (
+            project
+          ) => (
             <button
-              key={project.id}
+              key={
+                project.id
+              }
               type="button"
               className="adventure-project-card-button"
-              onClick={(event) => {
+              onClick={(
+                event
+              ) => {
                 event.stopPropagation();
-                onProjectSelect(project.id);
+
+                onProjectSelect(
+                  project.id
+                );
               }}
             >
-              <strong>{project.title}</strong>
-              <span>{project.technologies.slice(0, 5).join(" · ")}</span>
-              <em>Open case study →</em>
+              <strong>
+                {
+                  project.title
+                }
+              </strong>
+
+              <span>
+                {
+                  project.technologies
+                    .slice(
+                      0,
+                      5
+                    )
+                    .join(
+                      " · "
+                    )
+                }
+              </span>
+
+              <em>
+                Open case study →
+              </em>
             </button>
           )
         )}
@@ -885,7 +1583,9 @@ function AnnotationContent({
 
   return (
     <>
-      <p>Portfolio concept and implementation by Julie Anne Cantillep.</p>
+      <p>
+        Portfolio concept and implementation by Julie Anne Cantillep.
+      </p>
 
       <p>
         3D scene: &quot;A Mysterious Adventure - 3D Editor Challenge&quot; by
@@ -902,61 +1602,113 @@ function AnnotationContent({
 
 /* -------------------------------------------------------------------------- */
 /* Project modal                                                              */
-/* ------------------------------------------------------------export default function HeroScene({-------------- */
+/* -------------------------------------------------------------------------- */
 
 function ProjectCaseStudyModal({
   projectId,
   onClose,
 }: {
-  projectId: ProjectId | null;
-  onClose: () => void;
+  projectId:
+    | ProjectId
+    | null;
+
+  onClose:
+    () => void;
 }) {
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [
+    activeImageIndex,
+    setActiveImageIndex,
+  ] =
+    useState(
+      0
+    );
 
   useEffect(() => {
-    setActiveImageIndex(0);
-  }, [projectId]);
+    setActiveImageIndex(
+      0
+    );
+  }, [
+    projectId,
+  ]);
 
-  if (!projectId) return null;
+  if (
+    !projectId
+  ) {
+    return null;
+  }
 
-  const project = PROJECT_CASE_STUDIES[projectId];
-  const activeImage = project.images[activeImageIndex];
+  const project =
+    PROJECT_CASE_STUDIES[
+      projectId
+    ];
+
+  const activeImage =
+    project.images[
+      activeImageIndex
+    ];
 
   return (
     <div
       className="adventure-case-study-backdrop"
       role="presentation"
-      onClick={onClose}
+      onClick={
+        onClose
+      }
     >
       <article
         className="adventure-case-study-modal"
         role="dialog"
         aria-modal="true"
         aria-label={`${project.title} case study`}
-        onClick={(event) => event.stopPropagation()}
+        onClick={(
+          event
+        ) =>
+          event.stopPropagation()
+        }
       >
         <button
           type="button"
           className="adventure-case-study-close"
-          onClick={onClose}
+          onClick={
+            onClose
+          }
           aria-label="Close case study"
         >
           ×
         </button>
 
         <header className="adventure-case-study-header">
-          <p>{project.type}</p>
-          <h2>{project.title}</h2>
+          <p>
+            {
+              project.type
+            }
+          </p>
+
+          <h2>
+            {
+              project.title
+            }
+          </h2>
 
           <div className="adventure-case-study-meta">
             <span>
-              <b>Role</b>
-              {project.role}
+              <b>
+                Role
+              </b>
+
+              {
+                project.role
+              }
             </span>
 
             <span>
-              <b>Period</b>
-              {project.period}
+              <b>
+                Period
+              </b>
+
+              {
+                project.period
+              }
             </span>
           </div>
         </header>
@@ -965,34 +1717,63 @@ function ProjectCaseStudyModal({
           <section className="adventure-case-study-gallery">
             {activeImage ? (
               <img
-                src={activeImage}
+                src={
+                  activeImage
+                }
                 alt={`${project.title} screenshot ${activeImageIndex + 1}`}
                 className="adventure-case-study-main-image"
               />
             ) : (
               <div className="adventure-case-study-empty-gallery">
-                <strong>Screenshots coming soon</strong>
+                <strong>
+                  Screenshots coming soon
+                </strong>
 
                 <p>
                   Add PracticePal screenshots inside{" "}
-                  <code>public/projects/practicepal</code> when they are ready.
+                  <code>
+                    public/projects/practicepal
+                  </code>{" "}
+                  when they are ready.
                 </p>
               </div>
             )}
 
-            {project.images.length > 1 && (
+            {project.images.length >
+              1 && (
               <div className="adventure-case-study-thumbnails">
-                {project.images.map((image, index) => (
-                  <button
-                    key={image}
-                    type="button"
-                    className={activeImageIndex === index ? "is-active" : ""}
-                    onClick={() => setActiveImageIndex(index)}
-                    aria-label={`Show screenshot ${index + 1}`}
-                  >
-                    <img src={image} alt="" />
-                  </button>
-                ))}
+                {project.images.map(
+                  (
+                    image,
+                    index
+                  ) => (
+                    <button
+                      key={
+                        image
+                      }
+                      type="button"
+                      className={
+                        activeImageIndex ===
+                        index
+                          ? "is-active"
+                          : ""
+                      }
+                      onClick={() =>
+                        setActiveImageIndex(
+                          index
+                        )
+                      }
+                      aria-label={`Show screenshot ${index + 1}`}
+                    >
+                      <img
+                        src={
+                          image
+                        }
+                        alt=""
+                      />
+                    </button>
+                  )
+                )}
               </div>
             )}
 
@@ -1001,34 +1782,76 @@ function ProjectCaseStudyModal({
                 className="adventure-case-study-video"
                 controls
                 preload="metadata"
-                poster={project.images[0]}
+                poster={
+                  project.images[
+                    0
+                  ]
+                }
               >
-                <source src={project.video} type="video/mp4" />
+                <source
+                  src={
+                    project.video
+                  }
+                  type="video/mp4"
+                />
+
                 Your browser does not support the video tag.
               </video>
             )}
           </section>
 
           <section className="adventure-case-study-content">
-            <p className="adventure-case-study-summary">{project.summary}</p>
+            <p className="adventure-case-study-summary">
+              {
+                project.summary
+              }
+            </p>
 
             <div>
-              <h3>What I worked on</h3>
+              <h3>
+                What I worked on
+              </h3>
 
               <ul>
-                {project.contributions.map((contribution) => (
-                  <li key={contribution}>{contribution}</li>
-                ))}
+                {project.contributions.map(
+                  (
+                    contribution
+                  ) => (
+                    <li
+                      key={
+                        contribution
+                      }
+                    >
+                      {
+                        contribution
+                      }
+                    </li>
+                  )
+                )}
               </ul>
             </div>
 
             <div>
-              <h3>Technologies</h3>
+              <h3>
+                Technologies
+              </h3>
 
               <div className="adventure-case-study-tags">
-                {project.technologies.map((technology) => (
-                  <span key={technology}>{technology}</span>
-                ))}
+                {project.technologies.map(
+                  (
+                    technology
+                  ) => (
+                    <span
+                      key={
+                        technology
+                      }
+                    >
+                      {
+                        technology
+                      }
+                    </span>
+                  )
+                )}
               </div>
             </div>
           </section>
@@ -1044,14 +1867,24 @@ function ProjectCaseStudyModal({
 
 function AnnotationCard({
   section,
-  mobile = false,
+  mobile =
+    false,
   onClose,
   onProjectSelect,
 }: {
-  section: PortfolioSection;
-  mobile?: boolean;
-  onClose: () => void;
-  onProjectSelect: (id: ProjectId) => void;
+  section:
+    PortfolioSection;
+
+  mobile?:
+    boolean;
+
+  onClose:
+    () => void;
+
+  onProjectSelect: (
+    id:
+      ProjectId
+  ) => void;
 }) {
   return (
     <section
@@ -1060,18 +1893,35 @@ function AnnotationCard({
           ? "adventure-annotation-card--mobile"
           : ""
       }`}
-      role={mobile ? "dialog" : undefined}
-      aria-modal={mobile ? true : undefined}
-      aria-label={mobile ? section.title : undefined}
-      onClick={(event) => {
+      role={
+        mobile
+          ? "dialog"
+          : undefined
+      }
+      aria-modal={
+        mobile
+          ? true
+          : undefined
+      }
+      aria-label={
+        mobile
+          ? section.title
+          : undefined
+      }
+      onClick={(
+        event
+      ) => {
         event.stopPropagation();
       }}
     >
       <button
         type="button"
         className="adventure-annotation-close"
-        onClick={(event) => {
+        onClick={(
+          event
+        ) => {
           event.stopPropagation();
+
           onClose();
         }}
         aria-label={`Close ${section.title}`}
@@ -1080,21 +1930,33 @@ function AnnotationCard({
       </button>
 
       <p className="adventure-annotation-card-number">
-        {section.number}
+        {
+          section.number
+        }
       </p>
 
-      <h2>{section.title}</h2>
+      <h2>
+        {
+          section.title
+        }
+      </h2>
 
       <p className="adventure-annotation-card-eyebrow">
-        {section.eyebrow}
+        {
+          section.eyebrow
+        }
       </p>
 
       <div
         className={`adventure-annotation-card-copy is-${section.id}`}
       >
         <AnnotationContent
-          id={section.id}
-          onProjectSelect={onProjectSelect}
+          id={
+            section.id
+          }
+          onProjectSelect={
+            onProjectSelect
+          }
         />
       </div>
     </section>
@@ -1110,21 +1972,44 @@ function NumberHotspot({
   onClose,
   onProjectSelect,
 }: {
-  section: PortfolioSection;
-  disabled: boolean;
-  selected: boolean;
-  showCard: boolean;
-  onSelect: (section: PortfolioSection) => void;
-  onClose: () => void;
-  onProjectSelect: (id: ProjectId) => void;
+  section:
+    PortfolioSection;
+
+  disabled:
+    boolean;
+
+  selected:
+    boolean;
+
+  showCard:
+    boolean;
+
+  onSelect: (
+    section:
+      PortfolioSection
+  ) => void;
+
+  onClose:
+    () => void;
+
+  onProjectSelect: (
+    id:
+      ProjectId
+  ) => void;
 }) {
   return (
     <Html
-      position={section.hotspot}
+      position={
+        section.hotspot
+      }
       center
-      zIndexRange={[40, 0]}
+      zIndexRange={[
+        40,
+        0,
+      ]}
       style={{
-        pointerEvents: "auto",
+        pointerEvents:
+          "auto",
       }}
     >
       <div
@@ -1141,28 +2026,46 @@ function NumberHotspot({
               ? "is-selected"
               : ""
           }`}
-          disabled={disabled}
-          onClick={(event) => {
+          disabled={
+            disabled
+          }
+          onClick={(
+            event
+          ) => {
             event.stopPropagation();
-            onSelect(section);
+
+            onSelect(
+              section
+            );
           }}
           aria-label={`Open ${section.title}`}
         >
           <span className="adventure-number-ripple" />
+
           <span className="adventure-number-ripple ripple-two" />
 
           <span className="adventure-number-core">
-            {section.markerNumber ?? section.number}
+            {
+              section.markerNumber ??
+              section.number
+            }
           </span>
         </button>
 
-        {selected && showCard && (
-          <AnnotationCard
-            section={section}
-            onClose={onClose}
-            onProjectSelect={onProjectSelect}
-          />
-        )}
+        {selected &&
+          showCard && (
+            <AnnotationCard
+              section={
+                section
+              }
+              onClose={
+                onClose
+              }
+              onProjectSelect={
+                onProjectSelect
+              }
+            />
+          )}
       </div>
     </Html>
   );
@@ -1179,52 +2082,140 @@ function AdventureSceneContent({
   onProjectSelect,
   onSceneReady,
 }: {
-  viewportWidth: number;
-  activeId: SectionId | null;
-  onActiveChange: (id: SectionId | null) => void;
-  onProjectSelect: (id: ProjectId) => void;
-  onSceneReady?: () => void;
+  viewportWidth:
+    number;
+
+  activeId:
+    | SectionId
+    | null;
+
+  onActiveChange: (
+    id:
+      | SectionId
+      | null
+  ) => void;
+
+  onProjectSelect: (
+    id:
+      ProjectId
+  ) => void;
+
+  onSceneReady?:
+    () => void;
 }) {
-  const { camera, scene } = useThree();
+  const {
+    camera,
+    scene,
+  } =
+    useThree();
 
-  const controlsRef = useRef<any>(null);
-  const readyRef = useRef(false);
-  const introTimelineRef = useRef<gsap.core.Timeline | null>(null);
+  const controlsRef =
+    useRef<any>(
+      null
+    );
 
-  const [moving, setMoving] = useState(false);
+  const readyRef =
+    useRef(
+      false
+    );
 
-  const [debugClickPoint, setDebugClickPoint] = useState<
-    [number, number, number] | null
-  >(null);
+  const introTimelineRef =
+    useRef<
+      | gsap.core.Timeline
+      | null
+    >(
+      null
+    );
 
-  const compact = viewportWidth < 768;
+  const [
+    moving,
+    setMoving,
+  ] =
+    useState(
+      false
+    );
 
-  const homeCamera = compact
-    ? HOME_CAMERA_MOBILE
-    : HOME_CAMERA_DESKTOP;
+  const [
+    debugClickPoint,
+    setDebugClickPoint,
+  ] =
+    useState<
+      | [
+          number,
+          number,
+          number,
+        ]
+      | null
+    >(
+      null
+    );
+
+  const compact =
+    viewportWidth <
+    768;
+
+  const homeCamera =
+    compact
+      ? HOME_CAMERA_MOBILE
+      : HOME_CAMERA_DESKTOP;
 
   const handleLightDebugClick = (
-    event: ThreeEvent<MouseEvent>
+    event:
+      ThreeEvent<MouseEvent>
   ) => {
-    if (!ENABLE_LIGHT_DEBUGGER) return;
+    if (
+      !ENABLE_LIGHT_DEBUGGER
+    ) {
+      return;
+    }
 
     event.stopPropagation();
 
-    const { x, y, z } = event.point;
+    const {
+      x,
+      y,
+      z,
+    } =
+      event.point;
 
-    const clickedPosition: [number, number, number] = [
-      Number(x.toFixed(3)),
-      Number(y.toFixed(3)),
-      Number(z.toFixed(3)),
+    const clickedPosition: [
+      number,
+      number,
+      number,
+    ] = [
+      Number(
+        x.toFixed(
+          3
+        )
+      ),
+
+      Number(
+        y.toFixed(
+          3
+        )
+      ),
+
+      Number(
+        z.toFixed(
+          3
+        )
+      ),
     ];
 
-    const worldNormal = event.face?.normal?.clone();
+    const worldNormal =
+      event.face?.normal?.clone();
 
-    if (worldNormal) {
-      worldNormal.transformDirection(event.object.matrixWorld);
+    if (
+      worldNormal
+    ) {
+      worldNormal.transformDirection(
+        event.object.matrixWorld
+      );
     }
 
-    setDebugClickPoint(clickedPosition);
+    setDebugClickPoint(
+      clickedPosition
+    );
 
     console.group(
       "%cLIGHT POSITION DEBUG",
@@ -1233,139 +2224,259 @@ function AdventureSceneContent({
 
     console.log(
       "Clicked mesh:",
-      event.object.name || "(unnamed mesh)"
+      event.object.name ||
+        "(unnamed mesh)"
     );
 
-    console.log("World position:", clickedPosition);
+    console.log(
+      "World position:",
+      clickedPosition
+    );
 
-    if (worldNormal) {
-      console.log("World normal:", [
-        Number(worldNormal.x.toFixed(3)),
-        Number(worldNormal.y.toFixed(3)),
-        Number(worldNormal.z.toFixed(3)),
-      ]);
+    if (
+      worldNormal
+    ) {
+      console.log(
+        "World normal:",
+        [
+          Number(
+            worldNormal.x.toFixed(
+              3
+            )
+          ),
+
+          Number(
+            worldNormal.y.toFixed(
+              3
+            )
+          ),
+
+          Number(
+            worldNormal.z.toFixed(
+              3
+            )
+          ),
+        ]
+      );
     }
 
     const nearbyLights: Array<{
-      name: string;
-      type: string;
-      color: string;
-      intensity: number | string;
-      range: number | string;
-      distanceFromClick: number;
-      worldPosition: string;
-    }> = [];
+      name:
+        string;
 
-    scene.traverse((object) => {
-      const possibleLight = object as typeof object & {
-        isLight?: boolean;
+      type:
+        string;
 
-        color?: {
-          getHexString?: () => string;
-        };
+      color:
+        string;
 
-        intensity?: number;
-        distance?: number;
-      };
+      intensity:
+        | number
+        | string;
 
-      if (!possibleLight.isLight) return;
+      range:
+        | number
+        | string;
 
-      const lightPosition = new Vector3();
+      distanceFromClick:
+        number;
 
-      possibleLight.getWorldPosition(lightPosition);
+      worldPosition:
+        string;
+    }> =
+      [];
 
-      nearbyLights.push({
-        name:
-          possibleLight.name ||
-          "(unnamed light)",
+    scene.traverse(
+      (
+        object
+      ) => {
+        const possibleLight =
+          object as typeof object & {
+            isLight?:
+              boolean;
 
-        type: possibleLight.type,
+            color?: {
+              getHexString?: () => string;
+            };
 
-        color:
-          possibleLight.color?.getHexString
-            ? `#${possibleLight.color.getHexString()}`
-            : "(no color)",
+            intensity?:
+              number;
 
-        intensity:
-          typeof possibleLight.intensity === "number"
-            ? Number(possibleLight.intensity.toFixed(3))
-            : "(not available)",
+            distance?:
+              number;
+          };
 
-        range:
-          typeof possibleLight.distance === "number"
-            ? Number(possibleLight.distance.toFixed(3))
-            : "(not available)",
+        if (
+          !possibleLight.isLight
+        ) {
+          return;
+        }
 
-        distanceFromClick: Number(
+        const lightPosition =
+          new Vector3();
+
+        possibleLight.getWorldPosition(
           lightPosition
-            .distanceTo(event.point)
-            .toFixed(3)
-        ),
+        );
 
-        worldPosition: `[${lightPosition.x.toFixed(
-          3
-        )}, ${lightPosition.y.toFixed(
-          3
-        )}, ${lightPosition.z.toFixed(3)}]`,
-      });
-    });
+        nearbyLights.push(
+          {
+            name:
+              possibleLight.name ||
+              "(unnamed light)",
+
+            type:
+              possibleLight.type,
+
+            color:
+              possibleLight.color
+                ?.getHexString
+                ? `#${possibleLight.color.getHexString()}`
+                : "(no color)",
+
+            intensity:
+              typeof possibleLight.intensity ===
+              "number"
+                ? Number(
+                    possibleLight.intensity.toFixed(
+                      3
+                    )
+                  )
+                : "(not available)",
+
+            range:
+              typeof possibleLight.distance ===
+              "number"
+                ? Number(
+                    possibleLight.distance.toFixed(
+                      3
+                    )
+                  )
+                : "(not available)",
+
+            distanceFromClick:
+              Number(
+                lightPosition
+                  .distanceTo(
+                    event.point
+                  )
+                  .toFixed(
+                    3
+                  )
+              ),
+
+            worldPosition:
+              `[${lightPosition.x.toFixed(
+                3
+              )}, ${lightPosition.y.toFixed(
+                3
+              )}, ${lightPosition.z.toFixed(
+                3
+              )}]`,
+          }
+        );
+      }
+    );
 
     nearbyLights.sort(
-      (first, second) =>
+      (
+        first,
+        second
+      ) =>
         first.distanceFromClick -
         second.distanceFromClick
     );
 
-    console.log("Nearby scene lights, closest first:");
-    console.table(nearbyLights.slice(0, 20));
+    console.log(
+      "Nearby scene lights, closest first:"
+    );
+
+    console.table(
+      nearbyLights.slice(
+        0,
+        20
+      )
+    );
 
     const clickedObject =
       event.object as typeof event.object & {
-        material?: any;
+        material?:
+          any;
       };
 
-    const clickedMaterials = Array.isArray(
-      clickedObject.material
-    )
-      ? clickedObject.material
-      : [clickedObject.material];
+    const clickedMaterials =
+      Array.isArray(
+        clickedObject.material
+      )
+        ? clickedObject.material
+        : [
+            clickedObject.material,
+          ];
 
-    const materialRows = clickedMaterials
-      .filter(Boolean)
-      .map((material: any) => ({
-        name:
-          material.name ||
-          "(unnamed material)",
+    const materialRows =
+      clickedMaterials
+        .filter(
+          Boolean
+        )
+        .map(
+          (
+            material:
+              any
+          ) => ({
+            name:
+              material.name ||
+              "(unnamed material)",
 
-        type:
-          material.type ||
-          "(unknown type)",
+            type:
+              material.type ||
+              "(unknown type)",
 
-        color:
-          material.color?.getHexString
-            ? `#${material.color.getHexString()}`
-            : "(no color)",
+            color:
+              material.color
+                ?.getHexString
+                ? `#${material.color.getHexString()}`
+                : "(no color)",
 
-        emissive:
-          material.emissive?.getHexString
-            ? `#${material.emissive.getHexString()}`
-            : "(no emissive color)",
+            emissive:
+              material.emissive
+                ?.getHexString
+                ? `#${material.emissive.getHexString()}`
+                : "(no emissive color)",
 
-        emissiveIntensity:
-          typeof material.emissiveIntensity === "number"
-            ? Number(material.emissiveIntensity.toFixed(3))
-            : "(not available)",
+            emissiveIntensity:
+              typeof material.emissiveIntensity ===
+              "number"
+                ? Number(
+                    material.emissiveIntensity.toFixed(
+                      3
+                    )
+                  )
+                : "(not available)",
 
-        transparent: Boolean(material.transparent),
+            transparent:
+              Boolean(
+                material.transparent
+              ),
 
-        opacity:
-          typeof material.opacity === "number"
-            ? Number(material.opacity.toFixed(3))
-            : "(not available)",
-      }));
+            opacity:
+              typeof material.opacity ===
+              "number"
+                ? Number(
+                    material.opacity.toFixed(
+                      3
+                    )
+                  )
+                : "(not available)",
+          })
+        );
 
-    console.log("Clicked material:");
-    console.table(materialRows);
+    console.log(
+      "Clicked material:"
+    );
+
+    console.table(
+      materialRows
+    );
 
     console.log(
       `Copy position: [${clickedPosition[0]}, ${clickedPosition[1]}, ${clickedPosition[2]}]`
@@ -1374,138 +2485,200 @@ function AdventureSceneContent({
     console.groupEnd();
   };
 
-  const lockCamera = useCallback(
-    (
-      nextCamera: [number, number, number],
-      nextTarget: [number, number, number]
-    ) => {
-      const controls = controlsRef.current;
+  const lockCamera =
+    useCallback(
+      (
+        nextCamera: [
+          number,
+          number,
+          number,
+        ],
 
-      if (!controls) return;
+        nextTarget: [
+          number,
+          number,
+          number,
+        ]
+      ) => {
+        const controls =
+          controlsRef.current;
 
-      camera.position.set(...nextCamera);
-      controls.target.set(...nextTarget);
-      controls.update();
-    },
-    [camera]
-  );
+        if (
+          !controls
+        ) {
+          return;
+        }
 
-  const stopCameraTweens = useCallback(() => {
-    introTimelineRef.current?.kill();
-    introTimelineRef.current = null;
+        camera.position.set(
+          ...nextCamera
+        );
 
-    gsap.killTweensOf(camera.position);
+        controls.target.set(
+          ...nextTarget
+        );
 
-    if (controlsRef.current) {
-      gsap.killTweensOf(controlsRef.current.target);
-      controlsRef.current.update();
-    }
-  }, [camera]);
+        controls.update();
+      },
+      [
+        camera,
+      ]
+    );
+
+  const stopCameraTweens =
+    useCallback(
+      () => {
+        introTimelineRef.current?.kill();
+
+        introTimelineRef.current =
+          null;
+
+        gsap.killTweensOf(
+          camera.position
+        );
+
+        if (
+          controlsRef.current
+        ) {
+          gsap.killTweensOf(
+            controlsRef.current.target
+          );
+
+          controlsRef.current.update();
+        }
+      },
+      [
+        camera,
+      ]
+    );
 
   useEffect(() => {
-    const perspectiveCamera = camera as PerspectiveCamera;
+    const perspectiveCamera =
+      camera as PerspectiveCamera;
 
-    perspectiveCamera.fov = compact ? 43 : 36;
+    perspectiveCamera.fov =
+      compact
+        ? 43
+        : 36;
+
     perspectiveCamera.updateProjectionMatrix();
-  }, [camera, compact]);
-
-  const moveCamera = useCallback(
-    (
-      nextCamera: [number, number, number],
-      nextTarget: [number, number, number],
-      duration = 1.35
-    ) => {
-      const controls = controlsRef.current;
-
-      if (!controls) return;
-
-      stopCameraTweens();
-
-      setMoving(true);
-
-      const timeline = gsap.timeline({
-        onUpdate: () => {
-          controls.update();
-        },
-
-        onComplete: () => {
-          lockCamera(nextCamera, nextTarget);
-          setMoving(false);
-        },
-      });
-
-      timeline.to(
-        camera.position,
-        {
-          x: nextCamera[0],
-          y: nextCamera[1],
-          z: nextCamera[2],
-          duration,
-          ease: "power3.inOut",
-        },
-        0
-      );
-
-      timeline.to(
-        controls.target,
-        {
-          x: nextTarget[0],
-          y: nextTarget[1],
-          z: nextTarget[2],
-          duration,
-          ease: "power3.inOut",
-        },
-        0
-      );
-    },
-    [
-      camera,
-      lockCamera,
-      stopCameraTweens,
-    ]
-  );
-
-  /*
-    Keep OrbitControls centered on the full 3D model during manual navigation.
-
-    This preserves the current camera angle and zoom distance while switching
-    the orbit pivot back to the center of the building.
-  */
-  const centerNavigationTarget = useCallback(() => {
-    const controls = controlsRef.current;
-
-    if (!controls || moving) return;
-
-    const centeredTarget = new Vector3(
-      HOME_TARGET[0],
-      HOME_TARGET[1],
-      HOME_TARGET[2]
-    );
-
-    if (
-      controls.target.distanceToSquared(
-        centeredTarget
-      ) < 0.0001
-    ) {
-      return;
-    }
-
-    const cameraOffset = camera.position
-      .clone()
-      .sub(controls.target);
-
-    camera.position.copy(
-      centeredTarget
-        .clone()
-        .add(cameraOffset)
-    );
-
-    controls.target.copy(centeredTarget);
-    controls.update();
   }, [
     camera,
-    moving,
+    compact,
   ]);
+
+  const moveCamera =
+    useCallback(
+      (
+        nextCamera: [
+          number,
+          number,
+          number,
+        ],
+
+        nextTarget: [
+          number,
+          number,
+          number,
+        ],
+
+        duration =
+          1.35
+      ) => {
+        const controls =
+          controlsRef.current;
+
+        if (
+          !controls
+        ) {
+          return;
+        }
+
+        stopCameraTweens();
+
+        setMoving(
+          true
+        );
+
+        const timeline =
+          gsap.timeline(
+            {
+              onUpdate:
+                () => {
+                  controls.update();
+                },
+
+              onComplete:
+                () => {
+                  lockCamera(
+                    nextCamera,
+                    nextTarget
+                  );
+
+                  setMoving(
+                    false
+                  );
+                },
+            }
+          );
+
+        timeline.to(
+          camera.position,
+          {
+            x:
+              nextCamera[
+                0
+              ],
+
+            y:
+              nextCamera[
+                1
+              ],
+
+            z:
+              nextCamera[
+                2
+              ],
+
+            duration,
+
+            ease:
+              "power3.inOut",
+          },
+          0
+        );
+
+        timeline.to(
+          controls.target,
+          {
+            x:
+              nextTarget[
+                0
+              ],
+
+            y:
+              nextTarget[
+                1
+              ],
+
+            z:
+              nextTarget[
+                2
+              ],
+
+            duration,
+
+            ease:
+              "power3.inOut",
+          },
+          0
+        );
+      },
+      [
+        camera,
+        lockCamera,
+        stopCameraTweens,
+      ]
+    );
 
   /*
     Closing a popup only hides the text card.
@@ -1513,259 +2686,470 @@ function AdventureSceneContent({
     The camera stays exactly where it is.
     There is no zoom-out, rotation, or return to the full-model view.
   */
-  const closeAnnotation = useCallback(() => {
-    onActiveChange(null);
-  }, [onActiveChange]);
+  const closeAnnotation =
+    useCallback(
+      () => {
+        onActiveChange(
+          null
+        );
+      },
+      [
+        onActiveChange,
+      ]
+    );
 
   /*
     One continuous sideways movement for About Me.
   */
-  const moveToAboutDoor = useCallback(
-    (section: PortfolioSection) => {
-      const controls = controlsRef.current;
+  const moveToAboutDoor =
+    useCallback(
+      (
+        section:
+          PortfolioSection
+      ) => {
+        const controls =
+          controlsRef.current;
 
-      if (!controls) return;
+        if (
+          !controls
+        ) {
+          return;
+        }
 
-      const finalCamera = compact
-        ? ABOUT_CAMERA_MOBILE
-        : section.camera;
+        const finalCamera =
+          compact
+            ? ABOUT_CAMERA_MOBILE
+            : section.camera;
 
-      stopCameraTweens();
-      setMoving(true);
+        stopCameraTweens();
 
-      const timeline = gsap.timeline({
-        onUpdate: () => {
-          controls.update();
-        },
+        setMoving(
+          true
+        );
 
-        onComplete: () => {
-          lockCamera(
-            finalCamera,
-            section.focus
+        const timeline =
+          gsap.timeline(
+            {
+              onUpdate:
+                () => {
+                  controls.update();
+                },
+
+              onComplete:
+                () => {
+                  lockCamera(
+                    finalCamera,
+                    section.focus
+                  );
+
+                  setMoving(
+                    false
+                  );
+                },
+            }
           );
 
-          setMoving(false);
-        },
-      });
+        timeline.to(
+          camera.position,
+          {
+            x:
+              finalCamera[
+                0
+              ],
 
-      timeline.to(
-        camera.position,
-        {
-          x: finalCamera[0],
-          y: finalCamera[1],
-          z: finalCamera[2],
-          duration: 1.65,
-          ease: "power3.inOut",
-        },
-        0
-      );
+            y:
+              finalCamera[
+                1
+              ],
 
-      timeline.to(
-        controls.target,
-        {
-          x: section.focus[0],
-          y: section.focus[1],
-          z: section.focus[2],
-          duration: 1.65,
-          ease: "power3.inOut",
-        },
-        0
-      );
-    },
-    [
-      camera,
-      compact,
-      lockCamera,
-      stopCameraTweens,
-    ]
-  );
+            z:
+              finalCamera[
+                2
+              ],
+
+            duration:
+              1.65,
+
+            ease:
+              "power3.inOut",
+          },
+          0
+        );
+
+        timeline.to(
+          controls.target,
+          {
+            x:
+              section.focus[
+                0
+              ],
+
+            y:
+              section.focus[
+                1
+              ],
+
+            z:
+              section.focus[
+                2
+              ],
+
+            duration:
+              1.65,
+
+            ease:
+              "power3.inOut",
+          },
+          0
+        );
+      },
+      [
+        camera,
+        compact,
+        lockCamera,
+        stopCameraTweens,
+      ]
+    );
 
   /*
     One continuous low storefront movement for Projects.
   */
-  const moveToProjectsStorefront = useCallback(
-    (section: PortfolioSection) => {
-      const controls = controlsRef.current;
+  const moveToProjectsStorefront =
+    useCallback(
+      (
+        section:
+          PortfolioSection
+      ) => {
+        const controls =
+          controlsRef.current;
 
-      if (!controls) return;
+        if (
+          !controls
+        ) {
+          return;
+        }
 
-      const finalCamera = compact
-        ? PROJECTS_CAMERA_MOBILE
-        : section.camera;
+        const finalCamera =
+          compact
+            ? PROJECTS_CAMERA_MOBILE
+            : section.camera;
 
-      stopCameraTweens();
-      setMoving(true);
+        stopCameraTweens();
 
-      const timeline = gsap.timeline({
-        onUpdate: () => {
-          controls.update();
-        },
+        setMoving(
+          true
+        );
 
-        onComplete: () => {
-          lockCamera(
-            finalCamera,
-            section.focus
+        const timeline =
+          gsap.timeline(
+            {
+              onUpdate:
+                () => {
+                  controls.update();
+                },
+
+              onComplete:
+                () => {
+                  lockCamera(
+                    finalCamera,
+                    section.focus
+                  );
+
+                  setMoving(
+                    false
+                  );
+                },
+            }
           );
 
-          setMoving(false);
-        },
-      });
+        timeline.to(
+          camera.position,
+          {
+            x:
+              finalCamera[
+                0
+              ],
 
-      timeline.to(
-        camera.position,
-        {
-          x: finalCamera[0],
-          y: finalCamera[1],
-          z: finalCamera[2],
-          duration: 1.55,
-          ease: "power3.inOut",
-        },
-        0
-      );
+            y:
+              finalCamera[
+                1
+              ],
 
-      timeline.to(
-        controls.target,
-        {
-          x: section.focus[0],
-          y: section.focus[1],
-          z: section.focus[2],
-          duration: 1.55,
-          ease: "power3.inOut",
-        },
-        0
-      );
-    },
-    [
-      camera,
-      compact,
-      lockCamera,
-      stopCameraTweens,
-    ]
-  );
+            z:
+              finalCamera[
+                2
+              ],
+
+            duration:
+              1.55,
+
+            ease:
+              "power3.inOut",
+          },
+          0
+        );
+
+        timeline.to(
+          controls.target,
+          {
+            x:
+              section.focus[
+                0
+              ],
+
+            y:
+              section.focus[
+                1
+              ],
+
+            z:
+              section.focus[
+                2
+              ],
+
+            duration:
+              1.55,
+
+            ease:
+              "power3.inOut",
+          },
+          0
+        );
+      },
+      [
+        camera,
+        compact,
+        lockCamera,
+        stopCameraTweens,
+      ]
+    );
 
   /*
     Direct Credits rooftop movement.
   */
-  const moveToCreditsRooftop = useCallback(
-    (section: PortfolioSection) => {
-      const controls = controlsRef.current;
+  const moveToCreditsRooftop =
+    useCallback(
+      (
+        section:
+          PortfolioSection
+      ) => {
+        const controls =
+          controlsRef.current;
 
-      if (!controls) return;
+        if (
+          !controls
+        ) {
+          return;
+        }
 
-      const finalCamera = compact
-        ? CREDITS_CAMERA_MOBILE
-        : section.camera;
+        const finalCamera =
+          compact
+            ? CREDITS_CAMERA_MOBILE
+            : section.camera;
 
-      stopCameraTweens();
-      setMoving(true);
+        stopCameraTweens();
 
-      const timeline = gsap.timeline({
-        onUpdate: () => {
-          controls.update();
-        },
+        setMoving(
+          true
+        );
 
-        onComplete: () => {
-          lockCamera(
-            finalCamera,
-            section.focus
+        const timeline =
+          gsap.timeline(
+            {
+              onUpdate:
+                () => {
+                  controls.update();
+                },
+
+              onComplete:
+                () => {
+                  lockCamera(
+                    finalCamera,
+                    section.focus
+                  );
+
+                  introTimelineRef.current =
+                    null;
+
+                  setMoving(
+                    false
+                  );
+                },
+
+              onInterrupt:
+                () => {
+                  introTimelineRef.current =
+                    null;
+
+                  setMoving(
+                    false
+                  );
+                },
+            }
           );
 
-          introTimelineRef.current = null;
-          setMoving(false);
-        },
+        introTimelineRef.current =
+          timeline;
 
-        onInterrupt: () => {
-          introTimelineRef.current = null;
-          setMoving(false);
-        },
-      });
+        timeline.to(
+          camera.position,
+          {
+            x:
+              finalCamera[
+                0
+              ],
 
-      introTimelineRef.current = timeline;
+            y:
+              finalCamera[
+                1
+              ],
 
-      timeline.to(
-        camera.position,
-        {
-          x: finalCamera[0],
-          y: finalCamera[1],
-          z: finalCamera[2],
-          duration: 1.35,
-          ease: "power3.inOut",
-        },
-        0
-      );
+            z:
+              finalCamera[
+                2
+              ],
 
-      timeline.to(
-        controls.target,
-        {
-          x: section.focus[0],
-          y: section.focus[1],
-          z: section.focus[2],
-          duration: 1.35,
-          ease: "power3.inOut",
-        },
-        0
-      );
-    },
-    [
-      camera,
-      compact,
-      lockCamera,
-      stopCameraTweens,
-    ]
-  );
+            duration:
+              1.35,
 
-  const selectSection = useCallback(
-    (section: PortfolioSection) => {
-      if (moving) return;
+            ease:
+              "power3.inOut",
+          },
+          0
+        );
 
-      onActiveChange(section.id);
+        timeline.to(
+          controls.target,
+          {
+            x:
+              section.focus[
+                0
+              ],
 
-      if (section.id === "about") {
-        moveToAboutDoor(section);
-        return;
-      }
+            y:
+              section.focus[
+                1
+              ],
 
-      if (section.id === "projects") {
-        moveToProjectsStorefront(section);
-        return;
-      }
+            z:
+              section.focus[
+                2
+              ],
 
-      if (section.id === "credits") {
-        moveToCreditsRooftop(section);
-        return;
-      }
+            duration:
+              1.35,
 
-      moveCamera(
-        section.camera,
-        section.focus
-      );
-    },
-    [
-      moveCamera,
-      moveToAboutDoor,
-      moveToProjectsStorefront,
-      moveToCreditsRooftop,
-      moving,
-      onActiveChange,
-    ]
-  );
+            ease:
+              "power3.inOut",
+          },
+          0
+        );
+      },
+      [
+        camera,
+        compact,
+        lockCamera,
+        stopCameraTweens,
+      ]
+    );
+
+  const selectSection =
+    useCallback(
+      (
+        section:
+          PortfolioSection
+      ) => {
+        if (
+          moving
+        ) {
+          return;
+        }
+
+        onActiveChange(
+          section.id
+        );
+
+        if (
+          section.id ===
+          "about"
+        ) {
+          moveToAboutDoor(
+            section
+          );
+
+          return;
+        }
+
+        if (
+          section.id ===
+          "projects"
+        ) {
+          moveToProjectsStorefront(
+            section
+          );
+
+          return;
+        }
+
+        if (
+          section.id ===
+          "credits"
+        ) {
+          moveToCreditsRooftop(
+            section
+          );
+
+          return;
+        }
+
+        moveCamera(
+          section.camera,
+          section.focus
+        );
+      },
+      [
+        moveCamera,
+        moveToAboutDoor,
+        moveToProjectsStorefront,
+        moveToCreditsRooftop,
+        moving,
+        onActiveChange,
+      ]
+    );
 
   useEffect(() => {
-    const handleSelection = (event: Event) => {
-      const customEvent = event as CustomEvent<{
-        id?: SectionId;
-      }>;
+    const handleSelection =
+      (
+        event:
+          Event
+      ) => {
+        const customEvent =
+          event as CustomEvent<{
+            id?:
+              SectionId;
+          }>;
 
-      const requestedId = customEvent.detail?.id;
+        const requestedId =
+          customEvent.detail
+            ?.id;
 
-      const section = SECTIONS.find(
-        (item) => item.id === requestedId
-      );
+        const section =
+          SECTIONS.find(
+            (
+              item
+            ) =>
+              item.id ===
+              requestedId
+          );
 
-      if (section) {
-        selectSection(section);
-      }
-    };
+        if (
+          section
+        ) {
+          selectSection(
+            section
+          );
+        }
+      };
 
     window.addEventListener(
       "adventure:select",
@@ -1785,7 +3169,7 @@ function AdventureSceneContent({
   /*
     First-entry intro animation.
 
-    This is now one direct movement:
+    This is one direct movement:
     - start at the wide view,
     - immediately zoom into the final bicycle-and-road-sign view,
     - remain at the final position.
@@ -1793,70 +3177,125 @@ function AdventureSceneContent({
     There is no midpoint, overlap, pause, or automatic zoom-out.
   */
   useEffect(() => {
-    const handleIntro = () => {
-      const controls = controlsRef.current;
+    const handleIntro =
+      () => {
+        const controls =
+          controlsRef.current;
 
-      if (!controls) return;
+        if (
+          !controls
+        ) {
+          return;
+        }
 
-      const closeupCamera = compact
-        ? INTRO_STREET_CAMERA_MOBILE
-        : INTRO_STREET_CAMERA_DESKTOP;
+        const closeupCamera =
+          compact
+            ? INTRO_STREET_CAMERA_MOBILE
+            : INTRO_STREET_CAMERA_DESKTOP;
 
-      stopCameraTweens();
-      setMoving(true);
+        stopCameraTweens();
 
-      lockCamera(
-        INTRO_CAMERA,
-        INTRO_TARGET
-      );
+        setMoving(
+          true
+        );
 
-      const timeline = gsap.timeline({
-        onUpdate: () => {
-          controls.update();
-        },
+        lockCamera(
+          INTRO_CAMERA,
+          INTRO_TARGET
+        );
 
-        onComplete: () => {
-          lockCamera(
-            closeupCamera,
-            INTRO_STREET_TARGET
+        const timeline =
+          gsap.timeline(
+            {
+              onUpdate:
+                () => {
+                  controls.update();
+                },
+
+              onComplete:
+                () => {
+                  lockCamera(
+                    closeupCamera,
+                    INTRO_STREET_TARGET
+                  );
+
+                  introTimelineRef.current =
+                    null;
+
+                  setMoving(
+                    false
+                  );
+                },
+
+              onInterrupt:
+                () => {
+                  introTimelineRef.current =
+                    null;
+
+                  setMoving(
+                    false
+                  );
+                },
+            }
           );
 
-          introTimelineRef.current = null;
-          setMoving(false);
-        },
+        introTimelineRef.current =
+          timeline;
 
-        onInterrupt: () => {
-          introTimelineRef.current = null;
-          setMoving(false);
-        },
-      });
+        timeline.to(
+          camera.position,
+          {
+            x:
+              closeupCamera[
+                0
+              ],
 
-      introTimelineRef.current = timeline;
+            y:
+              closeupCamera[
+                1
+              ],
 
-      timeline.to(
-        camera.position,
-        {
-          x: closeupCamera[0],
-          y: closeupCamera[1],
-          z: closeupCamera[2],
-          duration: INTRO_ZOOM_DURATION,
-          ease: "power2.out",
-        },
-        0
-      );
+            z:
+              closeupCamera[
+                2
+              ],
 
-      timeline.to(
-        controls.target,
-        {
-          x: INTRO_STREET_TARGET[0],
-          y: INTRO_STREET_TARGET[1],
-          z: INTRO_STREET_TARGET[2],
-          duration: INTRO_ZOOM_DURATION,
-          ease: "power2.out",
-        },
-        0
-      );
-    };
+            duration:
+              INTRO_ZOOM_DURATION,
+
+            ease:
+              "power2.out",
+          },
+          0
+        );
+
+        timeline.to(
+          controls.target,
+          {
+            x:
+              INTRO_STREET_TARGET[
+                0
+              ],
+
+            y:
+              INTRO_STREET_TARGET[
+                1
+              ],
+
+            z:
+              INTRO_STREET_TARGET[
+                2
+              ],
+
+            duration:
+              INTRO_ZOOM_DURATION,
+
+            ease:
+              "power2.out",
+          },
+          0
+        );
+      };
 
     window.addEventListener(
       "adventure:intro",
@@ -1879,235 +3318,486 @@ function AdventureSceneContent({
   ]);
 
   useEffect(() => {
-    if (!controlsRef.current || readyRef.current) return;
+    if (
+      !controlsRef.current ||
+      readyRef.current
+    ) {
+      return;
+    }
 
-    readyRef.current = true;
+    readyRef.current =
+      true;
 
     lockCamera(
       homeCamera,
       HOME_TARGET
     );
 
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        onSceneReady?.();
-      });
-    });
+    requestAnimationFrame(
+      () => {
+        requestAnimationFrame(
+          () => {
+            onSceneReady?.();
+          }
+        );
+      }
+    );
   }, [
     homeCamera,
     lockCamera,
     onSceneReady,
   ]);
-  
+
   return (
     <>
-      <fog attach="fog" args={["#010106", 30, 74]} />
+      <fog
+        attach="fog"
+        args={[
+          "#010106",
+          30,
+          74,
+        ]}
+      />
 
-      <ambientLight intensity={0.12} />
-
-      <spotLight
-        position={[9, 17, 11]}
-        angle={0.52}
-        penumbra={0.86}
-        intensity={4.15}
-        color="#ffd0b6"
-        distance={48}
-        decay={1.45}
-        castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
+      <ambientLight
+        intensity={
+          0.12
+        }
       />
 
       <spotLight
-        position={[-11, 14, -10]}
-        angle={0.68}
-        penumbra={0.92}
-        intensity={2.75}
+        position={[
+          9,
+          17,
+          11,
+        ]}
+        angle={
+          0.52
+        }
+        penumbra={
+          0.86
+        }
+        intensity={
+          4.15
+        }
+        color="#ffd0b6"
+        distance={
+          48
+        }
+        decay={
+          1.45
+        }
+        castShadow
+        shadow-mapSize-width={
+          1024
+        }
+        shadow-mapSize-height={
+          1024
+        }
+      />
+
+      <spotLight
+        position={[
+          -11,
+          14,
+          -10,
+        ]}
+        angle={
+          0.68
+        }
+        penumbra={
+          0.92
+        }
+        intensity={
+          2.75
+        }
         color="#727cff"
-        distance={52}
-        decay={1.55}
+        distance={
+          52
+        }
+        decay={
+          1.55
+        }
       />
 
       <pointLight
-        position={[2.5, 8.2, 1.7]}
-        intensity={1.7}
+        position={[
+          2.5,
+          8.2,
+          1.7,
+        ]}
+        intensity={
+          1.7
+        }
         color="#ff7665"
-        distance={20}
-        decay={1.5}
+        distance={
+          20
+        }
+        decay={
+          1.5
+        }
       />
 
       <Stars
-        radius={78}
-        depth={38}
-        count={900}
-        factor={2.35}
-        saturation={0}
+        radius={
+          78
+        }
+        depth={
+          38
+        }
+        count={
+          900
+        }
+        factor={
+          2.35
+        }
+        saturation={
+          0
+        }
         fade
-        speed={0.22}
+        speed={
+          0.22
+        }
       />
 
       <ConcreteRooftopGround />
 
-      <group onClick={handleLightDebugClick}>
+      {/*
+        Render the portfolio introduction directly on the rooftop concrete.
+      */}
+      <GroundGraffiti />
+
+      <group
+        onClick={
+          handleLightDebugClick
+        }
+      >
         <MysteriousAdventureModel />
       </group>
 
-      {ENABLE_LIGHT_DEBUGGER && debugClickPoint && (
-        <mesh position={debugClickPoint} renderOrder={999}>
-          <sphereGeometry args={[0.11, 18, 18]} />
+      {ENABLE_LIGHT_DEBUGGER &&
+        debugClickPoint && (
+          <mesh
+            position={
+              debugClickPoint
+            }
+            renderOrder={
+              999
+            }
+          >
+            <sphereGeometry
+              args={[
+                0.11,
+                18,
+                18,
+              ]}
+            />
 
-          <meshBasicMaterial
-            color="#00ffff"
-            toneMapped={false}
-            depthTest={false}
-            depthWrite={false}
-          />
-        </mesh>
-      )}
+            <meshBasicMaterial
+              color="#00ffff"
+              toneMapped={
+                false
+              }
+              depthTest={
+                false
+              }
+              depthWrite={
+                false
+              }
+            />
+          </mesh>
+        )}
 
       <TokyoStreetLampGlow />
 
       <TrainStreetLampGlow />
 
       <pointLight
-        position={[10, 12, 4]}
-        intensity={5}
-        distance={28}
-        decay={1.6}
+        position={[
+          10,
+          12,
+          4,
+        ]}
+        intensity={
+          5
+        }
+        distance={
+          28
+        }
+        decay={
+          1.6
+        }
         color="#ffc87a"
       />
 
       <pointLight
-        position={[10, 7, 5]}
-        intensity={6}
-        distance={24}
-        decay={1.65}
+        position={[
+          10,
+          7,
+          5,
+        ]}
+        intensity={
+          6
+        }
+        distance={
+          24
+        }
+        decay={
+          1.65
+        }
         color="#ffbe72"
       />
 
       <pointLight
-        position={[9, 3.5, 6]}
-        intensity={7}
-        distance={22}
-        decay={1.6}
+        position={[
+          9,
+          3.5,
+          6,
+        ]}
+        intensity={
+          7
+        }
+        distance={
+          22
+        }
+        decay={
+          1.6
+        }
         color="#ffba68"
       />
 
       <pointLight
-        position={[8, 0.8, 8]}
-        intensity={7}
-        distance={20}
-        decay={1.55}
+        position={[
+          8,
+          0.8,
+          8,
+        ]}
+        intensity={
+          7
+        }
+        distance={
+          20
+        }
+        decay={
+          1.55
+        }
         color="#ffb660"
       />
 
       <pointLight
-        position={[7, 0.5, 3]}
-        intensity={3.4}
-        distance={13}
-        decay={1.85}
+        position={[
+          7,
+          0.5,
+          3,
+        ]}
+        intensity={
+          3.4
+        }
+        distance={
+          13
+        }
+        decay={
+          1.85
+        }
         color="#ffc070"
       />
 
       <pointLight
-        position={[5, 2.5, 1]}
-        intensity={2.8}
-        distance={12}
-        decay={1.9}
+        position={[
+          5,
+          2.5,
+          1,
+        ]}
+        intensity={
+          2.8
+        }
+        distance={
+          12
+        }
+        decay={
+          1.9
+        }
         color="#ffbe74"
       />
 
       <pointLight
-        position={[9, 0.1, 6]}
-        intensity={4.2}
-        distance={15}
-        decay={1.8}
+        position={[
+          9,
+          0.1,
+          6,
+        ]}
+        intensity={
+          4.2
+        }
+        distance={
+          15
+        }
+        decay={
+          1.8
+        }
         color="#ffb258"
       />
 
       <BackAlleyPinkGlow />
 
-      {SECTIONS.map((section) => (
-        <NumberHotspot
-          key={section.id}
-          section={section}
-          disabled={moving}
-          selected={activeId === section.id}
-          showCard={!compact}
-          onSelect={selectSection}
-          onClose={closeAnnotation}
-          onProjectSelect={onProjectSelect}
-        />
-      ))}
+      {SECTIONS.map(
+        (
+          section
+        ) => (
+          <NumberHotspot
+            key={
+              section.id
+            }
+            section={
+              section
+            }
+            disabled={
+              moving
+            }
+            selected={
+              activeId ===
+              section.id
+            }
+            showCard={
+              !compact
+            }
+            onSelect={
+              selectSection
+            }
+            onClose={
+              closeAnnotation
+            }
+            onProjectSelect={
+              onProjectSelect
+            }
+          />
+        )
+      )}
 
-      <EffectComposer multisampling={0} enableNormalPass>
+      <EffectComposer
+        multisampling={
+          0
+        }
+        enableNormalPass
+      >
         <SSAO
-          blendFunction={BlendFunction.MULTIPLY}
-          samples={12}
-          rings={4}
-          radius={0.075}
-          intensity={1.2}
-          luminanceInfluence={0.52}
-          resolutionScale={0.65}
+          blendFunction={
+            BlendFunction.MULTIPLY
+          }
+          samples={
+            12
+          }
+          rings={
+            4
+          }
+          radius={
+            0.075
+          }
+          intensity={
+            1.2
+          }
+          luminanceInfluence={
+            0.52
+          }
+          resolutionScale={
+            0.65
+          }
         />
 
         <Bloom
           mipmapBlur
-          intensity={0.5}
-          luminanceThreshold={0.68}
-          luminanceSmoothing={0.2}
+          intensity={
+            0.5
+          }
+          luminanceThreshold={
+            0.68
+          }
+          luminanceSmoothing={
+            0.2
+          }
         />
 
         <Vignette
-          eskil={false}
-          offset={0.18}
-          darkness={0.72}
+          eskil={
+            false
+          }
+          offset={
+            0.18
+          }
+          darkness={
+            0.72
+          }
         />
       </EffectComposer>
 
       <OrbitControls
-        ref={controlsRef}
+        ref={
+          controlsRef
+        }
         makeDefault
-        enabled={!moving}
-
-        /*
-          Allow the camera to slide horizontally and vertically.
-          This makes the model feel draggable without changing its world position.
-        */
+        enabled={
+          !moving
+        }
         enablePan
         screenSpacePanning
-
         enableZoom
         enableRotate
-
-        /*
-          Left mouse: move the model around the screen.
-          Right mouse: rotate around the model.
-          Middle mouse or wheel: zoom.
-        */
         mouseButtons={{
-          LEFT: MOUSE.PAN,
-          MIDDLE: MOUSE.DOLLY,
-          RIGHT: MOUSE.ROTATE,
+          LEFT:
+            MOUSE.PAN,
+
+          MIDDLE:
+            MOUSE.DOLLY,
+
+          RIGHT:
+            MOUSE.ROTATE,
         }}
-
-        minDistance={compact ? 8.5 : 7.2}
-        maxDistance={compact ? 42 : 34}
-
-        minPolarAngle={Math.PI / 7}
-        maxPolarAngle={Math.PI / 2.05}
-
-        zoomSpeed={compact ? 0.9 : 0.5}
-        rotateSpeed={compact ? 0.38 : 0.48}
-        panSpeed={compact ? 0.72 : 0.58}
-
+        minDistance={
+          compact
+            ? 8.5
+            : 7.2
+        }
+        maxDistance={
+          compact
+            ? 42
+            : 34
+        }
+        minPolarAngle={
+          Math.PI /
+          7
+        }
+        maxPolarAngle={
+          Math.PI /
+          2.05
+        }
+        zoomSpeed={
+          compact
+            ? 0.9
+            : 0.5
+        }
+        rotateSpeed={
+          compact
+            ? 0.38
+            : 0.48
+        }
+        panSpeed={
+          compact
+            ? 0.72
+            : 0.58
+        }
         touches={{
-          ONE: TOUCH.PAN,
-          TWO: TOUCH.DOLLY_ROTATE,
-        }}
+          ONE:
+            TOUCH.PAN,
 
-        enableDamping={!moving}
-        dampingFactor={0.08}
+          TWO:
+            TOUCH.DOLLY_ROTATE,
+        }}
+        enableDamping={
+          !moving
+        }
+        dampingFactor={
+          0.08
+        }
       />
     </>
   );
@@ -2118,49 +3808,94 @@ function AdventureSceneContent({
 /* -------------------------------------------------------------------------- */
 
 export type HeroSceneProps = {
-  onSceneReady?: () => void;
+  onSceneReady?:
+    () => void;
 };
 
 export default function HeroScene({
   onSceneReady,
 }: HeroSceneProps) {
-  const [viewportWidth, setViewportWidth] = useState(() =>
-    typeof window === "undefined" ? 1440 : window.innerWidth
-  );
+  const [
+    viewportWidth,
+    setViewportWidth,
+  ] =
+    useState(
+      () =>
+        typeof window ===
+        "undefined"
+          ? 1440
+          : window.innerWidth
+    );
 
-  const [activeId, setActiveId] = useState<SectionId | null>(null);
+  const [
+    activeId,
+    setActiveId,
+  ] =
+    useState<
+      | SectionId
+      | null
+    >(
+      null
+    );
 
-  const [selectedProjectId, setSelectedProjectId] =
-    useState<ProjectId | null>(null);
+  const [
+    selectedProjectId,
+    setSelectedProjectId,
+  ] =
+    useState<
+      | ProjectId
+      | null
+    >(
+      null
+    );
 
   const activeSection =
     SECTIONS.find(
-      (section) => section.id === activeId
-    ) ?? null;
+      (
+        section
+      ) =>
+        section.id ===
+        activeId
+    ) ??
+    null;
 
   useEffect(() => {
-    const handleResize = () => {
-      setViewportWidth(window.innerWidth);
-    };
+    const handleResize =
+      () => {
+        setViewportWidth(
+          window.innerWidth
+        );
+      };
 
-    window.addEventListener("resize", handleResize);
+    window.addEventListener(
+      "resize",
+      handleResize
+    );
 
     return () => {
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener(
+        "resize",
+        handleResize
+      );
     };
   }, []);
 
-  const selectFromBottomNav = (
-    id: SectionId
-  ) => {
-    window.dispatchEvent(
-      new CustomEvent("adventure:select", {
-        detail: {
-          id,
-        },
-      })
-    );
-  };
+  const selectFromBottomNav =
+    (
+      id:
+        SectionId
+    ) => {
+      window.dispatchEvent(
+        new CustomEvent(
+          "adventure:select",
+          {
+            detail: {
+              id,
+            },
+          }
+        )
+      );
+    };
 
   return (
     <section className="adventure-scene-shell">
@@ -2168,85 +3903,163 @@ export default function HeroScene({
 
       <Canvas
         shadows
-        dpr={viewportWidth < 768 ? [1, 1.4] : [1, 1.85]}
+        dpr={
+          viewportWidth <
+          768
+            ? [
+                1,
+                1.4,
+              ]
+            : [
+                1,
+                1.85,
+              ]
+        }
         camera={{
           position:
-            viewportWidth < 768
+            viewportWidth <
+            768
               ? HOME_CAMERA_MOBILE
               : HOME_CAMERA_DESKTOP,
 
-          fov: viewportWidth < 768 ? 43 : 36,
-          near: 0.1,
-          far: 300,
+          fov:
+            viewportWidth <
+            768
+              ? 43
+              : 36,
+
+          near:
+            0.1,
+
+          far:
+            300,
         }}
         gl={{
-          antialias: false,
-          alpha: true,
-          powerPreference: "high-performance",
+          antialias:
+            false,
+
+          alpha:
+            true,
+
+          powerPreference:
+            "high-performance",
         }}
-        onCreated={({ gl }) => {
-          gl.outputColorSpace = SRGBColorSpace;
-          gl.toneMapping = ACESFilmicToneMapping;
-          gl.toneMappingExposure = 0.92;
+        onCreated={({
+          gl,
+        }) => {
+          gl.outputColorSpace =
+            SRGBColorSpace;
+
+          gl.toneMapping =
+            ACESFilmicToneMapping;
+
+          gl.toneMappingExposure =
+            0.92;
         }}
         style={{
-          touchAction: "none",
-          position: "relative",
-          zIndex: 2,
+          touchAction:
+            "none",
+
+          position:
+            "relative",
+
+          zIndex:
+            2,
         }}
       >
-        <Suspense fallback={null}>
+        <Suspense
+          fallback={
+            null
+          }
+        >
           <AdventureSceneContent
-            viewportWidth={viewportWidth}
-            activeId={activeId}
-            onActiveChange={setActiveId}
-            onProjectSelect={setSelectedProjectId}
-            onSceneReady={onSceneReady}
+            viewportWidth={
+              viewportWidth
+            }
+            activeId={
+              activeId
+            }
+            onActiveChange={
+              setActiveId
+            }
+            onProjectSelect={
+              setSelectedProjectId
+            }
+            onSceneReady={
+              onSceneReady
+            }
           />
         </Suspense>
       </Canvas>
-      
-      
-      {viewportWidth < 768 && activeSection && (
-        <div className="adventure-mobile-annotation-layer">
-          <AnnotationCard
-            section={activeSection}
-            mobile
-            onClose={() => {
-              setActiveId(null);
-            }}
-            onProjectSelect={setSelectedProjectId}
-          />
-        </div>
-      )}
 
-      <div className="adventure-intro-copy">
-        <p className="adventure-kicker">Fullstack Developer</p>
-        <h1>Julie Anne Cantillep</h1>
+      {viewportWidth <
+        768 &&
+        activeSection && (
+          <div className="adventure-mobile-annotation-layer">
+            <AnnotationCard
+              section={
+                activeSection
+              }
+              mobile
+              onClose={() => {
+                setActiveId(
+                  null
+                );
+              }}
+              onProjectSelect={
+                setSelectedProjectId
+              }
+            />
+          </div>
+        )}
 
-        <p>
-          Click a numbered marker. Drag to rotate and scroll or pinch to zoom.
-        </p>
-      </div>
+      <nav
+        className="adventure-bottom-nav"
+        aria-label="Portfolio sections"
+      >
+        {SECTIONS.map(
+          (
+            section
+          ) => (
+            <button
+              type="button"
+              key={
+                section.id
+              }
+              onClick={() =>
+                selectFromBottomNav(
+                  section.id
+                )
+              }
+              className={
+                activeId ===
+                section.id
+                  ? "is-active"
+                  : ""
+              }
+            >
+              <span>
+                {
+                  section.number
+                }
+              </span>
 
-      <nav className="adventure-bottom-nav" aria-label="Portfolio sections">
-        {SECTIONS.map((section) => (
-          <button
-            type="button"
-            key={section.id}
-            onClick={() => selectFromBottomNav(section.id)}
-            className={activeId === section.id ? "is-active" : ""}
-          >
-            <span>{section.number}</span>
-            {section.title}
-          </button>
-        ))}
+              {
+                section.title
+              }
+            </button>
+          )
+        )}
       </nav>
 
       <ProjectCaseStudyModal
-        projectId={selectedProjectId}
+        projectId={
+          selectedProjectId
+        }
         onClose={() => {
-          setSelectedProjectId(null);
+          setSelectedProjectId(
+            null
+          );
         }}
       />
 
@@ -2358,8 +4171,7 @@ export default function HeroScene({
         }
 
         .adventure-annotation-card-number,
-        .adventure-annotation-card-eyebrow,
-        .adventure-kicker {
+        .adventure-annotation-card-eyebrow {
           margin: 0;
           color: #dbc7ff;
           font-size: 9px;
@@ -2398,34 +4210,6 @@ export default function HeroScene({
             opacity: 1;
             transform: translateX(0) translateY(0) scale(1);
           }
-        }
-
-        .adventure-intro-copy {
-          pointer-events: none;
-          position: absolute;
-          left: clamp(18px, 5vw, 72px);
-          top: clamp(22px, 7vh, 82px);
-          z-index: 10;
-          width: min(330px, 78vw);
-          color: white;
-          text-shadow: 0 3px 18px rgba(0, 0, 0, 0.62);
-        }
-
-        .adventure-intro-copy h1 {
-          margin: 12px 0 8px;
-          max-width: 330px;
-          font-size: clamp(2.5rem, 6vw, 5.1rem);
-          font-weight: 900;
-          letter-spacing: -0.075em;
-          line-height: 0.94;
-        }
-
-        .adventure-intro-copy > p:last-child {
-          margin: 0;
-          max-width: 285px;
-          color: rgba(255, 255, 255, 0.78);
-          font-size: 13px;
-          line-height: 1.6;
         }
 
         .adventure-bottom-nav {
@@ -2540,11 +4324,12 @@ export default function HeroScene({
           overflow-y: auto;
           border: 1px solid rgba(255, 255, 255, 0.18);
           border-radius: 24px;
-          background: linear-gradient(
-            145deg,
-            rgba(13, 15, 28, 0.97),
-            rgba(26, 18, 39, 0.95)
-          );
+          background:
+            linear-gradient(
+              145deg,
+              rgba(13, 15, 28, 0.97),
+              rgba(26, 18, 39, 0.95)
+            );
           box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
           color: white;
           padding: 24px;
@@ -2748,15 +4533,6 @@ export default function HeroScene({
         }
 
         @media (max-width: 767px) {
-          .adventure-intro-copy {
-            top: 20px;
-            width: min(260px, 76vw);
-          }
-
-          .adventure-intro-copy h1 {
-            font-size: 2.85rem;
-          }
-
           .adventure-bottom-nav {
             bottom: 13px;
             gap: 3px;
@@ -2791,9 +4567,12 @@ export default function HeroScene({
             left: auto;
             top: auto;
             width: min(370px, 100%);
-            max-height: calc(
-              100dvh - 112px - env(safe-area-inset-bottom)
-            );
+            max-height:
+              calc(
+                100dvh -
+                  112px -
+                  env(safe-area-inset-bottom)
+              );
             transform: none;
             animation: adventure-card-enter-mobile 220ms ease both;
           }
