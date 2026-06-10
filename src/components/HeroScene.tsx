@@ -1042,10 +1042,70 @@ function ProjectCaseStudyModal({
 /* Number hotspots                                                            */
 /* -------------------------------------------------------------------------- */
 
+function AnnotationCard({
+  section,
+  mobile = false,
+  onClose,
+  onProjectSelect,
+}: {
+  section: PortfolioSection;
+  mobile?: boolean;
+  onClose: () => void;
+  onProjectSelect: (id: ProjectId) => void;
+}) {
+  return (
+    <section
+      className={`adventure-annotation-card ${
+        mobile
+          ? "adventure-annotation-card--mobile"
+          : ""
+      }`}
+      role={mobile ? "dialog" : undefined}
+      aria-modal={mobile ? true : undefined}
+      aria-label={mobile ? section.title : undefined}
+      onClick={(event) => {
+        event.stopPropagation();
+      }}
+    >
+      <button
+        type="button"
+        className="adventure-annotation-close"
+        onClick={(event) => {
+          event.stopPropagation();
+          onClose();
+        }}
+        aria-label={`Close ${section.title}`}
+      >
+        ×
+      </button>
+
+      <p className="adventure-annotation-card-number">
+        {section.number}
+      </p>
+
+      <h2>{section.title}</h2>
+
+      <p className="adventure-annotation-card-eyebrow">
+        {section.eyebrow}
+      </p>
+
+      <div
+        className={`adventure-annotation-card-copy is-${section.id}`}
+      >
+        <AnnotationContent
+          id={section.id}
+          onProjectSelect={onProjectSelect}
+        />
+      </div>
+    </section>
+  );
+}
+
 function NumberHotspot({
   section,
   disabled,
   selected,
+  showCard,
   onSelect,
   onClose,
   onProjectSelect,
@@ -1053,6 +1113,7 @@ function NumberHotspot({
   section: PortfolioSection;
   disabled: boolean;
   selected: boolean;
+  showCard: boolean;
   onSelect: (section: PortfolioSection) => void;
   onClose: () => void;
   onProjectSelect: (id: ProjectId) => void;
@@ -1066,10 +1127,20 @@ function NumberHotspot({
         pointerEvents: "auto",
       }}
     >
-      <div className={`adventure-annotation-wrap ${selected ? "is-open" : ""}`}>
+      <div
+        className={`adventure-annotation-wrap ${
+          selected
+            ? "is-open"
+            : ""
+        }`}
+      >
         <button
           type="button"
-          className={`adventure-number ${selected ? "is-selected" : ""}`}
+          className={`adventure-number ${
+            selected
+              ? "is-selected"
+              : ""
+          }`}
           disabled={disabled}
           onClick={(event) => {
             event.stopPropagation();
@@ -1085,34 +1156,12 @@ function NumberHotspot({
           </span>
         </button>
 
-        {selected && (
-          <section className="adventure-annotation-card">
-            <button
-              type="button"
-              className="adventure-annotation-close"
-              onClick={(event) => {
-                event.stopPropagation();
-                onClose();
-              }}
-              aria-label={`Close ${section.title}`}
-            >
-              ×
-            </button>
-
-            <p className="adventure-annotation-card-number">{section.number}</p>
-            <h2>{section.title}</h2>
-
-            <p className="adventure-annotation-card-eyebrow">
-              {section.eyebrow}
-            </p>
-
-            <div className={`adventure-annotation-card-copy is-${section.id}`}>
-              <AnnotationContent
-                id={section.id}
-                onProjectSelect={onProjectSelect}
-              />
-            </div>
-          </section>
+        {selected && showCard && (
+          <AnnotationCard
+            section={section}
+            onClose={onClose}
+            onProjectSelect={onProjectSelect}
+          />
         )}
       </div>
     </Html>
@@ -1984,6 +2033,7 @@ function AdventureSceneContent({
           section={section}
           disabled={moving}
           selected={activeId === section.id}
+          showCard={!compact}
           onSelect={selectSection}
           onClose={closeAnnotation}
           onProjectSelect={onProjectSelect}
@@ -2081,6 +2131,11 @@ export default function HeroScene({
   const [selectedProjectId, setSelectedProjectId] =
     useState<ProjectId | null>(null);
 
+  const activeSection =
+    SECTIONS.find(
+      (section) => section.id === activeId
+    ) ?? null;
+
   useEffect(() => {
     const handleResize = () => {
       setViewportWidth(window.innerWidth);
@@ -2148,6 +2203,20 @@ export default function HeroScene({
           />
         </Suspense>
       </Canvas>
+      
+      
+      {viewportWidth < 768 && activeSection && (
+        <div className="adventure-mobile-annotation-layer">
+          <AnnotationCard
+            section={activeSection}
+            mobile
+            onClose={() => {
+              setActiveId(null);
+            }}
+            onProjectSelect={setSelectedProjectId}
+          />
+        </div>
+      )}
 
       <div className="adventure-intro-copy">
         <p className="adventure-kicker">Fullstack Developer</p>
@@ -2255,14 +2324,18 @@ export default function HeroScene({
           top: -18px;
           width: min(310px, 76vw);
           max-height: min(390px, 70vh);
+          min-width: 0;
+          overflow-x: hidden;
           overflow-y: auto;
+          overscroll-behavior: contain;
           border: 1px solid rgba(255, 255, 255, 0.18);
           border-radius: 16px;
-          background: rgba(6, 7, 12, 0.82);
+          background: rgba(6, 7, 12, 0.88);
           box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
           padding: 16px;
           color: #fff;
           backdrop-filter: blur(15px);
+          -webkit-overflow-scrolling: touch;
           animation: adventure-card-enter 220ms ease both;
         }
 
@@ -2649,6 +2722,29 @@ export default function HeroScene({
           text-transform: uppercase;
         }
 
+        .adventure-mobile-annotation-layer {
+          pointer-events: none;
+          position: absolute;
+          inset: 0;
+          z-index: 70;
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          padding:
+            14px
+            14px
+            calc(78px + env(safe-area-inset-bottom));
+        }
+
+        .adventure-annotation-card-copy,
+        .adventure-annotation-card-eyebrow,
+        .adventure-project-card-button,
+        .adventure-project-card-button span {
+          min-width: 0;
+          overflow-wrap: anywhere;
+          word-break: break-word;
+        }
+
         @media (max-width: 767px) {
           .adventure-intro-copy {
             top: 20px;
@@ -2687,11 +2783,29 @@ export default function HeroScene({
             gap: 16px;
           }
 
-          .adventure-annotation-card {
-            left: 50%;
-            top: 48px;
-            width: min(290px, 82vw);
-            transform: translateX(-50%);
+          .adventure-annotation-card--mobile {
+            pointer-events: auto;
+            position: relative;
+            left: auto;
+            top: auto;
+            width: min(370px, 100%);
+            max-height: calc(
+              100dvh - 112px - env(safe-area-inset-bottom)
+            );
+            transform: none;
+            animation: adventure-card-enter-mobile 220ms ease both;
+          }
+
+          @keyframes adventure-card-enter-mobile {
+            from {
+              opacity: 0;
+              transform: translateY(12px) scale(0.97);
+            }
+
+            to {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+            }
           }
         }
       `}</style>
