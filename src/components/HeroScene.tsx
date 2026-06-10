@@ -902,7 +902,7 @@ function AnnotationContent({
 
 /* -------------------------------------------------------------------------- */
 /* Project modal                                                              */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------export default function HeroScene({-------------- */
 
 function ProjectCaseStudyModal({
   projectId,
@@ -2117,11 +2117,13 @@ function AdventureSceneContent({
 /* Main component                                                             */
 /* -------------------------------------------------------------------------- */
 
+export type HeroSceneProps = {
+  onSceneReady?: () => void;
+};
+
 export default function HeroScene({
   onSceneReady,
-}: {
-  onSceneReady?: () => void;
-}) {
+}: HeroSceneProps) {
   const [viewportWidth, setViewportWidth] = useState(() =>
     typeof window === "undefined" ? 1440 : window.innerWidth
   );

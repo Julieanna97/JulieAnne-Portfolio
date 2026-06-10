@@ -5,97 +5,97 @@ import {
   useEffect,
   useState,
 } from "react";
-import { useProgress } from "@react-three/drei";
 import {
   Volume2,
   VolumeX,
 } from "lucide-react";
 import Preloader from "@/components/Preloader";
+import type { HeroSceneProps } from "@/components/HeroScene";
 import {
   getAmbientAudioMuted,
   setAmbientAudioMuted,
 } from "@/lib/ambientAudio";
 
-const HeroScene = dynamic(
-  () => import("@/components/HeroScene"),
-  {
-    ssr: false,
-    loading: () => null,
-  }
-);
+/*
+  Explicitly provide HeroScene's prop type.
 
-const PRELOADER_STORAGE_KEY = "preloaderShown";
-
-function ReturningVisitorSceneLoader() {
-  const { progress } = useProgress();
-
-  const displayedProgress = Math.min(
-    99,
-    Math.max(
-      1,
-      Math.round(progress)
-    )
+  This prevents next/dynamic from incorrectly inferring that HeroScene
+  accepts no props.
+*/
+const HeroScene =
+  dynamic<HeroSceneProps>(
+    () =>
+      import(
+        "@/components/HeroScene"
+      ).then(
+        (module) =>
+          module.default
+      ),
+    {
+      ssr: false,
+      loading: () => null,
+    }
   );
-
-  return (
-    <div
-      className="fixed inset-0 z-[140] grid place-items-center bg-[#080b18]"
-      role="status"
-      aria-live="polite"
-      aria-label={`Loading 3D street: ${displayedProgress}%`}
-    >
-      <div className="grid w-[min(270px,calc(100vw-48px))] justify-items-center gap-4 text-center text-white">
-        <span className="h-11 w-11 animate-spin rounded-full border border-[#e2ccff]/30 border-r-[#85aaff] border-t-[#e2ccff]" />
-
-        <p className="m-0 text-[10px] font-black uppercase tracking-[0.3em] text-white/90">
-          Preparing the street
-        </p>
-
-        <div className="h-[3px] w-full overflow-hidden rounded-full bg-white/10">
-          <span
-            className="block h-full rounded-full bg-gradient-to-r from-[#d8bfff] via-[#85aaff] to-[#ff90c8] transition-[width] duration-200"
-            style={{
-              width: `${displayedProgress}%`,
-            }}
-          />
-        </div>
-
-        <strong className="text-[10px] tracking-[0.2em] text-[#e2ccff]/90">
-          {displayedProgress}%
-        </strong>
-      </div>
-    </div>
-  );
-}
 
 export default function HomePage() {
-  const [bootChecked, setBootChecked] = useState(false);
-  const [sceneMounted, setSceneMounted] = useState(false);
-  const [showPreloader, setShowPreloader] = useState(false);
-  const [sceneReady, setSceneReady] = useState(false);
-  const [sceneVisible, setSceneVisible] = useState(false);
-  const [shouldPlayIntro, setShouldPlayIntro] = useState(false);
-  const [musicMuted, setMusicMuted] = useState(false);
+  const [
+    bootChecked,
+    setBootChecked,
+  ] = useState(false);
 
+  const [
+    sceneMounted,
+    setSceneMounted,
+  ] = useState(false);
+
+  const [
+    showPreloader,
+    setShowPreloader,
+  ] = useState(true);
+
+  const [
+    sceneReady,
+    setSceneReady,
+  ] = useState(false);
+
+  const [
+    sceneVisible,
+    setSceneVisible,
+  ] = useState(false);
+
+  const [
+    shouldPlayIntro,
+    setShouldPlayIntro,
+  ] = useState(false);
+
+  const [
+    musicMuted,
+    setMusicMuted,
+  ] = useState(false);
+
+  /*
+    Load the 3D model immediately behind the orange loader.
+
+    The orange animation and loading bar remain visible until HeroScene
+    reports that the scene is ready. Music still waits for the Enter click.
+  */
   useEffect(() => {
-    document.documentElement.dataset.theme = "twilight";
-    document.documentElement.style.colorScheme = "dark";
+    document.documentElement.dataset.theme =
+      "twilight";
 
-    const alreadyEntered =
-      sessionStorage.getItem(
-        PRELOADER_STORAGE_KEY
-      ) === "true";
+    document.documentElement.style.colorScheme =
+      "dark";
 
-    setSceneMounted(alreadyEntered);
-    setShowPreloader(!alreadyEntered);
+    setSceneMounted(true);
+    setShowPreloader(true);
     setBootChecked(true);
   }, []);
 
   /*
-    Reveal the completed model only after:
-    - the scene has mounted,
-    - HeroScene has confirmed that its model and controls are ready,
-    - the first-entry preloader has finished closing.
+    Reveal the scene and play the intro animation only after:
+    - HeroScene is ready,
+    - the visitor has clicked Enter,
+    - the orange loader has faded away.
   */
   useEffect(() => {
     if (
@@ -106,23 +106,24 @@ export default function HomePage() {
       return;
     }
 
+    setSceneVisible(true);
+
     if (!shouldPlayIntro) {
-      setSceneVisible(true);
       return;
     }
 
-    setSceneVisible(true);
-
     const introFrame =
-      window.requestAnimationFrame(() => {
-        window.dispatchEvent(
-          new CustomEvent(
-            "adventure:intro"
-          )
-        );
+      window.requestAnimationFrame(
+        () => {
+          window.dispatchEvent(
+            new CustomEvent(
+              "adventure:intro"
+            )
+          );
 
-        setShouldPlayIntro(false);
-      });
+          setShouldPlayIntro(false);
+        }
+      );
 
     return () => {
       window.cancelAnimationFrame(
@@ -150,7 +151,8 @@ export default function HomePage() {
         }>;
 
       const nextMuted =
-        customEvent.detail?.muted ??
+        customEvent.detail
+          ?.muted ??
         true;
 
       setAmbientAudioMuted(
@@ -176,19 +178,13 @@ export default function HomePage() {
   }, []);
 
   /*
-    Mount the Three.js scene immediately when Enter is clicked.
+    This callback is triggered only after the visitor clicks Enter.
 
-    The preloader itself remains on top until sceneReady becomes true.
+    Preloader.tsx starts the music from the same click event.
   */
   const handleEntered = () => {
-    sessionStorage.setItem(
-      PRELOADER_STORAGE_KEY,
-      "true"
-    );
-
     setSceneVisible(false);
     setShouldPlayIntro(true);
-    setSceneMounted(true);
   };
 
   return (
@@ -227,24 +223,17 @@ export default function HomePage() {
       {bootChecked &&
         showPreloader && (
           <Preloader
+            sceneReady={
+              sceneReady
+            }
             onEnter={
               handleEntered
             }
             onFinished={() => {
               setShowPreloader(false);
             }}
-            sceneReady={
-              sceneReady
-            }
             musicSrc="/music/lofivision-lost-in-tokyo-242003.mp3"
           />
-        )}
-
-      {bootChecked &&
-        sceneMounted &&
-        !sceneReady &&
-        !showPreloader && (
-          <ReturningVisitorSceneLoader />
         )}
 
       {bootChecked &&
