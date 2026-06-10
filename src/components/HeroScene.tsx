@@ -14,6 +14,7 @@ import {
   type ThreeEvent,
 } from "@react-three/fiber";
 import {
+  ContactShadows,
   Html,
   OrbitControls,
   Stars,
@@ -755,9 +756,40 @@ function NightBackdrop() {
       <span className="adventure-original-glow original-glow-left" />
       <span className="adventure-original-glow original-glow-right" />
       <span className="adventure-original-glow original-glow-bottom" />
+
       <FullscreenNightStars />
+
       <span className="adventure-original-vignette" />
     </div>
+  );
+}
+
+function ConcreteRooftopGround() {
+  return (
+    <>
+      <mesh
+        position={[0, -0.055, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        receiveShadow
+      >
+        <planeGeometry args={[90, 90]} />
+
+        <meshStandardMaterial
+          color="#030305"
+          roughness={0.96}
+          metalness={0.02}
+        />
+      </mesh>
+
+      <ContactShadows
+        position={[0, -0.025, 0]}
+        opacity={0.24}
+        scale={38}
+        blur={4}
+        far={9}
+        color="#000000"
+      />
+    </>
   );
 }
 
@@ -1820,7 +1852,6 @@ function AdventureSceneContent({
 
   return (
     <>
-      <color attach="background" args={["#010106"]} />
       <fog attach="fog" args={["#010106", 30, 74]} />
 
       <ambientLight intensity={0.12} />
@@ -1865,6 +1896,8 @@ function AdventureSceneContent({
         fade
         speed={0.22}
       />
+
+      <ConcreteRooftopGround />
 
       <group onClick={handleLightDebugClick}>
         <MysteriousAdventureModel />
