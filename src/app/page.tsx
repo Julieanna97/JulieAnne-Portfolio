@@ -124,7 +124,7 @@ export default function HomePage() {
       {bootChecked && showPreloader && (
         <Preloader
           onEnter={handleEntered}
-          musicSrc="/music/ambient.mp3"
+          musicSrc="/music/lofivision-lost-in-tokyo-242003.mp3"
         />
       )}
 

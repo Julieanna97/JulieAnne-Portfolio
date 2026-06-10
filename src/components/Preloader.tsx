@@ -44,7 +44,7 @@ function PreloaderStars() {
 
 export default function Preloader({
   onEnter,
-  musicSrc = "/music/ambient.mp3",
+  musicSrc = "/music/lofivision-lost-in-tokyo-242003.mp3",
 }: PreloaderProps) {
   const [revealed, setRevealed] = useState(false);
   const [opening, setOpening] = useState(false);
