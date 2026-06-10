@@ -33,7 +33,6 @@ export type PreloaderProps = {
 };
 
 const ENTER_REVEAL_DELAY_MS = 180;
-const EXIT_ANIMATION_MS = 520;
 
 export default function Preloader({
   sceneReady,
@@ -41,57 +40,129 @@ export default function Preloader({
   onFinished,
   musicSrc = "/music/lofivision-lost-in-tokyo-242003.mp3",
 }: PreloaderProps) {
-  const { active, progress } = useProgress();
+  const { progress } = useProgress();
 
-  const [enterVisible, setEnterVisible] =
-    useState(false);
+  const [
+    displayedProgress,
+    setDisplayedProgress,
+  ] = useState(3);
 
-  const [leaving, setLeaving] =
-    useState(false);
-
-  const exitTimerRef =
-    useRef<number | null>(null);
+  const [
+    enterVisible,
+    setEnterVisible,
+  ] = useState(false);
 
   const enteredRef =
     useRef(false);
 
-  /*
-    Keep the percentage below 100 until HeroScene confirms that the model,
-    controls, and camera are ready.
-  */
-  const displayedProgress = sceneReady
-    ? 100
-    : Math.min(
-        99,
-        Math.max(
-          active ? 1 : 0,
-          Math.round(progress)
-        )
-      );
+  const finishFrameRef =
+    useRef<number | null>(null);
 
   /*
-    Reveal Enter shortly after the loading bar reaches 100%.
+    Use Drei's real loading percentage when available.
+
+    Some cached assets may cause Drei to report zero or jump abruptly.
+    The gradual fallback keeps the loader moving while HeroScene prepares
+    its model, camera, and controls.
+
+    The bar never reaches 100% until HeroScene explicitly reports readiness.
   */
   useEffect(() => {
-    if (!sceneReady) {
+    if (sceneReady) {
+      setDisplayedProgress(100);
+      return;
+    }
+
+    const realProgress = Math.min(
+      92,
+      Math.max(
+        0,
+        Math.round(progress)
+      )
+    );
+
+    setDisplayedProgress(
+      (currentProgress) =>
+        Math.max(
+          currentProgress,
+          realProgress
+        )
+    );
+
+    const progressTimer =
+      window.setInterval(() => {
+        setDisplayedProgress(
+          (currentProgress) => {
+            if (
+              currentProgress <
+              68
+            ) {
+              return Math.min(
+                68,
+                currentProgress + 2
+              );
+            }
+
+            if (
+              currentProgress <
+              92
+            ) {
+              return Math.min(
+                92,
+                currentProgress + 1
+              );
+            }
+
+            return currentProgress;
+          }
+        );
+      }, 100);
+
+    return () => {
+      window.clearInterval(
+        progressTimer
+      );
+    };
+  }, [
+    progress,
+    sceneReady,
+  ]);
+
+  /*
+    Reveal Enter only after the real scene-ready signal has arrived.
+  */
+  useEffect(() => {
+    if (
+      !sceneReady ||
+      displayedProgress < 100
+    ) {
       setEnterVisible(false);
       return;
     }
 
-    const timer = window.setTimeout(() => {
-      setEnterVisible(true);
-    }, ENTER_REVEAL_DELAY_MS);
+    const revealTimer =
+      window.setTimeout(() => {
+        setEnterVisible(true);
+      }, ENTER_REVEAL_DELAY_MS);
 
     return () => {
-      window.clearTimeout(timer);
+      window.clearTimeout(
+        revealTimer
+      );
     };
-  }, [sceneReady]);
+  }, [
+    sceneReady,
+    displayedProgress,
+  ]);
 
   useEffect(() => {
     return () => {
-      if (exitTimerRef.current !== null) {
-        window.clearTimeout(
-          exitTimerRef.current
+      if (
+        finishFrameRef.current !==
+        null
+      ) {
+        window.cancelAnimationFrame(
+          finishFrameRef.current
         );
       }
     };
@@ -101,7 +172,6 @@ export default function Preloader({
     if (
       !sceneReady ||
       !enterVisible ||
-      leaving ||
       enteredRef.current
     ) {
       return;
@@ -110,19 +180,23 @@ export default function Preloader({
     enteredRef.current = true;
 
     /*
-      Start music only from this click handler.
+      Start the music only after the visitor clicks Enter.
 
-      Browsers require a real visitor interaction before allowing audio.
+      Keeping audio inside this click handler avoids browser autoplay
+      restrictions.
     */
     try {
       setAmbientAudioMuted(false);
 
       window.dispatchEvent(
-        new CustomEvent("ambient:set-muted", {
-          detail: {
-            muted: false,
-          },
-        })
+        new CustomEvent(
+          "ambient:set-muted",
+          {
+            detail: {
+              muted: false,
+            },
+          }
+        )
       );
 
       void playAmbientAudio(
@@ -141,23 +215,25 @@ export default function Preloader({
       );
     }
 
+    /*
+      Start the Three.js intro while the loader still covers the current frame.
+    */
     onEnter();
-    setLeaving(true);
 
-    exitTimerRef.current =
-      window.setTimeout(() => {
+    /*
+      Remove the loader on the following frame.
+
+      There is intentionally no fade, slide, or orange exit animation.
+      The visitor immediately sees the 3D intro animation.
+    */
+    finishFrameRef.current =
+      window.requestAnimationFrame(() => {
         onFinished();
-      }, EXIT_ANIMATION_MS);
+      });
   };
 
   return (
-    <div
-      className={`orange-loader ${
-        leaving
-          ? "is-leaving"
-          : ""
-      }`}
-    >
+    <div className="orange-loader">
       <main
         className="orange-loader-content"
         role="status"
@@ -180,7 +256,10 @@ export default function Preloader({
           />
         </div>
 
-        <div className="orange-loader-bar">
+        <div
+          className="orange-loader-bar"
+          aria-hidden="true"
+        >
           <span
             style={{
               width: `${displayedProgress}%`,
@@ -188,29 +267,15 @@ export default function Preloader({
           />
         </div>
 
-        <p className="orange-loader-percentage">
-          {displayedProgress}%
-        </p>
-
-        <div
-          className={`orange-loader-enter-wrap ${
-            enterVisible
-              ? "is-visible"
-              : ""
-          }`}
-        >
+        {enterVisible && (
           <button
             type="button"
             className="orange-loader-enter"
             onClick={handleEnter}
-            disabled={
-              !enterVisible ||
-              leaving
-            }
           >
             Enter
           </button>
-        </div>
+        )}
       </main>
 
       <style jsx>{`
@@ -222,28 +287,25 @@ export default function Preloader({
           place-items: center;
           overflow: hidden;
           background: #ffffff;
-          transition:
-            opacity ${EXIT_ANIMATION_MS}ms ease,
-            visibility ${EXIT_ANIMATION_MS}ms ease;
-        }
-
-        .orange-loader.is-leaving {
-          visibility: hidden;
-          opacity: 0;
         }
 
         .orange-loader-content {
           display: grid;
-          width: min(680px, 100%);
+          width: min(760px, 100%);
           justify-items: center;
-          padding: 18px;
+          padding: 16px;
           text-align: center;
         }
 
+        /*
+          Keep the orange very large while preventing it from blocking
+          the Enter button.
+        */
         .orange-loader-animation {
-          width: min(620px, 88vw);
-          height: min(620px, 88vw);
-          margin-bottom: -24px;
+          pointer-events: none;
+          width: min(720px, 96vw);
+          height: min(720px, 96vw);
+          margin-bottom: -42px;
         }
 
         :global(.orange-loader-placeholder) {
@@ -253,7 +315,7 @@ export default function Preloader({
           background:
             radial-gradient(
               circle,
-              rgba(255, 170, 74, 0.18),
+              rgba(255, 170, 74, 0.14),
               transparent 68%
             );
         }
@@ -278,38 +340,19 @@ export default function Preloader({
               #ff7d3e 100%
             );
           box-shadow:
-            0 0 16px rgba(255, 151, 66, 0.35);
-          transition: width 220ms ease;
-        }
-
-        .orange-loader-percentage {
-          margin: 11px 0 0;
-          color: rgba(123, 76, 42, 0.72);
-          font-size: 11px;
-          font-weight: 900;
-          letter-spacing: 0.22em;
-        }
-
-        .orange-loader-enter-wrap {
-          display: grid;
-          grid-template-rows: 0fr;
-          margin-top: 0;
-          opacity: 0;
+            0 0 16px
+            rgba(255, 151, 66, 0.35);
           transition:
-            grid-template-rows 260ms ease,
-            margin-top 260ms ease,
-            opacity 260ms ease;
+            width 220ms ease;
         }
 
-        .orange-loader-enter-wrap.is-visible {
-          grid-template-rows: 1fr;
-          margin-top: 18px;
-          opacity: 1;
-        }
-
+        /*
+          Transparent text-only Enter button.
+        */
         .orange-loader-enter {
-          min-height: 0;
-          overflow: hidden;
+          position: relative;
+          z-index: 4;
+          margin-top: 20px;
           border: 0;
           background: transparent;
           padding: 12px 18px;
@@ -321,25 +364,25 @@ export default function Preloader({
           text-transform: uppercase;
           transition:
             color 180ms ease,
-            opacity 180ms ease,
             transform 180ms ease;
         }
 
-        .orange-loader-enter:hover:not(:disabled) {
+        .orange-loader-enter:hover {
           color: #a94e12;
           transform: translateY(-2px);
         }
 
-        .orange-loader-enter:disabled {
-          cursor: wait;
-          opacity: 0.64;
+        .orange-loader-enter:focus-visible {
+          border-radius: 6px;
+          outline: 2px solid rgba(216, 111, 34, 0.6);
+          outline-offset: 4px;
         }
 
         @media (max-width: 767px) {
           .orange-loader-animation {
-            width: min(500px, 112vw);
-            height: min(500px, 112vw);
-            margin-bottom: -18px;
+            width: min(620px, 132vw);
+            height: min(620px, 132vw);
+            margin-bottom: -34px;
           }
 
           .orange-loader-bar {

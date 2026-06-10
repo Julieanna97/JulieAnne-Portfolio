@@ -10,17 +10,20 @@ import {
   VolumeX,
 } from "lucide-react";
 import Preloader from "@/components/Preloader";
-import type { HeroSceneProps } from "@/components/HeroScene";
 import {
   getAmbientAudioMuted,
   setAmbientAudioMuted,
 } from "@/lib/ambientAudio";
 
-/*
-  Explicitly provide HeroScene's prop type.
+type HeroSceneProps = {
+  onSceneReady?: () => void;
+};
 
-  This prevents next/dynamic from incorrectly inferring that HeroScene
-  accepts no props.
+/*
+  Declare HeroScene's accepted props explicitly.
+
+  This prevents TypeScript from incorrectly treating the dynamically imported
+  component as a component with no props.
 */
 const HeroScene =
   dynamic<HeroSceneProps>(
@@ -59,25 +62,15 @@ export default function HomePage() {
   ] = useState(false);
 
   const [
-    sceneVisible,
-    setSceneVisible,
-  ] = useState(false);
-
-  const [
-    shouldPlayIntro,
-    setShouldPlayIntro,
-  ] = useState(false);
-
-  const [
     musicMuted,
     setMusicMuted,
   ] = useState(false);
 
   /*
-    Load the 3D model immediately behind the orange loader.
+    Mount the Three.js scene immediately behind the loader.
 
-    The orange animation and loading bar remain visible until HeroScene
-    reports that the scene is ready. Music still waits for the Enter click.
+    This allows the loading bar to track the model while the large orange
+    remains visible on top.
   */
   useEffect(() => {
     document.documentElement.dataset.theme =
@@ -90,52 +83,6 @@ export default function HomePage() {
     setShowPreloader(true);
     setBootChecked(true);
   }, []);
-
-  /*
-    Reveal the scene and play the intro animation only after:
-    - HeroScene is ready,
-    - the visitor has clicked Enter,
-    - the orange loader has faded away.
-  */
-  useEffect(() => {
-    if (
-      !sceneMounted ||
-      !sceneReady ||
-      showPreloader
-    ) {
-      return;
-    }
-
-    setSceneVisible(true);
-
-    if (!shouldPlayIntro) {
-      return;
-    }
-
-    const introFrame =
-      window.requestAnimationFrame(
-        () => {
-          window.dispatchEvent(
-            new CustomEvent(
-              "adventure:intro"
-            )
-          );
-
-          setShouldPlayIntro(false);
-        }
-      );
-
-    return () => {
-      window.cancelAnimationFrame(
-        introFrame
-      );
-    };
-  }, [
-    sceneMounted,
-    sceneReady,
-    showPreloader,
-    shouldPlayIntro,
-  ]);
 
   useEffect(() => {
     setMusicMuted(
@@ -151,8 +98,7 @@ export default function HomePage() {
         }>;
 
       const nextMuted =
-        customEvent.detail
-          ?.muted ??
+        customEvent.detail?.muted ??
         true;
 
       setAmbientAudioMuted(
@@ -178,13 +124,16 @@ export default function HomePage() {
   }, []);
 
   /*
-    This callback is triggered only after the visitor clicks Enter.
+    Start the intro immediately after Enter is clicked.
 
-    Preloader.tsx starts the music from the same click event.
+    Preloader.tsx removes its white overlay on the following frame.
   */
   const handleEntered = () => {
-    setSceneVisible(false);
-    setShouldPlayIntro(true);
+    window.dispatchEvent(
+      new CustomEvent(
+        "adventure:intro"
+      )
+    );
   };
 
   return (
@@ -223,12 +172,8 @@ export default function HomePage() {
       {bootChecked &&
         showPreloader && (
           <Preloader
-            sceneReady={
-              sceneReady
-            }
-            onEnter={
-              handleEntered
-            }
+            sceneReady={sceneReady}
+            onEnter={handleEntered}
             onFinished={() => {
               setShowPreloader(false);
             }}
@@ -238,13 +183,7 @@ export default function HomePage() {
 
       {bootChecked &&
         sceneMounted && (
-          <main
-            className={`h-[100dvh] w-full overflow-hidden transition-opacity duration-500 ${
-              sceneVisible
-                ? "opacity-100"
-                : "opacity-0"
-            }`}
-          >
+          <main className="h-[100dvh] w-full overflow-hidden bg-[#010106]">
             <HeroScene
               onSceneReady={() => {
                 setSceneReady(true);

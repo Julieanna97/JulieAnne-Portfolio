@@ -1,90 +1,132 @@
-const AMBIENT_MUTED_STORAGE_KEY = "ambientAudioMuted";
+const MUTED_STORAGE_KEY =
+  "ambientAudioMuted";
 
-let ambientAudio: HTMLAudioElement | null = null;
-let visibilityListenerAttached = false;
-let ambientMuted = false;
+let ambientAudio:
+  | HTMLAudioElement
+  | null = null;
 
-function readStoredMutedState() {
-  if (typeof window === "undefined") return ambientMuted;
+let mutedState =
+  false;
 
-  ambientMuted =
-    window.localStorage.getItem(AMBIENT_MUTED_STORAGE_KEY) === "true";
+let mutedStateLoaded =
+  false;
 
-  return ambientMuted;
+function canUseBrowserApis() {
+  return (
+    typeof window !==
+      "undefined" &&
+    typeof document !==
+      "undefined"
+  );
 }
 
-function attachVisibilityListener() {
-  if (typeof window === "undefined" || visibilityListenerAttached) return;
+function loadMutedState() {
+  if (
+    mutedStateLoaded ||
+    !canUseBrowserApis()
+  ) {
+    return;
+  }
 
-  visibilityListenerAttached = true;
+  mutedStateLoaded =
+    true;
 
-  const handleVisibilityChange = () => {
-    if (!ambientAudio) return;
-
-    if (document.hidden) {
-      ambientAudio.pause();
-      return;
-    }
-
-    ambientAudio.play().catch(() => {
-      // Autoplay may be blocked until the user interacts with the page.
-    });
-  };
-
-  document.addEventListener("visibilitychange", handleVisibilityChange);
+  mutedState =
+    window.localStorage.getItem(
+      MUTED_STORAGE_KEY
+    ) === "true";
 }
 
-export async function playAmbientAudio(src: string, volume = 0.4) {
-  if (typeof window === "undefined") return;
+function getOrCreateAudio() {
+  if (!canUseBrowserApis()) {
+    return null;
+  }
 
   if (!ambientAudio) {
-    ambientAudio = new Audio(src);
-    ambientAudio.preload = "auto";
-    attachVisibilityListener();
+    ambientAudio =
+      new Audio();
+
+    ambientAudio.loop =
+      true;
+
+    ambientAudio.preload =
+      "auto";
   }
 
-  if (!ambientAudio.src.endsWith(src)) {
-    ambientAudio.src = src;
-  }
-
-  ambientAudio.loop = true;
-  ambientAudio.volume = volume;
-  ambientAudio.muted = readStoredMutedState();
-
-  if (ambientAudio.paused) {
-    await ambientAudio.play();
-  }
-}
-
-export function getAmbientAudio() {
   return ambientAudio;
 }
 
 export function getAmbientAudioMuted() {
-  return readStoredMutedState();
+  loadMutedState();
+
+  return mutedState;
 }
 
-export function setAmbientAudioMuted(muted: boolean) {
-  ambientMuted = muted;
+export function setAmbientAudioMuted(
+  muted:
+    boolean
+) {
+  loadMutedState();
 
-  if (typeof window !== "undefined") {
+  mutedState =
+    muted;
+
+  if (
+    canUseBrowserApis()
+  ) {
     window.localStorage.setItem(
-      AMBIENT_MUTED_STORAGE_KEY,
+      MUTED_STORAGE_KEY,
       String(muted)
     );
   }
 
   if (ambientAudio) {
-    ambientAudio.muted = muted;
+    ambientAudio.muted =
+      muted;
   }
 }
 
-export function resumeAudioIfNeeded() {
-  if (typeof window === "undefined" || !ambientAudio) return;
+export async function playAmbientAudio(
+  src:
+    string,
 
-  if (!document.hidden && ambientAudio.paused) {
-    ambientAudio.play().catch(() => {
-      // Autoplay may be blocked until the user interacts with the page.
-    });
+  volume =
+    0.1
+) {
+  const audio =
+    getOrCreateAudio();
+
+  if (!audio) {
+    return;
   }
+
+  const absoluteSource =
+    new URL(
+      src,
+      window.location.href
+    ).href;
+
+  if (
+    audio.src !==
+    absoluteSource
+  ) {
+    audio.src =
+      src;
+
+    audio.load();
+  }
+
+  audio.volume =
+    Math.min(
+      1,
+      Math.max(
+        0,
+        volume
+      )
+    );
+
+  audio.muted =
+    getAmbientAudioMuted();
+
+  await audio.play();
 }

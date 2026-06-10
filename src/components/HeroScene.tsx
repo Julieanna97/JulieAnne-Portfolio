@@ -1898,7 +1898,7 @@ function AdventureSceneContent({
     lockCamera,
     onSceneReady,
   ]);
-
+  
   return (
     <>
       <fog attach="fog" args={["#010106", 30, 74]} />
