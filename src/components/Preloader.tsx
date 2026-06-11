@@ -284,28 +284,65 @@ export default function Preloader({
           inset: 0;
           z-index: 200;
           display: grid;
+          width: 100%;
+          height: 100vh;
+          height: 100dvh;
           place-items: center;
           overflow: hidden;
           background: #ffffff;
+
+          /*
+            Keep interactive content away from phone notches,
+            rounded corners, and the iPhone home indicator.
+          */
+          padding:
+            max(12px, env(safe-area-inset-top))
+            max(12px, env(safe-area-inset-right))
+            max(12px, env(safe-area-inset-bottom))
+            max(12px, env(safe-area-inset-left));
         }
 
         .orange-loader-content {
           display: grid;
+
+          /*
+            Prevent the oversized orange animation from widening the grid column.
+            All elements will remain centered against the visible screen.
+          */
+          grid-template-columns: minmax(0, 1fr);
           width: min(760px, 100%);
+          min-width: 0;
+
           justify-items: center;
+          align-items: center;
           padding: 16px;
           text-align: center;
         }
 
         /*
-          Keep the orange very large while preventing it from blocking
-          the Enter button.
+          Use both width and visible screen height to calculate the orange size.
+
+          On a normal portrait phone, the animation remains large.
+          On a short screen or landscape phone, it shrinks so the bar and button
+          remain visible.
         */
         .orange-loader-animation {
           pointer-events: none;
-          width: min(720px, 96vw);
-          height: min(720px, 96vw);
-          margin-bottom: -42px;
+          width:
+            min(
+              720px,
+              96vw,
+              calc(100dvh - 170px)
+            );
+          height:
+            min(
+              720px,
+              96vw,
+              calc(100dvh - 170px)
+            );
+          min-width: 210px;
+          min-height: 210px;
+          margin-bottom: -36px;
         }
 
         :global(.orange-loader-placeholder) {
@@ -322,7 +359,7 @@ export default function Preloader({
 
         .orange-loader-bar {
           overflow: hidden;
-          width: min(360px, 78vw);
+          width: clamp(210px, 78vw, 360px);
           height: 6px;
           border-radius: 999px;
           background: rgba(240, 135, 49, 0.14);
@@ -347,21 +384,27 @@ export default function Preloader({
         }
 
         /*
-          Transparent text-only Enter button.
+          Use a minimum touch-friendly height while retaining the
+          transparent text-only appearance.
         */
         .orange-loader-enter {
           position: relative;
           z-index: 4;
-          margin-top: 20px;
+          display: inline-grid;
+          min-height: 44px;
+          place-items: center;
+          margin-top: 16px;
           border: 0;
           background: transparent;
-          padding: 12px 18px;
+          padding: 10px 18px;
           color: #d86f22;
           cursor: pointer;
           font-size: 11px;
           font-weight: 900;
           letter-spacing: 0.32em;
           text-transform: uppercase;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
           transition:
             color 180ms ease,
             transform 180ms ease;
@@ -372,21 +415,78 @@ export default function Preloader({
           transform: translateY(-2px);
         }
 
+        .orange-loader-enter:active {
+          transform: scale(0.96);
+        }
+
         .orange-loader-enter:focus-visible {
           border-radius: 6px;
           outline: 2px solid rgba(216, 111, 34, 0.6);
           outline-offset: 4px;
         }
 
+        /*
+          Portrait phones:
+          allow the orange to remain intentionally wider than the screen,
+          but limit its height using the visible mobile viewport.
+        */
         @media (max-width: 767px) {
+          .orange-loader-content {
+            width: 100%;
+          }
+
           .orange-loader-animation {
-            width: min(620px, 132vw);
-            height: min(620px, 132vw);
-            margin-bottom: -34px;
+            pointer-events: none;
+            justify-self: center;
+            width: min(720px, 96vw);
+            height: min(720px, 96vw);
+            margin-bottom: -42px;
           }
 
           .orange-loader-bar {
-            width: min(300px, 78vw);
+            width: clamp(210px, 78vw, 300px);
+          }
+
+          .orange-loader-enter {
+            margin-top: 14px;
+          }
+        }
+
+        /*
+          Short screens and landscape phones:
+          shrink the animation further so that Enter never disappears
+          below the browser toolbar.
+        */
+        @media (max-height: 520px) {
+          .orange-loader-animation {
+            width:
+              min(
+                460px,
+                88vw,
+                calc(100dvh - 118px)
+              );
+            height:
+              min(
+                460px,
+                88vw,
+                calc(100dvh - 118px)
+              );
+            min-width: 150px;
+            min-height: 150px;
+            margin-bottom: -20px;
+          }
+
+          .orange-loader-enter {
+            min-height: 40px;
+            margin-top: 8px;
+            padding: 7px 16px;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .orange-loader-bar span,
+          .orange-loader-enter {
+            transition: none;
           }
         }
       `}</style>

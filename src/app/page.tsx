@@ -154,7 +154,11 @@ export default function HomePage() {
                 nextMuted
               );
             }}
-            className="fixed bottom-4 right-4 z-[160] inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-[#0d1020]/70 text-white shadow-lg backdrop-blur-xl transition hover:-translate-y-0.5"
+            className="fixed z-[160] inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-[#0d1020]/70 text-white shadow-lg backdrop-blur-xl transition hover:-translate-y-0.5"
+            style={{
+              bottom: "max(1rem, env(safe-area-inset-bottom))",
+              right: "max(1rem, env(safe-area-inset-right))",
+            }}
             aria-label={
               musicMuted
                 ? "Unmute background music"
@@ -183,7 +187,7 @@ export default function HomePage() {
 
       {bootChecked &&
         sceneMounted && (
-          <main className="h-[100dvh] w-full overflow-hidden bg-[#010106]">
+          <main className="h-screen h-[100dvh] w-full overflow-hidden bg-[#010106]">
             <HeroScene
               onSceneReady={() => {
                 setSceneReady(true);
