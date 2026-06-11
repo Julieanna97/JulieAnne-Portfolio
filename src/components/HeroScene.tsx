@@ -37,6 +37,8 @@ import type {
 import {
   ACESFilmicToneMapping,
   MOUSE,
+  Shape,
+  ShapeGeometry,
   SRGBColorSpace,
   TOUCH,
   Vector3,
@@ -1085,50 +1087,43 @@ function BackAlleyPinkGlow() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Rooftop YouTube advertisement screen                                       */
+/* Rounded rooftop video advertisement                                        */
 /* -------------------------------------------------------------------------- */
 
 /*
-  Replace this value whenever you want to show a different YouTube video.
+  IMPORTANT:
 
-  Example URL:
-  https://www.youtube.com/watch?v=abc123XYZ
+  This rounded rooftop advertisement is rendered as a real Three.js mesh,
+  just like the square wall advertisement below. It is not rendered as an
+  <Html> element.
 
-  Video ID:
-  abc123XYZ
-*/
-const YOUTUBE_AD_VIDEO_ID =
-  "RrKOH8h_3_g";
+  A DOM video or iframe can visually float above nearby 3D geometry because it
+  does not participate in the WebGL depth buffer pixel-by-pixel. Mapping the
+  MP4 onto a real mesh allows signs, electrical wires, building edges, and
+  other 3D objects to naturally cover the correct portions of the video.
 
-/*
-  Clicking the rounded rooftop advertisement opens the original YouTube page
-  in a new browser tab. The embedded preview itself stays muted and decorative.
-*/
-const ROOFTOP_AD_YOUTUBE_URL =
-  "https://www.youtube.com/watch?v=RrKOH8h_3_g";
-
-/*
-  Use a local MP4 preview instead of a YouTube iframe.
-
-  A YouTube iframe can show YouTube-owned hover overlays and playback UI.
-  A normal muted video element has no YouTube controls, while the full screen
-  remains clickable and opens the original YouTube page in a new tab.
-
-  Add your licensed preview file here:
+  Add your licensed preview MP4 here:
   public/videos/rooftop-ad.mp4
 */
 const ROOFTOP_AD_VIDEO_SRC =
   "/videos/rooftop-ad.mp4";
 
 /*
-  The selected wall position from the debugger was:
+  Clicking the rounded rooftop advertisement opens the original YouTube page
+  in a new browser tab.
+*/
+const ROOFTOP_AD_YOUTUBE_URL =
+  "https://www.youtube.com/watch?v=RrKOH8h_3_g";
+
+/*
+  The selected rooftop-screen position from the debugger was:
   [0.624, 10.546, -3.747]
 
   Its outward-facing normal was approximately:
   [0, 0, -1]
 
-  The advertisement is moved slightly outward from the wall to prevent
-  flickering against the original model.
+  Keep the z value slightly farther outward than the original surface to avoid
+  flickering against the built-in display housing.
 */
 const ROOFTOP_AD_POSITION: [
   number,
@@ -1141,14 +1136,17 @@ const ROOFTOP_AD_POSITION: [
 ];
 
 /*
-  Adjust only this number when fine-tuning the advertisement size.
-
-  The previous value of 0.145 was slightly too small for the rounded
-  display already built into the 3D model. A value of 0.16 makes the
-  interactive YouTube player a little larger while preserving the rounded edges.
+  These values fit the rounded display housing already built into the 3D
+  model. Adjust width and height independently if you need a tiny visual tweak.
 */
-const ROOFTOP_AD_HTML_SCALE =
-  0.16;
+const ROOFTOP_AD_WIDTH =
+  3.04;
+
+const ROOFTOP_AD_HEIGHT =
+  1.71;
+
+const ROOFTOP_AD_CORNER_RADIUS =
+  0.18;
 
 /*
   Open an advertisement's original YouTube page without replacing the
@@ -1165,106 +1163,190 @@ function openYoutubeAdvertisement(
   );
 }
 
-function RooftopYoutubeAdvertisement() {
-  const groupRef =
-    useRef<Object3D>(
-      null
+/*
+  Create a true rounded rectangle geometry and normalize its UV coordinates so
+  the MP4 preview fills the entire screen cleanly without stretching beyond the
+  rounded corners.
+*/
+function createRoundedVideoGeometry(
+  width:
+    number,
+
+  height:
+    number,
+
+  radius:
+    number
+) {
+  const safeRadius =
+    Math.min(
+      radius,
+      width / 2,
+      height / 2
     );
 
-  const frontVisibleRef =
-    useRef(
-      true
-    );
+  const left =
+    -width / 2;
 
-  const [
-    frontVisible,
-    setFrontVisible,
-  ] =
-    useState(
-      true
-    );
+  const right =
+    width / 2;
 
-  const screenWorldPosition =
-    useMemo(
-      () =>
-        new Vector3(),
-      []
-    );
+  const bottom =
+    -height / 2;
 
-  const screenFrontNormal =
-    useMemo(
-      () =>
-        new Vector3(),
-      []
-    );
+  const top =
+    height / 2;
 
-  const screenToCamera =
-    useMemo(
-      () =>
-        new Vector3(),
-      []
-    );
+  const shape =
+    new Shape();
 
-  /*
-    Hide the rounded advertisement whenever the visitor rotates behind it.
-    This prevents a mirrored reverse-side video from appearing.
-  */
-  useFrame(
-    ({
-      camera,
-    }) => {
-      const group =
-        groupRef.current;
-
-      if (
-        !group
-      ) {
-        return;
-      }
-
-      group.getWorldPosition(
-        screenWorldPosition
-      );
-
-      group.getWorldDirection(
-        screenFrontNormal
-      );
-
-      screenToCamera
-        .copy(
-          camera.position
-        )
-        .sub(
-          screenWorldPosition
-        );
-
-      const nextFrontVisible =
-        screenToCamera.dot(
-          screenFrontNormal
-        ) >
-        0;
-
-      if (
-        frontVisibleRef.current ===
-        nextFrontVisible
-      ) {
-        return;
-      }
-
-      frontVisibleRef.current =
-        nextFrontVisible;
-
-      setFrontVisible(
-        nextFrontVisible
-      );
-    }
+  shape.moveTo(
+    left + safeRadius,
+    bottom
   );
+
+  shape.lineTo(
+    right - safeRadius,
+    bottom
+  );
+
+  shape.quadraticCurveTo(
+    right,
+    bottom,
+    right,
+    bottom + safeRadius
+  );
+
+  shape.lineTo(
+    right,
+    top - safeRadius
+  );
+
+  shape.quadraticCurveTo(
+    right,
+    top,
+    right - safeRadius,
+    top
+  );
+
+  shape.lineTo(
+    left + safeRadius,
+    top
+  );
+
+  shape.quadraticCurveTo(
+    left,
+    top,
+    left,
+    top - safeRadius
+  );
+
+  shape.lineTo(
+    left,
+    bottom + safeRadius
+  );
+
+  shape.quadraticCurveTo(
+    left,
+    bottom,
+    left + safeRadius,
+    bottom
+  );
+
+  const geometry =
+    new ShapeGeometry(
+      shape,
+      18
+    );
+
+  const positions =
+    geometry.getAttribute(
+      "position"
+    );
+
+  const uvs =
+    geometry.getAttribute(
+      "uv"
+    );
+
+  for (
+    let index = 0;
+    index < positions.count;
+    index += 1
+  ) {
+    uvs.setXY(
+      index,
+      (positions.getX(
+        index
+      ) - left) /
+        width,
+      (positions.getY(
+        index
+      ) - bottom) /
+        height
+    );
+  }
+
+  uvs.needsUpdate =
+    true;
+
+  return geometry;
+}
+
+function RooftopVideoAdvertisement() {
+  const texture =
+    useVideoTexture(
+      ROOFTOP_AD_VIDEO_SRC,
+      {
+        muted:
+          true,
+
+        loop:
+          true,
+
+        start:
+          true,
+
+        playsInline:
+          true,
+
+        crossOrigin:
+          "anonymous",
+      }
+    );
+
+  const roundedGeometry =
+    useMemo(
+      () =>
+        createRoundedVideoGeometry(
+          ROOFTOP_AD_WIDTH,
+          ROOFTOP_AD_HEIGHT,
+          ROOFTOP_AD_CORNER_RADIUS
+        ),
+      []
+    );
+
+  useEffect(() => {
+    return () => {
+      roundedGeometry.dispose();
+    };
+  }, [
+    roundedGeometry,
+  ]);
+
+  const openRooftopAdvertisement = (
+    event:
+      ThreeEvent<MouseEvent>
+  ) => {
+    event.stopPropagation();
+
+    openYoutubeAdvertisement(
+      ROOFTOP_AD_YOUTUBE_URL
+    );
+  };
 
   return (
     <group
-      ref={
-        groupRef
-      }
       position={
         ROOFTOP_AD_POSITION
       }
@@ -1274,166 +1356,45 @@ function RooftopYoutubeAdvertisement() {
         0,
       ]}
     >
-      <Html
-        transform
-        center
+      <mesh
+        geometry={
+          roundedGeometry
+        }
         position={[
           0.16,
           0.2,
           0.012,
         ]}
-        scale={
-          ROOFTOP_AD_HTML_SCALE
+        onClick={
+          openRooftopAdvertisement
         }
-        zIndexRange={[
-          30,
-          0,
-        ]}
-        style={{
-          display:
-            frontVisible
-              ? "block"
-              : "none",
-
-          width:
-            "640px",
-
-          height:
-            "360px",
-
-          overflow:
-            "hidden",
-
-          borderRadius:
-            "28px",
-
-          visibility:
-            frontVisible
-              ? "visible"
-              : "hidden",
-
-          opacity:
-            frontVisible
-              ? 1
-              : 0,
-
-          pointerEvents:
-            frontVisible
-              ? "auto"
-              : "none",
-
-          backfaceVisibility:
-            "hidden",
-
-          WebkitBackfaceVisibility:
-            "hidden",
+        onPointerOver={() => {
+          document.body.style.cursor =
+            "pointer";
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor =
+            "";
         }}
       >
-        <a
-          href={
-            ROOFTOP_AD_YOUTUBE_URL
+        <meshBasicMaterial
+          map={
+            texture
           }
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Open rooftop advertisement on YouTube"
-          onClick={(
-            event
-          ) => {
-            event.stopPropagation();
-          }}
-          onPointerDown={(
-            event
-          ) => {
-            event.stopPropagation();
-          }}
-          style={{
-            position:
-              "relative",
-
-            display:
-              "block",
-
-            width:
-              "640px",
-
-            height:
-              "360px",
-
-            overflow:
-              "hidden",
-
-            borderRadius:
-              "28px",
-
-            clipPath:
-              "inset(0 round 28px)",
-
-            background:
-              "transparent",
-
-            cursor:
-              "pointer",
-
-            textDecoration:
-              "none",
-
-            backfaceVisibility:
-              "hidden",
-
-            WebkitBackfaceVisibility:
-              "hidden",
-          }}
-        >
-          <video
-            src={
-              ROOFTOP_AD_VIDEO_SRC
-            }
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            controls={
-              false
-            }
-            tabIndex={
-              -1
-            }
-            aria-hidden="true"
-            style={{
-              display:
-                "block",
-
-              width:
-                "640px",
-
-              height:
-                "360px",
-
-              objectFit:
-                "cover",
-
-              border:
-                0,
-
-              borderRadius:
-                "28px",
-
-              pointerEvents:
-                "none",
-
-              userSelect:
-                "none",
-
-              backfaceVisibility:
-                "hidden",
-
-              WebkitBackfaceVisibility:
-                "hidden",
-            }}
-          />
-        </a>
-      </Html>
+          toneMapped={
+            false
+          }
+          depthTest
+          depthWrite
+          polygonOffset
+          polygonOffsetFactor={
+            -1
+          }
+          polygonOffsetUnits={
+            -1
+          }
+        />
+      </mesh>
 
       <pointLight
         name="rooftopAdvertisementGlow"
@@ -1539,33 +1500,14 @@ function SquareWallVideoAdvertisement() {
       }
     );
 
-  const video =
-    texture.image as HTMLVideoElement;
+  /*
+    useVideoTexture already starts this muted looping video because start is
+    true. Do not call video.play() and video.pause() again inside an effect.
 
-  useEffect(() => {
-    video.muted =
-      true;
-
-    video.loop =
-      true;
-
-    video.playsInline =
-      true;
-
-    void video
-      .play()
-      .catch(() => {
-        /*
-          Some browsers delay playback until the first visitor interaction.
-        */
-      });
-
-    return () => {
-      video.pause();
-    };
-  }, [
-    video,
-  ]);
+    In React development mode, effects can mount and clean up quickly. Calling
+    pause() while an earlier play() promise is still resolving can trigger:
+    AbortError: The play() request was interrupted by a call to pause().
+  */
 
   const openWallAdvertisement = (
     event:
@@ -4021,7 +3963,7 @@ function AdventureSceneContent({
         <MysteriousAdventureModel />
       </group>
 
-      <RooftopYoutubeAdvertisement />
+      <RooftopVideoAdvertisement />
 
       <SquareWallVideoAdvertisement />
 
