@@ -6,13 +6,12 @@ import {
   useRef,
   useState,
 } from "react";
-import { useProgress } from "@react-three/drei";
 import {
   playAmbientAudio,
   setAmbientAudioMuted,
 } from "@/lib/ambientAudio";
 
-const OrangeAnimation = dynamic(
+const SushiAnimation = dynamic(
   () =>
     import("@lottiefiles/react-lottie-player").then(
       (module) => module.Player
@@ -20,7 +19,7 @@ const OrangeAnimation = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="orange-loader-placeholder" />
+      <div className="sushi-loader-placeholder" />
     ),
   }
 );
@@ -32,7 +31,18 @@ export type PreloaderProps = {
   musicSrc?: string;
 };
 
-const ENTER_REVEAL_DELAY_MS = 180;
+const START_REVEAL_DELAY_MS =
+  180;
+
+function isAbortError(
+  error: unknown
+) {
+  return (
+    error instanceof DOMException &&
+    error.name ===
+      "AbortError"
+  );
+}
 
 export default function Preloader({
   sceneReady,
@@ -40,110 +50,40 @@ export default function Preloader({
   onFinished,
   musicSrc = "/music/lofivision-lost-in-tokyo-242003.mp3",
 }: PreloaderProps) {
-  const { progress } = useProgress();
-
   const [
-    displayedProgress,
-    setDisplayedProgress,
-  ] = useState(3);
-
-  const [
-    enterVisible,
-    setEnterVisible,
+    startVisible,
+    setStartVisible,
   ] = useState(false);
 
   const enteredRef =
     useRef(false);
 
   const finishFrameRef =
-    useRef<number | null>(null);
-
-  /*
-    Use Drei's real loading percentage when available.
-
-    Some cached assets may cause Drei to report zero or jump abruptly.
-    The gradual fallback keeps the loader moving while HeroScene prepares
-    its model, camera, and controls.
-
-    The bar never reaches 100% until HeroScene explicitly reports readiness.
-  */
-  useEffect(() => {
-    if (sceneReady) {
-      setDisplayedProgress(100);
-      return;
-    }
-
-    const realProgress = Math.min(
-      92,
-      Math.max(
-        0,
-        Math.round(progress)
-      )
+    useRef<number | null>(
+      null
     );
 
-    setDisplayedProgress(
-      (currentProgress) =>
-        Math.max(
-          currentProgress,
-          realProgress
-        )
-    );
-
-    const progressTimer =
-      window.setInterval(() => {
-        setDisplayedProgress(
-          (currentProgress) => {
-            if (
-              currentProgress <
-              68
-            ) {
-              return Math.min(
-                68,
-                currentProgress + 2
-              );
-            }
-
-            if (
-              currentProgress <
-              92
-            ) {
-              return Math.min(
-                92,
-                currentProgress + 1
-              );
-            }
-
-            return currentProgress;
-          }
-        );
-      }, 100);
-
-    return () => {
-      window.clearInterval(
-        progressTimer
-      );
-    };
-  }, [
-    progress,
-    sceneReady,
-  ]);
-
   /*
-    Reveal Enter only after the real scene-ready signal has arrived.
+    Show Start only after HeroScene confirms that the 3D model,
+    camera, and controls are ready.
   */
   useEffect(() => {
     if (
-      !sceneReady ||
-      displayedProgress < 100
+      !sceneReady
     ) {
-      setEnterVisible(false);
+      setStartVisible(
+        false
+      );
+
       return;
     }
 
     const revealTimer =
       window.setTimeout(() => {
-        setEnterVisible(true);
-      }, ENTER_REVEAL_DELAY_MS);
+        setStartVisible(
+          true
+        );
+      }, START_REVEAL_DELAY_MS);
 
     return () => {
       window.clearTimeout(
@@ -152,7 +92,6 @@ export default function Preloader({
     };
   }, [
     sceneReady,
-    displayedProgress,
   ]);
 
   useEffect(() => {
@@ -168,324 +107,440 @@ export default function Preloader({
     };
   }, []);
 
-  const handleEnter = () => {
-    if (
-      !sceneReady ||
-      !enterVisible ||
-      enteredRef.current
-    ) {
-      return;
-    }
+  const handleStart =
+    () => {
+      if (
+        !sceneReady ||
+        !startVisible ||
+        enteredRef.current
+      ) {
+        return;
+      }
 
-    enteredRef.current = true;
+      enteredRef.current =
+        true;
 
-    /*
-      Start the music only after the visitor clicks Enter.
+      /*
+        Start playback directly inside the visitor's click.
 
-      Keeping audio inside this click handler avoids browser autoplay
-      restrictions.
-    */
-    try {
-      setAmbientAudioMuted(false);
-
-      window.dispatchEvent(
-        new CustomEvent(
-          "ambient:set-muted",
-          {
-            detail: {
-              muted: false,
-            },
-          }
-        )
-      );
-
+        AbortError is harmless when a media element is replaced or paused
+        while an earlier play request is still resolving.
+      */
       void playAmbientAudio(
         musicSrc,
         0.1
-      ).catch((error) => {
-        console.warn(
-          "Background audio could not be played. Continuing without music.",
-          error
+      )
+        .then(() => {
+          setAmbientAudioMuted(
+            false
+          );
+
+          window.dispatchEvent(
+            new CustomEvent(
+              "ambient:set-muted",
+              {
+                detail: {
+                  muted:
+                    false,
+                },
+              }
+            )
+          );
+        })
+        .catch(
+          (
+            error
+          ) => {
+            if (
+              isAbortError(
+                error
+              )
+            ) {
+              return;
+            }
+
+            console.warn(
+              "Background audio could not be played. Continuing without music.",
+              error
+            );
+          }
         );
-      });
-    } catch (error) {
-      console.warn(
-        "Background audio could not be started. Continuing without music.",
-        error
-      );
-    }
 
-    /*
-      Start the Three.js intro while the loader still covers the current frame.
-    */
-    onEnter();
+      /*
+        Start the Three.js intro while the loader still covers the frame.
+      */
+      onEnter();
 
-    /*
-      Remove the loader on the following frame.
-
-      There is intentionally no fade, slide, or orange exit animation.
-      The visitor immediately sees the 3D intro animation.
-    */
-    finishFrameRef.current =
-      window.requestAnimationFrame(() => {
-        onFinished();
-      });
-  };
+      /*
+        Remove the loader on the following frame so the visitor immediately
+        sees the 3D intro animation.
+      */
+      finishFrameRef.current =
+        window.requestAnimationFrame(
+          () => {
+            onFinished();
+          }
+        );
+    };
 
   return (
-    <div className="orange-loader">
+    <div className="sushi-loader">
+      <div
+        className="sushi-loader-animation"
+        aria-hidden="true"
+      >
+        <SushiAnimation
+          autoplay
+          loop
+          src="/animations/sushi-loader.json"
+          style={{
+            width:
+              "100%",
+
+            height:
+              "100%",
+          }}
+        />
+      </div>
+
       <main
-        className="orange-loader-content"
+        className="sushi-loader-content"
         role="status"
         aria-live="polite"
+        aria-busy={
+          !sceneReady
+        }
         aria-label={
           sceneReady
             ? "The interactive scene is ready"
-            : `Loading the interactive scene: ${displayedProgress}%`
+            : "Loading the interactive scene"
         }
       >
-        <div className="orange-loader-animation">
-          <OrangeAnimation
-            autoplay
-            loop
-            src="/animations/orange-hi.json"
-            style={{
-              width: "100%",
-              height: "100%",
-            }}
-          />
-        </div>
-
-        <div
-          className="orange-loader-bar"
-          aria-hidden="true"
-        >
-          <span
-            style={{
-              width: `${displayedProgress}%`,
-            }}
-          />
-        </div>
-
-        {enterVisible && (
+        {startVisible && (
           <button
             type="button"
-            className="orange-loader-enter"
-            onClick={handleEnter}
+            className="sushi-loader-start"
+            onClick={
+              handleStart
+            }
           >
-            Enter
+            Start
           </button>
         )}
       </main>
 
       <style jsx>{`
-        .orange-loader {
+        .sushi-loader {
           position: fixed;
           inset: 0;
           z-index: 200;
-          display: grid;
           width: 100%;
           height: 100vh;
           height: 100dvh;
-          place-items: center;
           overflow: hidden;
           background: #ffffff;
-
-          /*
-            Keep interactive content away from phone notches,
-            rounded corners, and the iPhone home indicator.
-          */
-          padding:
-            max(12px, env(safe-area-inset-top))
-            max(12px, env(safe-area-inset-right))
-            max(12px, env(safe-area-inset-bottom))
-            max(12px, env(safe-area-inset-left));
-        }
-
-        .orange-loader-content {
-          display: grid;
-
-          /*
-            Prevent the oversized orange animation from widening the grid column.
-            All elements will remain centered against the visible screen.
-          */
-          grid-template-columns: minmax(0, 1fr);
-          width: min(760px, 100%);
-          min-width: 0;
-
-          justify-items: center;
-          align-items: center;
-          padding: 16px;
-          text-align: center;
         }
 
         /*
-          Use both width and visible screen height to calculate the orange size.
+          The uploaded Lottie animation has a 2100 × 1200 canvas.
 
-          On a normal portrait phone, the animation remains large.
-          On a short screen or landscape phone, it shrinks so the bar and button
-          remain visible.
+          These calculations make the landscape animation cover the viewport
+          on desktop and mobile while cropping excess space evenly.
         */
-        .orange-loader-animation {
+        .sushi-loader-animation {
           pointer-events: none;
+          position: absolute;
+          left: 50%;
+          top: 50%;
           width:
-            min(
-              720px,
-              96vw,
-              calc(100dvh - 170px)
+            max(
+              100vw,
+              calc(100dvh * 1.75)
             );
           height:
-            min(
-              720px,
-              96vw,
-              calc(100dvh - 170px)
+            max(
+              100dvh,
+              calc(100vw / 1.75)
             );
-          min-width: 210px;
-          min-height: 210px;
-          margin-bottom: -36px;
+          transform:
+            translate(
+              -50%,
+              -50%
+            );
         }
 
-        :global(.orange-loader-placeholder) {
+        :global(.sushi-loader-placeholder) {
           width: 100%;
           height: 100%;
-          border-radius: 999px;
-          background:
-            radial-gradient(
-              circle,
-              rgba(255, 170, 74, 0.14),
-              transparent 68%
-            );
+          background: #ffffff;
         }
 
-        .orange-loader-bar {
-          overflow: hidden;
-          width: clamp(210px, 78vw, 360px);
-          height: 6px;
-          border-radius: 999px;
-          background: rgba(240, 135, 49, 0.14);
-        }
-
-        .orange-loader-bar span {
-          display: block;
-          height: 100%;
-          border-radius: inherit;
-          background:
-            linear-gradient(
-              90deg,
-              #ffd27a 0%,
-              #ffad4f 44%,
-              #ff7d3e 100%
-            );
-          box-shadow:
-            0 0 16px
-            rgba(255, 151, 66, 0.35);
-          transition:
-            width 220ms ease;
-        }
-
-        /*
-          Use a minimum touch-friendly height while retaining the
-          transparent text-only appearance.
-        */
-        .orange-loader-enter {
+        .sushi-loader-content {
+          pointer-events: none;
           position: relative;
-          z-index: 4;
-          display: inline-grid;
-          min-height: 44px;
-          place-items: center;
-          margin-top: 16px;
+          z-index: 2;
+          display: grid;
+          width: 100%;
+          height: 100%;
+          align-items: end;
+          justify-items: center;
+          padding:
+            max(
+              18px,
+              env(
+                safe-area-inset-top
+              )
+            )
+            max(
+              16px,
+              env(
+                safe-area-inset-right
+              )
+            )
+            max(
+              34px,
+              env(
+                safe-area-inset-bottom
+              )
+            )
+            max(
+              16px,
+              env(
+                safe-area-inset-left
+              )
+            );
+        }
+
+        .sushi-loader-start {
+          pointer-events: auto;
+          min-height: 54px;
+          margin-bottom:
+            clamp(
+              10px,
+              6dvh,
+              72px
+            );
           border: 0;
           background: transparent;
-          padding: 10px 18px;
-          color: #d86f22;
+          padding:
+            14px
+            30px
+            14px
+            35px;
+          color: #ffffff;
           cursor: pointer;
-          font-size: 11px;
+          font-size: 20px;
           font-weight: 900;
-          letter-spacing: 0.32em;
+          letter-spacing: 0.34em;
+          line-height: 1;
+          text-shadow:
+            0 2px 10px
+              rgba(
+                22,
+                28,
+                38,
+                0.58
+              );
           text-transform: uppercase;
           touch-action: manipulation;
           -webkit-tap-highlight-color: transparent;
+          backdrop-filter:
+            blur(
+              8px
+            );
+          animation:
+            sushi-start-reveal
+              720ms
+              cubic-bezier(
+                0.16,
+                1,
+                0.3,
+                1
+              )
+              both,
+            sushi-start-breathe
+              2.8s
+              ease-in-out
+              850ms
+              infinite;
           transition:
-            color 180ms ease,
-            transform 180ms ease;
+            text-shadow
+              180ms
+              ease,
+            transform
+              180ms
+              ease;
         }
 
-        .orange-loader-enter:hover {
-          color: #a94e12;
-          transform: translateY(-2px);
-        }
-
-        .orange-loader-enter:active {
-          transform: scale(0.96);
-        }
-
-        .orange-loader-enter:focus-visible {
-          border-radius: 6px;
-          outline: 2px solid rgba(216, 111, 34, 0.6);
-          outline-offset: 4px;
-        }
-
-        /*
-          Portrait phones:
-          allow the orange to remain intentionally wider than the screen,
-          but limit its height using the visible mobile viewport.
-        */
-        @media (max-width: 767px) {
-          .orange-loader-content {
-            width: 100%;
-          }
-
-          .orange-loader-animation {
-            pointer-events: none;
-            justify-self: center;
-            width: min(720px, 96vw);
-            height: min(720px, 96vw);
-            margin-bottom: -42px;
-          }
-
-          .orange-loader-bar {
-            width: clamp(210px, 78vw, 300px);
-          }
-
-          .orange-loader-enter {
-            margin-top: 14px;
-          }
-        }
-
-        /*
-          Short screens and landscape phones:
-          shrink the animation further so that Enter never disappears
-          below the browser toolbar.
-        */
-        @media (max-height: 520px) {
-          .orange-loader-animation {
-            width:
-              min(
-                460px,
-                88vw,
-                calc(100dvh - 118px)
+        .sushi-loader-start:hover {
+          text-shadow:
+            0 2px 10px
+              rgba(
+                22,
+                28,
+                38,
+                0.58
+              ),
+            0 0 18px
+              rgba(
+                255,
+                255,
+                255,
+                0.72
               );
-            height:
-              min(
-                460px,
-                88vw,
-                calc(100dvh - 118px)
+          transform:
+            translateY(
+              -3px
+            )
+            scale(
+              1.04
+            );
+        }
+
+        .sushi-loader-start:active {
+          transform:
+            scale(
+              0.97
+            );
+        }
+
+        .sushi-loader-start:focus-visible {
+          outline: 3px solid
+            rgba(
+              255,
+              255,
+              255,
+              0.88
+            );
+          outline-offset: 5px;
+        }
+
+        @keyframes sushi-start-reveal {
+          from {
+            opacity: 0;
+            filter:
+              blur(
+                8px
               );
-            min-width: 150px;
-            min-height: 150px;
-            margin-bottom: -20px;
+            transform:
+              translateY(
+                22px
+              )
+              scale(
+                0.92
+              );
           }
 
-          .orange-loader-enter {
-            min-height: 40px;
-            margin-top: 8px;
-            padding: 7px 16px;
+          to {
+            opacity: 1;
+            filter:
+              blur(
+                0
+              );
+            transform:
+              translateY(
+                0
+              )
+              scale(
+                1
+              );
           }
         }
 
-        @media (prefers-reduced-motion: reduce) {
-          .orange-loader-bar span,
-          .orange-loader-enter {
+        @keyframes sushi-start-breathe {
+          0%,
+          100% {
+            text-shadow:
+              0 2px 10px
+                rgba(
+                  22,
+                  28,
+                  38,
+                  0.58
+                ),
+              0 0 10px
+                rgba(
+                  255,
+                  255,
+                  255,
+                  0.22
+                );
+          }
+
+          50% {
+            text-shadow:
+              0 2px 10px
+                rgba(
+                  22,
+                  28,
+                  38,
+                  0.58
+                ),
+              0 0 22px
+                rgba(
+                  255,
+                  255,
+                  255,
+                  0.58
+                );
+          }
+        }
+
+        @media (
+          max-width:
+            767px
+        ) {
+          .sushi-loader-content {
+            padding-bottom:
+              max(
+                22px,
+                env(
+                  safe-area-inset-bottom
+                )
+              );
+          }
+
+          .sushi-loader-start {
+            min-height: 50px;
+            margin-bottom:
+              clamp(
+                8px,
+                4dvh,
+                34px
+              );
+            padding:
+              13px
+              24px
+              13px
+              29px;
+            font-size: 18px;
+            letter-spacing:
+              0.3em;
+          }
+        }
+
+        @media (
+          max-height:
+            520px
+        ) {
+          .sushi-loader-start {
+            min-height: 44px;
+            margin-bottom: 0;
+            padding:
+              10px
+              22px
+              10px
+              27px;
+            font-size: 16px;
+          }
+        }
+
+        @media (
+          prefers-reduced-motion:
+            reduce
+        ) {
+          .sushi-loader-start {
+            animation: none;
             transition: none;
           }
         }

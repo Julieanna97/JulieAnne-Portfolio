@@ -20,6 +20,7 @@ import {
   OrbitControls,
   Stars,
   Text,
+  useVideoTexture,
 } from "@react-three/drei";
 import {
   Bloom,
@@ -42,9 +43,6 @@ import {
 } from "three";
 import gsap from "gsap";
 import MysteriousAdventureModel from "../models/MysteriousAdventureModel";
-import {
-  setAmbientAudioMuted,
-} from "@/lib/ambientAudio";
 
 type SectionId =
   | "about"
@@ -390,7 +388,7 @@ function GroundGraffiti() {
       <Text
         position={[
           0,
-          0,
+          0.06,
           0.012,
         ]}
         fontSize={0.7}
@@ -1103,6 +1101,26 @@ const YOUTUBE_AD_VIDEO_ID =
   "RrKOH8h_3_g";
 
 /*
+  Clicking the rounded rooftop advertisement opens the original YouTube page
+  in a new browser tab. The embedded preview itself stays muted and decorative.
+*/
+const ROOFTOP_AD_YOUTUBE_URL =
+  "https://www.youtube.com/watch?v=RrKOH8h_3_g";
+
+/*
+  Use a local MP4 preview instead of a YouTube iframe.
+
+  A YouTube iframe can show YouTube-owned hover overlays and playback UI.
+  A normal muted video element has no YouTube controls, while the full screen
+  remains clickable and opens the original YouTube page in a new tab.
+
+  Add your licensed preview file here:
+  public/videos/rooftop-ad.mp4
+*/
+const ROOFTOP_AD_VIDEO_SRC =
+  "/videos/rooftop-ad.mp4";
+
+/*
   The selected wall position from the debugger was:
   [0.624, 10.546, -3.747]
 
@@ -1133,147 +1151,23 @@ const ROOFTOP_AD_HTML_SCALE =
   0.16;
 
 /*
-  Load the YouTube iframe API only once, even if additional YouTube screens
-  are added to the portfolio later.
+  Open an advertisement's original YouTube page without replacing the
+  portfolio tab.
 */
-let youtubeIframeApiPromise:
-  | Promise<void>
-  | null =
-  null;
-
-function loadYoutubeIframeApi() {
-  if (
-    typeof window ===
-    "undefined"
-  ) {
-    return Promise.resolve();
-  }
-
-  const youtubeWindow =
-    window as typeof window & {
-      YT?: {
-        Player?: new (
-          iframe:
-            HTMLIFrameElement,
-          options?: {
-            events?: {
-              onReady?: (
-                event:
-                  any
-              ) => void;
-
-              onStateChange?: (
-                event:
-                  any
-              ) => void;
-            };
-          }
-        ) => any;
-      };
-
-      onYouTubeIframeAPIReady?: () => void;
-    };
-
-  if (
-    youtubeWindow.YT
-      ?.Player
-  ) {
-    return Promise.resolve();
-  }
-
-  if (
-    youtubeIframeApiPromise
-  ) {
-    return youtubeIframeApiPromise;
-  }
-
-  youtubeIframeApiPromise =
-    new Promise<void>(
-      (
-        resolve
-      ) => {
-        const previousReadyHandler =
-          youtubeWindow.onYouTubeIframeAPIReady;
-
-        youtubeWindow.onYouTubeIframeAPIReady =
-          () => {
-            previousReadyHandler?.();
-
-            resolve();
-          };
-
-        if (
-          document.querySelector(
-            'script[src="https://www.youtube.com/iframe_api"]'
-          )
-        ) {
-          return;
-        }
-
-        const script =
-          document.createElement(
-            "script"
-          );
-
-        script.src =
-          "https://www.youtube.com/iframe_api";
-
-        script.async =
-          true;
-
-        script.onerror =
-          () => {
-            console.warn(
-              "The YouTube iframe API could not be loaded."
-            );
-
-            resolve();
-          };
-
-        document.head.appendChild(
-          script
-        );
-      }
-    );
-
-  return youtubeIframeApiPromise;
-}
-
-/*
-  Mute the ambient portfolio soundtrack while a YouTube video has audible
-  sound. Dispatching the event also keeps the mute button in HomePage in sync.
-*/
-function muteAmbientMusicForYoutube() {
-  setAmbientAudioMuted(
-    true
-  );
-
-  window.dispatchEvent(
-    new CustomEvent(
-      "ambient:set-muted",
-      {
-        detail: {
-          muted:
-            true,
-        },
-      }
-    )
+function openYoutubeAdvertisement(
+  url:
+    string
+) {
+  window.open(
+    url,
+    "_blank",
+    "noopener,noreferrer"
   );
 }
 
 function RooftopYoutubeAdvertisement() {
   const groupRef =
     useRef<Object3D>(
-      null
-    );
-
-  const iframeRef =
-    useRef<HTMLIFrameElement>(
-      null
-    );
-
-  const youtubePlayerRef =
-    useRef<any>(
       null
     );
 
@@ -1312,11 +1206,8 @@ function RooftopYoutubeAdvertisement() {
     );
 
   /*
-    Hide the HTML iframe whenever the visitor rotates behind the billboard.
-
-    Drei's transformed Html element is rendered through the DOM, not as a
-    normal Three.js material. This explicit camera-side check prevents the
-    mirrored reverse side from remaining visible.
+    Hide the rounded advertisement whenever the visitor rotates behind it.
+    This prevents a mirrored reverse-side video from appearing.
   */
   useFrame(
     ({
@@ -1369,177 +1260,6 @@ function RooftopYoutubeAdvertisement() {
     }
   );
 
-  const youtubeEmbedUrl =
-    useMemo(
-      () => {
-        const origin =
-          typeof window ===
-          "undefined"
-            ? ""
-            : `&origin=${encodeURIComponent(
-                window.location.origin
-              )}`;
-
-        return (
-          `https://www.youtube-nocookie.com/embed/${YOUTUBE_AD_VIDEO_ID}` +
-          `?autoplay=1` +
-          `&mute=1` +
-          `&loop=1` +
-          `&playlist=${YOUTUBE_AD_VIDEO_ID}` +
-          `&controls=1` +
-          `&enablejsapi=1` +
-          `&playsinline=1` +
-          `&rel=0` +
-          origin
-        );
-      },
-      []
-    );
-
-  /*
-    YouTube iframes are cross-origin, so the website cannot listen directly
-    for a click on the volume icon. The iframe API lets us inspect the player's
-    mute and volume state instead.
-
-    Polling detects the visitor enabling sound even if the video was already
-    playing when they clicked unmute.
-  */
-  useEffect(() => {
-    let cancelled =
-      false;
-
-    let soundCheckTimer:
-      | number
-      | null =
-      null;
-
-    const muteAmbientIfYoutubeIsAudible =
-      () => {
-        const player =
-          youtubePlayerRef.current;
-
-        if (
-          !player
-        ) {
-          return;
-        }
-
-        try {
-          const youtubeIsAudible =
-            !player.isMuted() &&
-            player.getVolume() >
-              0;
-
-          if (
-            youtubeIsAudible
-          ) {
-            muteAmbientMusicForYoutube();
-          }
-        } catch {
-          /*
-            The API may not be ready during its first render.
-          */
-        }
-      };
-
-    const initialiseYoutubePlayer =
-      () => {
-        if (
-          cancelled ||
-          !iframeRef.current ||
-          youtubePlayerRef.current
-        ) {
-          return;
-        }
-
-        const youtubeWindow =
-          window as typeof window & {
-            YT?: {
-              Player?: new (
-                iframe:
-                  HTMLIFrameElement,
-                options?: {
-                  events?: {
-                    onReady?: (
-                      event:
-                        any
-                    ) => void;
-
-                    onStateChange?: (
-                      event:
-                        any
-                    ) => void;
-                  };
-                }
-              ) => any;
-            };
-          };
-
-        const YoutubePlayer =
-          youtubeWindow.YT
-            ?.Player;
-
-        if (
-          !YoutubePlayer
-        ) {
-          return;
-        }
-
-        youtubePlayerRef.current =
-          new YoutubePlayer(
-            iframeRef.current,
-            {
-              events: {
-                onReady:
-                  () => {
-                    muteAmbientIfYoutubeIsAudible();
-                  },
-
-                onStateChange:
-                  () => {
-                    muteAmbientIfYoutubeIsAudible();
-                  },
-              },
-            }
-          );
-
-        soundCheckTimer =
-          window.setInterval(
-            muteAmbientIfYoutubeIsAudible,
-            300
-          );
-      };
-
-    void loadYoutubeIframeApi().then(
-      initialiseYoutubePlayer
-    );
-
-    return () => {
-      cancelled =
-        true;
-
-      if (
-        soundCheckTimer !==
-        null
-      ) {
-        window.clearInterval(
-          soundCheckTimer
-        );
-      }
-
-      try {
-        youtubePlayerRef.current?.destroy?.();
-      } catch {
-        /*
-          The iframe may already have been removed during navigation.
-        */
-      }
-
-      youtubePlayerRef.current =
-        null;
-    };
-  }, []);
-
   return (
     <group
       ref={
@@ -1548,24 +1268,12 @@ function RooftopYoutubeAdvertisement() {
       position={
         ROOFTOP_AD_POSITION
       }
-      /*
-        Planes face positive z by default. Rotating the screen by 180 degrees
-        makes it face outward toward negative z, matching the wall normal.
-      */
       rotation={[
         0,
         Math.PI,
         0,
       ]}
     >
-      {/*
-        Use the rounded display housing that already exists inside the 3D
-        model. No additional rectangular backing mesh is added here.
-
-        The YouTube screen remains interactive from the front. When the
-        visitor rotates behind the display, display: none removes the DOM
-        iframe completely so a mirrored reverse-side video cannot appear.
-      */}
       <Html
         transform
         center
@@ -1621,10 +1329,29 @@ function RooftopYoutubeAdvertisement() {
             "hidden",
         }}
       >
-        <div
+        <a
+          href={
+            ROOFTOP_AD_YOUTUBE_URL
+          }
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open rooftop advertisement on YouTube"
+          onClick={(
+            event
+          ) => {
+            event.stopPropagation();
+          }}
+          onPointerDown={(
+            event
+          ) => {
+            event.stopPropagation();
+          }}
           style={{
             position:
               "relative",
+
+            display:
+              "block",
 
             width:
               "640px",
@@ -1644,15 +1371,11 @@ function RooftopYoutubeAdvertisement() {
             background:
               "transparent",
 
-            visibility:
-              frontVisible
-                ? "visible"
-                : "hidden",
+            cursor:
+              "pointer",
 
-            pointerEvents:
-              frontVisible
-                ? "auto"
-                : "none",
+            textDecoration:
+              "none",
 
             backfaceVisibility:
               "hidden",
@@ -1661,19 +1384,22 @@ function RooftopYoutubeAdvertisement() {
               "hidden",
           }}
         >
-          <iframe
-            ref={
-              iframeRef
-            }
-            width="640"
-            height="360"
+          <video
             src={
-              youtubeEmbedUrl
+              ROOFTOP_AD_VIDEO_SRC
             }
-            title="Tokyo rooftop advertisement video"
-            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-            allowFullScreen
-            loading="lazy"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            controls={
+              false
+            }
+            tabIndex={
+              -1
+            }
+            aria-hidden="true"
             style={{
               display:
                 "block",
@@ -1684,21 +1410,20 @@ function RooftopYoutubeAdvertisement() {
               height:
                 "360px",
 
+              objectFit:
+                "cover",
+
               border:
                 0,
 
               borderRadius:
                 "28px",
 
-              visibility:
-                frontVisible
-                  ? "visible"
-                  : "hidden",
-
               pointerEvents:
-                frontVisible
-                  ? "auto"
-                  : "none",
+                "none",
+
+              userSelect:
+                "none",
 
               backfaceVisibility:
                 "hidden",
@@ -1707,13 +1432,9 @@ function RooftopYoutubeAdvertisement() {
                 "hidden",
             }}
           />
-        </div>
+        </a>
       </Html>
 
-      {/*
-        HTML content cannot cast light inside Three.js, so this point light
-        simulates a subtle glow from the screen.
-      */}
       <pointLight
         name="rooftopAdvertisementGlow"
         position={[
@@ -1733,6 +1454,177 @@ function RooftopYoutubeAdvertisement() {
         color="#8fdcff"
       />
     </group>
+  );
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* Square building-wall video advertisement                                   */
+/* -------------------------------------------------------------------------- */
+
+/*
+  IMPORTANT:
+
+  The wall advertisement is intentionally rendered as a real Three.js mesh,
+  not as a YouTube iframe inside <Html>.
+
+  A DOM iframe cannot participate in the WebGL depth buffer pixel-by-pixel.
+  Mapping a normal MP4 file onto a plane allows the building, electrical wires,
+  signs, and other 3D geometry to cover the correct portions of the video.
+
+  Add your licensed MP4 file here:
+  public/videos/wall-ad.mp4
+*/
+const WALL_AD_VIDEO_SRC =
+  "/videos/wall-ad.mp4";
+
+/*
+  Clicking the real Three.js MP4 wall advertisement opens its matching
+  YouTube page in a new browser tab.
+*/
+const WALL_AD_YOUTUBE_URL =
+  "https://www.youtube.com/watch?v=Pd0pjNZ2b6Y";
+
+/*
+  Selected wall position:
+  [0.452, 7.398, -3.643]
+
+  Wall normal:
+  [0, 0, -1]
+
+  Keep the z value slightly farther outward than the original wall to avoid
+  flickering against the building surface.
+*/
+const WALL_AD_POSITION: [
+  number,
+  number,
+  number,
+] = [
+  0.452,
+  7.428,
+  -3.686,
+];
+
+/*
+  Adjust these two values independently when fitting the video to the wall.
+
+  Increase WALL_AD_WIDTH to make it wider without making it taller.
+  Decrease WALL_AD_HEIGHT to make it shorter without shrinking its width.
+*/
+const WALL_AD_WIDTH =
+  2.86;
+
+const WALL_AD_HEIGHT =
+  1.44;
+
+function SquareWallVideoAdvertisement() {
+  const texture =
+    useVideoTexture(
+      WALL_AD_VIDEO_SRC,
+      {
+        muted:
+          true,
+
+        loop:
+          true,
+
+        start:
+          true,
+
+        playsInline:
+          true,
+
+        crossOrigin:
+          "anonymous",
+      }
+    );
+
+  const video =
+    texture.image as HTMLVideoElement;
+
+  useEffect(() => {
+    video.muted =
+      true;
+
+    video.loop =
+      true;
+
+    video.playsInline =
+      true;
+
+    void video
+      .play()
+      .catch(() => {
+        /*
+          Some browsers delay playback until the first visitor interaction.
+        */
+      });
+
+    return () => {
+      video.pause();
+    };
+  }, [
+    video,
+  ]);
+
+  const openWallAdvertisement = (
+    event:
+      ThreeEvent<MouseEvent>
+  ) => {
+    event.stopPropagation();
+
+    openYoutubeAdvertisement(
+      WALL_AD_YOUTUBE_URL
+    );
+  };
+
+  return (
+    <mesh
+      position={
+        WALL_AD_POSITION
+      }
+      rotation={[
+        0,
+        Math.PI,
+        0,
+      ]}
+      onClick={
+        openWallAdvertisement
+      }
+      onPointerOver={() => {
+        document.body.style.cursor =
+          "pointer";
+      }}
+      onPointerOut={() => {
+        document.body.style.cursor =
+          "";
+      }}
+    >
+      <planeGeometry
+        args={[
+          WALL_AD_WIDTH,
+          WALL_AD_HEIGHT,
+        ]}
+      />
+
+      <meshBasicMaterial
+        map={
+          texture
+        }
+        toneMapped={
+          false
+        }
+        depthTest
+        depthWrite
+        polygonOffset
+        polygonOffsetFactor={
+          -1
+        }
+        polygonOffsetUnits={
+          -1
+        }
+      />
+    </mesh>
   );
 }
 
@@ -4130,6 +4022,8 @@ function AdventureSceneContent({
       </group>
 
       <RooftopYoutubeAdvertisement />
+
+      <SquareWallVideoAdvertisement />
 
       {ENABLE_LIGHT_DEBUGGER &&
         debugClickPoint && (
