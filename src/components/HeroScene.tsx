@@ -10,6 +10,7 @@ import {
 } from "react";
 import {
   Canvas,
+  useFrame,
   useThree,
   type ThreeEvent,
 } from "@react-three/fiber";
@@ -41,6 +42,9 @@ import {
 } from "three";
 import gsap from "gsap";
 import MysteriousAdventureModel from "../models/MysteriousAdventureModel";
+import {
+  setAmbientAudioMuted,
+} from "@/lib/ambientAudio";
 
 type SectionId =
   | "about"
@@ -1079,6 +1083,656 @@ function BackAlleyPinkGlow() {
         color="#ff78be"
       />
     </>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Rooftop YouTube advertisement screen                                       */
+/* -------------------------------------------------------------------------- */
+
+/*
+  Replace this value whenever you want to show a different YouTube video.
+
+  Example URL:
+  https://www.youtube.com/watch?v=abc123XYZ
+
+  Video ID:
+  abc123XYZ
+*/
+const YOUTUBE_AD_VIDEO_ID =
+  "RrKOH8h_3_g";
+
+/*
+  The selected wall position from the debugger was:
+  [0.624, 10.546, -3.747]
+
+  Its outward-facing normal was approximately:
+  [0, 0, -1]
+
+  The advertisement is moved slightly outward from the wall to prevent
+  flickering against the original model.
+*/
+const ROOFTOP_AD_POSITION: [
+  number,
+  number,
+  number,
+] = [
+  0.624,
+  10.546,
+  -3.79,
+];
+
+/*
+  Adjust only this number when fine-tuning the advertisement size.
+
+  The previous value of 0.145 was slightly too small for the rounded
+  display already built into the 3D model. A value of 0.16 makes the
+  interactive YouTube player a little larger while preserving the rounded edges.
+*/
+const ROOFTOP_AD_HTML_SCALE =
+  0.16;
+
+/*
+  Load the YouTube iframe API only once, even if additional YouTube screens
+  are added to the portfolio later.
+*/
+let youtubeIframeApiPromise:
+  | Promise<void>
+  | null =
+  null;
+
+function loadYoutubeIframeApi() {
+  if (
+    typeof window ===
+    "undefined"
+  ) {
+    return Promise.resolve();
+  }
+
+  const youtubeWindow =
+    window as typeof window & {
+      YT?: {
+        Player?: new (
+          iframe:
+            HTMLIFrameElement,
+          options?: {
+            events?: {
+              onReady?: (
+                event:
+                  any
+              ) => void;
+
+              onStateChange?: (
+                event:
+                  any
+              ) => void;
+            };
+          }
+        ) => any;
+      };
+
+      onYouTubeIframeAPIReady?: () => void;
+    };
+
+  if (
+    youtubeWindow.YT
+      ?.Player
+  ) {
+    return Promise.resolve();
+  }
+
+  if (
+    youtubeIframeApiPromise
+  ) {
+    return youtubeIframeApiPromise;
+  }
+
+  youtubeIframeApiPromise =
+    new Promise<void>(
+      (
+        resolve
+      ) => {
+        const previousReadyHandler =
+          youtubeWindow.onYouTubeIframeAPIReady;
+
+        youtubeWindow.onYouTubeIframeAPIReady =
+          () => {
+            previousReadyHandler?.();
+
+            resolve();
+          };
+
+        if (
+          document.querySelector(
+            'script[src="https://www.youtube.com/iframe_api"]'
+          )
+        ) {
+          return;
+        }
+
+        const script =
+          document.createElement(
+            "script"
+          );
+
+        script.src =
+          "https://www.youtube.com/iframe_api";
+
+        script.async =
+          true;
+
+        script.onerror =
+          () => {
+            console.warn(
+              "The YouTube iframe API could not be loaded."
+            );
+
+            resolve();
+          };
+
+        document.head.appendChild(
+          script
+        );
+      }
+    );
+
+  return youtubeIframeApiPromise;
+}
+
+/*
+  Mute the ambient portfolio soundtrack while a YouTube video has audible
+  sound. Dispatching the event also keeps the mute button in HomePage in sync.
+*/
+function muteAmbientMusicForYoutube() {
+  setAmbientAudioMuted(
+    true
+  );
+
+  window.dispatchEvent(
+    new CustomEvent(
+      "ambient:set-muted",
+      {
+        detail: {
+          muted:
+            true,
+        },
+      }
+    )
+  );
+}
+
+function RooftopYoutubeAdvertisement() {
+  const groupRef =
+    useRef<Object3D>(
+      null
+    );
+
+  const iframeRef =
+    useRef<HTMLIFrameElement>(
+      null
+    );
+
+  const youtubePlayerRef =
+    useRef<any>(
+      null
+    );
+
+  const frontVisibleRef =
+    useRef(
+      true
+    );
+
+  const [
+    frontVisible,
+    setFrontVisible,
+  ] =
+    useState(
+      true
+    );
+
+  const screenWorldPosition =
+    useMemo(
+      () =>
+        new Vector3(),
+      []
+    );
+
+  const screenFrontNormal =
+    useMemo(
+      () =>
+        new Vector3(),
+      []
+    );
+
+  const screenToCamera =
+    useMemo(
+      () =>
+        new Vector3(),
+      []
+    );
+
+  /*
+    Hide the HTML iframe whenever the visitor rotates behind the billboard.
+
+    Drei's transformed Html element is rendered through the DOM, not as a
+    normal Three.js material. This explicit camera-side check prevents the
+    mirrored reverse side from remaining visible.
+  */
+  useFrame(
+    ({
+      camera,
+    }) => {
+      const group =
+        groupRef.current;
+
+      if (
+        !group
+      ) {
+        return;
+      }
+
+      group.getWorldPosition(
+        screenWorldPosition
+      );
+
+      group.getWorldDirection(
+        screenFrontNormal
+      );
+
+      screenToCamera
+        .copy(
+          camera.position
+        )
+        .sub(
+          screenWorldPosition
+        );
+
+      const nextFrontVisible =
+        screenToCamera.dot(
+          screenFrontNormal
+        ) >
+        0;
+
+      if (
+        frontVisibleRef.current ===
+        nextFrontVisible
+      ) {
+        return;
+      }
+
+      frontVisibleRef.current =
+        nextFrontVisible;
+
+      setFrontVisible(
+        nextFrontVisible
+      );
+    }
+  );
+
+  const youtubeEmbedUrl =
+    useMemo(
+      () => {
+        const origin =
+          typeof window ===
+          "undefined"
+            ? ""
+            : `&origin=${encodeURIComponent(
+                window.location.origin
+              )}`;
+
+        return (
+          `https://www.youtube-nocookie.com/embed/${YOUTUBE_AD_VIDEO_ID}` +
+          `?autoplay=1` +
+          `&mute=1` +
+          `&loop=1` +
+          `&playlist=${YOUTUBE_AD_VIDEO_ID}` +
+          `&controls=1` +
+          `&enablejsapi=1` +
+          `&playsinline=1` +
+          `&rel=0` +
+          origin
+        );
+      },
+      []
+    );
+
+  /*
+    YouTube iframes are cross-origin, so the website cannot listen directly
+    for a click on the volume icon. The iframe API lets us inspect the player's
+    mute and volume state instead.
+
+    Polling detects the visitor enabling sound even if the video was already
+    playing when they clicked unmute.
+  */
+  useEffect(() => {
+    let cancelled =
+      false;
+
+    let soundCheckTimer:
+      | number
+      | null =
+      null;
+
+    const muteAmbientIfYoutubeIsAudible =
+      () => {
+        const player =
+          youtubePlayerRef.current;
+
+        if (
+          !player
+        ) {
+          return;
+        }
+
+        try {
+          const youtubeIsAudible =
+            !player.isMuted() &&
+            player.getVolume() >
+              0;
+
+          if (
+            youtubeIsAudible
+          ) {
+            muteAmbientMusicForYoutube();
+          }
+        } catch {
+          /*
+            The API may not be ready during its first render.
+          */
+        }
+      };
+
+    const initialiseYoutubePlayer =
+      () => {
+        if (
+          cancelled ||
+          !iframeRef.current ||
+          youtubePlayerRef.current
+        ) {
+          return;
+        }
+
+        const youtubeWindow =
+          window as typeof window & {
+            YT?: {
+              Player?: new (
+                iframe:
+                  HTMLIFrameElement,
+                options?: {
+                  events?: {
+                    onReady?: (
+                      event:
+                        any
+                    ) => void;
+
+                    onStateChange?: (
+                      event:
+                        any
+                    ) => void;
+                  };
+                }
+              ) => any;
+            };
+          };
+
+        const YoutubePlayer =
+          youtubeWindow.YT
+            ?.Player;
+
+        if (
+          !YoutubePlayer
+        ) {
+          return;
+        }
+
+        youtubePlayerRef.current =
+          new YoutubePlayer(
+            iframeRef.current,
+            {
+              events: {
+                onReady:
+                  () => {
+                    muteAmbientIfYoutubeIsAudible();
+                  },
+
+                onStateChange:
+                  () => {
+                    muteAmbientIfYoutubeIsAudible();
+                  },
+              },
+            }
+          );
+
+        soundCheckTimer =
+          window.setInterval(
+            muteAmbientIfYoutubeIsAudible,
+            300
+          );
+      };
+
+    void loadYoutubeIframeApi().then(
+      initialiseYoutubePlayer
+    );
+
+    return () => {
+      cancelled =
+        true;
+
+      if (
+        soundCheckTimer !==
+        null
+      ) {
+        window.clearInterval(
+          soundCheckTimer
+        );
+      }
+
+      try {
+        youtubePlayerRef.current?.destroy?.();
+      } catch {
+        /*
+          The iframe may already have been removed during navigation.
+        */
+      }
+
+      youtubePlayerRef.current =
+        null;
+    };
+  }, []);
+
+  return (
+    <group
+      ref={
+        groupRef
+      }
+      position={
+        ROOFTOP_AD_POSITION
+      }
+      /*
+        Planes face positive z by default. Rotating the screen by 180 degrees
+        makes it face outward toward negative z, matching the wall normal.
+      */
+      rotation={[
+        0,
+        Math.PI,
+        0,
+      ]}
+    >
+      {/*
+        Use the rounded display housing that already exists inside the 3D
+        model. No additional rectangular backing mesh is added here.
+
+        The YouTube screen remains interactive from the front. When the
+        visitor rotates behind the display, display: none removes the DOM
+        iframe completely so a mirrored reverse-side video cannot appear.
+      */}
+      <Html
+        transform
+        center
+        position={[
+          0.16,
+          0.2,
+          0.012,
+        ]}
+        scale={
+          ROOFTOP_AD_HTML_SCALE
+        }
+        zIndexRange={[
+          30,
+          0,
+        ]}
+        style={{
+          display:
+            frontVisible
+              ? "block"
+              : "none",
+
+          width:
+            "640px",
+
+          height:
+            "360px",
+
+          overflow:
+            "hidden",
+
+          borderRadius:
+            "28px",
+
+          visibility:
+            frontVisible
+              ? "visible"
+              : "hidden",
+
+          opacity:
+            frontVisible
+              ? 1
+              : 0,
+
+          pointerEvents:
+            frontVisible
+              ? "auto"
+              : "none",
+
+          backfaceVisibility:
+            "hidden",
+
+          WebkitBackfaceVisibility:
+            "hidden",
+        }}
+      >
+        <div
+          style={{
+            position:
+              "relative",
+
+            width:
+              "640px",
+
+            height:
+              "360px",
+
+            overflow:
+              "hidden",
+
+            borderRadius:
+              "28px",
+
+            clipPath:
+              "inset(0 round 28px)",
+
+            background:
+              "transparent",
+
+            visibility:
+              frontVisible
+                ? "visible"
+                : "hidden",
+
+            pointerEvents:
+              frontVisible
+                ? "auto"
+                : "none",
+
+            backfaceVisibility:
+              "hidden",
+
+            WebkitBackfaceVisibility:
+              "hidden",
+          }}
+        >
+          <iframe
+            ref={
+              iframeRef
+            }
+            width="640"
+            height="360"
+            src={
+              youtubeEmbedUrl
+            }
+            title="Tokyo rooftop advertisement video"
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            allowFullScreen
+            loading="lazy"
+            style={{
+              display:
+                "block",
+
+              width:
+                "640px",
+
+              height:
+                "360px",
+
+              border:
+                0,
+
+              borderRadius:
+                "28px",
+
+              visibility:
+                frontVisible
+                  ? "visible"
+                  : "hidden",
+
+              pointerEvents:
+                frontVisible
+                  ? "auto"
+                  : "none",
+
+              backfaceVisibility:
+                "hidden",
+
+              WebkitBackfaceVisibility:
+                "hidden",
+            }}
+          />
+        </div>
+      </Html>
+
+      {/*
+        HTML content cannot cast light inside Three.js, so this point light
+        simulates a subtle glow from the screen.
+      */}
+      <pointLight
+        name="rooftopAdvertisementGlow"
+        position={[
+          0,
+          -0.12,
+          0.9,
+        ]}
+        intensity={
+          0.9
+        }
+        distance={
+          4.5
+        }
+        decay={
+          2
+        }
+        color="#8fdcff"
+      />
+    </group>
   );
 }
 
@@ -3474,6 +4128,8 @@ function AdventureSceneContent({
       >
         <MysteriousAdventureModel />
       </group>
+
+      <RooftopYoutubeAdvertisement />
 
       {ENABLE_LIGHT_DEBUGGER &&
         debugClickPoint && (
