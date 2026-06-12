@@ -63,10 +63,17 @@ type ProjectCaseStudy = {
   role: string;
   period: string;
   summary: string;
+  overview?: string[];
   technologies: string[];
   contributions: string[];
+  highlights?: Array<{
+    title: string;
+    text: string;
+  }>;
   images: string[];
   video?: string;
+  externalUrl?: string;
+  externalLabel?: string;
 };
 
 type PortfolioSection = {
@@ -1586,32 +1593,62 @@ const PROJECT_CASE_STUDIES: Record<
       "Sigma Autonomous Car",
 
     type:
-      "Embedded / Software Project",
+      "Embedded / Robotics Project",
 
     role:
-      "Team Lead & Developer",
+      "Embedded Software Developer Intern",
 
     period:
       "September 2023 – October 2023",
 
     summary:
-      "A team-built autonomous-car project focused on real-time perception, obstacle detection, and navigation. I helped lead the team while contributing to the software implementation and testing process.",
+      "A hands-on autonomous RC-car project where I worked through the full build process — from planning the electrical schematic and assembling the hardware to programming the car, testing its behavior, and refining how it responded to different situations.",
+
+    overview: [
+      "I worked on the project from the electrical schematic to the physical assembly, wiring, programming, testing, and debugging.",
+      "The project helped me understand how electrical design, hardware components, sensors, and software logic work together to create an autonomous system.",
+    ],
 
     technologies: [
-      "Python",
+      "Embedded Systems",
       "C++",
-      "ROS",
-      "OpenCV",
-      "YOLOv8",
-      "LiDAR",
-      "Computer Vision",
+      "Python",
+      "Arduino",
+      "Electronics",
+      "Sensors",
+      "Hardware Assembly",
+      "System Testing",
     ],
 
     contributions: [
-      "Worked on real-time object and obstacle detection for autonomous navigation.",
-      "Used camera and LiDAR input to support environmental awareness.",
-      "Helped test and iterate on the car's movement and perception behavior.",
-      "Coordinated tasks as team lead and supported integration between different parts of the project.",
+      "Planned and followed the electrical schematic needed to connect the car's components correctly.",
+      "Assembled the physical car hardware, including the wiring, sensors, and electronic components.",
+      "Programmed the car's logic so it could respond to its environment and operate autonomously.",
+      "Tested, debugged, and refined the system to improve how the car behaved in different situations.",
+    ],
+
+    highlights: [
+      {
+        title:
+          "What I worked on",
+
+        text:
+          "Electrical schematic planning, physical assembly, wiring, programming, testing, and debugging.",
+      },
+      {
+        title:
+          "Skills used",
+
+        text:
+          "Circuit planning, hardware assembly, embedded programming, sensor integration, debugging, and system testing.",
+      },
+      {
+        title:
+          "What I learned",
+
+        text:
+          "How electrical design, hardware components, and software logic work together in an autonomous system.",
+      },
     ],
 
     images: [
@@ -1639,10 +1676,15 @@ const PROJECT_CASE_STUDIES: Record<
       "Fullstack Developer Intern",
 
     period:
-      "2025 – 2026",
+      "September 2025 – April 2026",
 
     summary:
-      "During my internship, I worked inside a real production codebase for a podcast SaaS platform. I contributed to recording, editing, publishing, and AI-assisted workflow features while following team conventions and code-review practices.",
+      "I worked as a fullstack intern on PodManager.ai, an AI-powered podcast platform. My work focused on media-editing features, publishing controls, and improving an existing production codebase.",
+
+    overview: [
+      "PodManager.ai gave me experience working in a real product environment with an existing codebase, team conventions, code reviews, and production requirements.",
+      "Instead of building isolated demo features, I contributed to parts of the platform used for podcast editing and publishing. This helped me understand how frontend, backend, and product decisions connect in a fullstack application.",
+    ],
 
     technologies: [
       "Next.js",
@@ -1651,14 +1693,34 @@ const PROJECT_CASE_STUDIES: Record<
       "Python",
       "AI Workflows",
       "Production Codebase",
+      "Code Reviews",
+      "Fullstack Development",
     ],
 
     contributions: [
       "Implemented waveform visualization to make podcast audio easier to navigate and edit.",
-      "Worked on the video-track strip for a clearer visual editing experience.",
-      "Added support for sound effects and music inside the podcast editor.",
-      "Built publish-page toggles for optional intro, outro, and watermark settings.",
-      "Refactored existing components to improve structure and maintainability.",
+      "Worked on the video-track strip to support a clearer visual editing experience.",
+      "Added support for sound effects and music so users could enhance podcast episodes during editing.",
+      "Built publish-page toggles for optional intro, outro, and watermark settings before export.",
+      "Refactored existing components to improve readability, structure, and maintainability.",
+      "Worked inside a real production codebase with team conventions, reviews, and active product requirements.",
+    ],
+
+    highlights: [
+      {
+        title:
+          "Main focus",
+
+        text:
+          "Podcast editing: audio waveform, video track strip, music, sound effects, and publish controls.",
+      },
+      {
+        title:
+          "Impact",
+
+        text:
+          "Helped make editing and publishing podcast episodes more flexible and easier to navigate.",
+      },
     ],
 
     images: [
@@ -1666,6 +1728,12 @@ const PROJECT_CASE_STUDIES: Record<
       "/projects/podmanager/image-1.png",
       "/projects/podmanager/image-2.png",
     ],
+
+    externalUrl:
+      "https://www.podmanager.ai/",
+
+    externalLabel:
+      "Visit PodManager.ai ↗",
   },
 
   practicepal: {
@@ -1676,7 +1744,7 @@ const PROJECT_CASE_STUDIES: Record<
       "PracticePal",
 
     type:
-      "Fullstack Web Application",
+      "Fullstack Web Application · Degree Project",
 
     role:
       "Creator & Fullstack Developer",
@@ -1686,6 +1754,10 @@ const PROJECT_CASE_STUDIES: Record<
 
     summary:
       "A music-practice tracking platform designed to help musicians plan sessions, stay consistent, and review their progress. The application includes authentication, practice planning, statistics, and a subscription flow.",
+
+    overview: [
+      "PracticePal was built as my degree project. It combines account management, planning tools, progress tracking, and a Pro subscription flow in one fullstack application.",
+    ],
 
     technologies: [
       "Next.js",
@@ -1707,7 +1779,6 @@ const PROJECT_CASE_STUDIES: Record<
       [],
   },
 };
-
 const SECTIONS: PortfolioSection[] = [
   {
     id:
@@ -1974,9 +2045,277 @@ function FullscreenNightStars() {
 /* Annotation content                                                         */
 /* -------------------------------------------------------------------------- */
 
+const ABOUT_EXPERIENCE = [
+  {
+    role:
+      "Fullstack Developer",
+
+    company:
+      "PodManager.ai",
+
+    period:
+      "Sep 2025 — Apr 2026",
+
+    summary:
+      "Worked on an AI-powered platform for podcast and audio editing.",
+
+    points: [
+      "Built audio and video editing features in the browser using React and TypeScript.",
+      "Worked on waveform and video-timeline UI so editing felt smoother.",
+      "Helped with APIs for projects, clips, and editing effects.",
+    ],
+  },
+  {
+    role:
+      "Quality Assurance Analyst",
+
+    company:
+      "OneForma.com",
+
+    period:
+      "May 2026 — Ongoing",
+
+    summary:
+      "Freelance QA work for AI and data-related projects.",
+
+    points: [
+      "Reviewed multilingual data and checked that it followed project guidelines.",
+      "Focused on making the final results accurate, clear, and natural.",
+    ],
+  },
+  {
+    role:
+      "AI Data Specialist",
+
+    company:
+      "Appen.com",
+
+    period:
+      "Jan 2026 — Ongoing",
+
+    summary:
+      "Worked on AI training and evaluation tasks.",
+
+    points: [
+      "Worked with text, audio, and multilingual data.",
+      "Reviewed transcriptions, labels, and content quality for AI projects.",
+    ],
+  },
+  {
+    role:
+      "AI Trainer (Coder)",
+
+    company:
+      "Outlier",
+
+    period:
+      "Sep 2024 — Jun 2025",
+
+    summary:
+      "Worked on coding-related AI training tasks.",
+
+    points: [
+      "Reviewed and improved coding responses for AI models.",
+      "Checked code quality, explanations, and problem-solving steps.",
+    ],
+  },
+  {
+    role:
+      "Embedded Software Developer Intern",
+
+    company:
+      "Nodehill AB",
+
+    period:
+      "Jan 2024 — Apr 2024",
+
+    summary:
+      "Worked with embedded systems and wireless communication.",
+
+    points: [
+      "Built LoRa communication between two ESP32 microcontrollers.",
+      "Worked on a long-range wireless-communication setup.",
+    ],
+  },
+  {
+    role:
+      "Embedded Software Developer Intern",
+
+    company:
+      "Sigma Industry Evolution",
+
+    period:
+      "Sep 2023 — Oct 2023",
+
+    summary:
+      "Worked on an embedded project in an engineering environment.",
+
+    points: [
+      "Built a self-driving RC car using Arduino and sensors.",
+      "Worked with C/C++ and Python for the car's control logic.",
+    ],
+  },
+];
+
+const ABOUT_SKILL_GROUPS = [
+  {
+    title:
+      "Languages",
+
+    items: [
+      "JavaScript",
+      "TypeScript",
+      "Python",
+      "C/C++",
+      "HTML",
+      "CSS",
+    ],
+  },
+  {
+    title:
+      "Frontend",
+
+    items: [
+      "React",
+      "Next.js",
+      "Tailwind CSS",
+      "Bootstrap",
+    ],
+  },
+  {
+    title:
+      "Backend",
+
+    items: [
+      "Node.js",
+      "Express",
+      "FastAPI",
+      "Flask",
+      "REST APIs",
+      "ffmpeg",
+      "Mailchimp",
+    ],
+  },
+  {
+    title:
+      "Databases",
+
+    items: [
+      "SQL",
+      "MongoDB",
+      "phpMyAdmin",
+      "NoSQL",
+    ],
+  },
+  {
+    title:
+      "Tools & Platforms",
+
+    items: [
+      "Git",
+      "Jira",
+      "VS Code",
+      "Docker",
+      "Azure",
+      "WordPress",
+      "Linux / Ubuntu",
+    ],
+  },
+  {
+    title:
+      "Design",
+
+    items: [
+      "Figma",
+      "Canva",
+      "Web / Graphic Design",
+    ],
+  },
+  {
+    title:
+      "Embedded & Other",
+
+    items: [
+      "RTOS / Zephyr",
+      "Yocto",
+      "UART / SPI / I2C / CAN",
+      "GTest",
+      "CMake",
+    ],
+  },
+  {
+    title:
+      "Soft Skills",
+
+    items: [
+      "Problem Solving",
+      "Team Communication",
+    ],
+  },
+];
+
+const CREDIT_GROUPS = [
+  {
+    title:
+      "Frontend",
+
+    items: [
+      "React",
+      "Next.js",
+      "TypeScript",
+      "Tailwind CSS",
+    ],
+  },
+  {
+    title:
+      "3D stack",
+
+    items: [
+      "Three.js",
+      "React Three Fiber",
+      "Drei",
+      "GLB models",
+    ],
+  },
+  {
+    title:
+      "Motion",
+
+    items: [
+      "GSAP",
+      "Camera zooms",
+      "Scene transitions",
+      "Lottie animation",
+    ],
+  },
+  {
+    title:
+      "Visual direction",
+
+    items: [
+      "Cozy Tokyo-night atmosphere",
+      "Soft color stories",
+      "Playful interactions",
+      "Small environmental details",
+    ],
+  },
+  {
+    title:
+      "Behind the scenes",
+
+    items: [
+      "UI iteration",
+      "Accessibility pass",
+      "Responsive layouts",
+      "Performance polish",
+    ],
+  },
+];
+
 function AnnotationContent({
   id,
   onProjectSelect,
+  onOpenSectionDetail,
 }: {
   id:
     SectionId;
@@ -1984,6 +2323,11 @@ function AnnotationContent({
   onProjectSelect: (
     id:
       ProjectId
+  ) => void;
+
+  onOpenSectionDetail: (
+    id:
+      "about" | "credits"
   ) => void;
 }) {
   if (
@@ -1993,19 +2337,34 @@ function AnnotationContent({
     return (
       <>
         <p>
-          Hi, I&apos;m Julie Anne. I build playful, polished digital
-          experiences with thoughtful details, warm visuals, and a little bit
-          of wonder.
+          Hi, I&apos;m Julie Anne — a software developer working across
+          fullstack, embedded, and AI-related projects.
         </p>
 
         <p>
-          I recently graduated from a two-year Fullstack Development program at
-          Medieinstitutet in Sweden.
+          I enjoy building useful, easy-to-use experiences and adding small
+          design details that make an application feel more personal.
         </p>
 
         <p>
-          React · Next.js · TypeScript · Node.js · Python · FastAPI · MongoDB
+          React · Next.js · TypeScript · Node.js · Python · FastAPI · C/C++
         </p>
+
+        <button
+          type="button"
+          className="adventure-detail-button"
+          onClick={(
+            event
+          ) => {
+            event.stopPropagation();
+
+            onOpenSectionDetail(
+              "about"
+            );
+          }}
+        >
+          View full profile →
+        </button>
       </>
     );
   }
@@ -2076,15 +2435,473 @@ function AnnotationContent({
       </p>
 
       <p>
-        3D scene: &quot;A Mysterious Adventure - 3D Editor Challenge&quot; by
-        Diosmel, used under the Creative Commons Attribution 4.0 license.
+        Built with Next.js, TypeScript, React Three Fiber, Drei, Three.js,
+        GSAP, and a custom responsive 3D interface.
       </p>
 
-      <p>
-        Built with Next.js, TypeScript, React Three Fiber, Drei, Three.js, and
-        GSAP.
-      </p>
+      <button
+        type="button"
+        className="adventure-detail-button"
+        onClick={(
+          event
+        ) => {
+          event.stopPropagation();
+
+          onOpenSectionDetail(
+            "credits"
+          );
+        }}
+      >
+        View full credits →
+      </button>
     </>
+  );
+}
+
+function SectionDetailModal({
+  detailId,
+  onClose,
+}: {
+  detailId:
+    | "about"
+    | "credits"
+    | null;
+
+  onClose:
+    () => void;
+}) {
+  if (
+    !detailId
+  ) {
+    return null;
+  }
+
+  const isAbout =
+    detailId ===
+    "about";
+
+  return (
+    <div
+      className="adventure-section-detail-backdrop"
+      role="presentation"
+      onClick={
+        onClose
+      }
+    >
+      <article
+        className="adventure-section-detail-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label={
+          isAbout
+            ? "About Julie Anne"
+            : "Portfolio credits"
+        }
+        onClick={(
+          event
+        ) =>
+          event.stopPropagation()
+        }
+      >
+        <button
+          type="button"
+          className="adventure-case-study-close"
+          onClick={
+            onClose
+          }
+          aria-label={
+            isAbout
+              ? "Close about profile"
+              : "Close credits"
+          }
+        >
+          ×
+        </button>
+
+        {isAbout ? (
+          <>
+            <header className="adventure-section-detail-header">
+              <p>
+                About Me
+              </p>
+
+              <h2>
+                Hi, I&apos;m Julie Anne ✨
+              </h2>
+
+              <strong>
+                Software Developer · Fullstack · Embedded · AI
+              </strong>
+
+              <p className="adventure-section-detail-intro">
+                I&apos;m a software developer who enjoys building things that
+                are useful, easy to use, and nice to look at. I&apos;ve worked
+                with fullstack apps, embedded systems, and AI-related projects,
+                and I like mixing clean code with small design details that make
+                an app feel more personal.
+              </p>
+            </header>
+
+            <section className="adventure-detail-grid adventure-detail-grid--three">
+              <div className="adventure-detail-card">
+                <h3>
+                  Frontend
+                </h3>
+
+                <p>
+                  I build interfaces with React, Next.js, TypeScript, and
+                  Tailwind. I like making pages feel clean, smooth, and easy to
+                  use.
+                </p>
+              </div>
+
+              <div className="adventure-detail-card">
+                <h3>
+                  Backend
+                </h3>
+
+                <p>
+                  I work with Node.js, Express, FastAPI, and Flask. I enjoy
+                  building APIs, connecting databases, and organizing the
+                  logic behind the scenes.
+                </p>
+              </div>
+
+              <div className="adventure-detail-card">
+                <h3>
+                  Creative & Embedded
+                </h3>
+
+                <p>
+                  I also enjoy 3D web, animation, and embedded projects with
+                  C/C++ and Python. I like combining technical work with playful
+                  visual details.
+                </p>
+              </div>
+            </section>
+
+            <section className="adventure-section-block">
+              <h3>
+                Work Experience
+              </h3>
+
+              <div className="adventure-experience-list">
+                {ABOUT_EXPERIENCE.map(
+                  (
+                    experience
+                  ) => (
+                    <article
+                      key={`${experience.company}-${experience.period}`}
+                      className="adventure-experience-card"
+                    >
+                      <div>
+                        <h4>
+                          {
+                            experience.role
+                          }
+                        </h4>
+
+                        <strong>
+                          {
+                            experience.company
+                          }
+                        </strong>
+                      </div>
+
+                      <time>
+                        {
+                          experience.period
+                        }
+                      </time>
+
+                      <p>
+                        {
+                          experience.summary
+                        }
+                      </p>
+
+                      <ul>
+                        {experience.points.map(
+                          (
+                            point
+                          ) => (
+                            <li
+                              key={
+                                point
+                              }
+                            >
+                              {
+                                point
+                              }
+                            </li>
+                          )
+                        )}
+                      </ul>
+                    </article>
+                  )
+                )}
+              </div>
+            </section>
+
+            <section className="adventure-section-block">
+              <h3>
+                Skills
+              </h3>
+
+              <div className="adventure-skill-grid">
+                {ABOUT_SKILL_GROUPS.map(
+                  (
+                    group
+                  ) => (
+                    <article
+                      key={
+                        group.title
+                      }
+                      className="adventure-skill-card"
+                    >
+                      <h4>
+                        {
+                          group.title
+                        }
+                      </h4>
+
+                      <div className="adventure-case-study-tags">
+                        {group.items.map(
+                          (
+                            item
+                          ) => (
+                            <span
+                              key={
+                                item
+                              }
+                            >
+                              {
+                                item
+                              }
+                            </span>
+                          )
+                        )}
+                      </div>
+                    </article>
+                  )
+                )}
+              </div>
+            </section>
+
+            <section className="adventure-section-block">
+              <h3>
+                Education
+              </h3>
+
+              <div className="adventure-detail-grid">
+                <article className="adventure-detail-card">
+                  <p className="adventure-detail-kicker">
+                    2026
+                  </p>
+
+                  <h4>
+                    Fullstack Developer
+                  </h4>
+
+                  <strong>
+                    The Media Institute
+                  </strong>
+
+                  <ul>
+                    <li>
+                      Frontend, backend, databases, and system development.
+                    </li>
+                    <li>
+                      Projects built with agile methods.
+                    </li>
+                    <li>
+                      E-commerce platforms and fullstack application structure.
+                    </li>
+                  </ul>
+                </article>
+
+                <article className="adventure-detail-card">
+                  <p className="adventure-detail-kicker">
+                    2024
+                  </p>
+
+                  <h4>
+                    Embedded Software Development
+                  </h4>
+
+                  <strong>
+                    Movant University of Applied Science
+                  </strong>
+
+                  <ul>
+                    <li>
+                      Embedded programming, hardware communication, and
+                      real-time systems.
+                    </li>
+                    <li>
+                      Led a group project where we built an autonomous car.
+                    </li>
+                  </ul>
+                </article>
+              </div>
+            </section>
+
+            <section className="adventure-section-block">
+              <h3>
+                Let&apos;s Connect
+              </h3>
+
+              <div className="adventure-contact-grid">
+                <a href="mailto:kisamae1997@gmail.com">
+                  kisamae1997@gmail.com
+                </a>
+
+                <a
+                  href="https://www.linkedin.com/in/julie-anne-cantillep-4ba4ab250/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  LinkedIn ↗
+                </a>
+
+                <a
+                  href="https://github.com/Julieanna97"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  GitHub ↗
+                </a>
+              </div>
+
+              <p className="adventure-detail-location">
+                Malmö, Sweden
+              </p>
+            </section>
+          </>
+        ) : (
+          <>
+            <header className="adventure-section-detail-header">
+              <p>
+                Credits
+              </p>
+
+              <h2>
+                Built with care ♡
+              </h2>
+
+              <p className="adventure-section-detail-intro">
+                Portfolio concept and implementation by Julie Anne Cantillep.
+                This interactive scene combines 3D development, animation,
+                responsive UI work, and small environmental details.
+              </p>
+            </header>
+
+            <section className="adventure-section-block">
+              <h3>
+                Scene attribution
+              </h3>
+
+              <article className="adventure-detail-card">
+                <h4>
+                  A Mysterious Adventure - 3D Editor Challenge
+                </h4>
+
+                <p>
+                  3D scene by Diosmel, used under the Creative Commons
+                  Attribution 4.0 license.
+                </p>
+              </article>
+            </section>
+
+            <section className="adventure-section-block">
+              <h3>
+                Tools, technology & visual direction
+              </h3>
+
+              <div className="adventure-skill-grid">
+                {CREDIT_GROUPS.map(
+                  (
+                    group
+                  ) => (
+                    <article
+                      key={
+                        group.title
+                      }
+                      className="adventure-skill-card"
+                    >
+                      <h4>
+                        {
+                          group.title
+                        }
+                      </h4>
+
+                      <ul>
+                        {group.items.map(
+                          (
+                            item
+                          ) => (
+                            <li
+                              key={
+                                item
+                              }
+                            >
+                              {
+                                item
+                              }
+                            </li>
+                          )
+                        )}
+                      </ul>
+                    </article>
+                  )
+                )}
+              </div>
+            </section>
+
+            <section className="adventure-section-block">
+              <h3>
+                What shaped this portfolio
+              </h3>
+
+              <div className="adventure-detail-grid adventure-detail-grid--three">
+                <article className="adventure-detail-card">
+                  <h4>
+                    Cozy spaces
+                  </h4>
+
+                  <p>
+                    A small environment that feels lived-in rather than a
+                    standard portfolio landing page.
+                  </p>
+                </article>
+
+                <article className="adventure-detail-card">
+                  <h4>
+                    Soft color stories
+                  </h4>
+
+                  <p>
+                    Warm lights, pink reflections, dark city tones, and playful
+                    accents throughout the interface.
+                  </p>
+                </article>
+
+                <article className="adventure-detail-card">
+                  <h4>
+                    Playful interactions
+                  </h4>
+
+                  <p>
+                    Camera movement, scene markers, animated advertisements,
+                    sound, and small responsive details.
+                  </p>
+                </article>
+              </div>
+            </section>
+          </>
+        )}
+      </article>
+    </div>
   );
 }
 
@@ -2295,6 +3112,82 @@ function ProjectCaseStudyModal({
               }
             </p>
 
+            {project.externalUrl && (
+              <a
+                className="adventure-project-external-link"
+                href={
+                  project.externalUrl
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {
+                  project.externalLabel ??
+                  "Open live site ↗"
+                }
+              </a>
+            )}
+
+            {project.overview && (
+              <div>
+                <h3>
+                  Overview
+                </h3>
+
+                <div className="adventure-case-study-overview">
+                  {project.overview.map(
+                    (
+                      paragraph
+                    ) => (
+                      <p
+                        key={
+                          paragraph
+                        }
+                      >
+                        {
+                          paragraph
+                        }
+                      </p>
+                    )
+                  )}
+                </div>
+              </div>
+            )}
+
+            {project.highlights && (
+              <div>
+                <h3>
+                  Highlights
+                </h3>
+
+                <div className="adventure-project-highlight-list">
+                  {project.highlights.map(
+                    (
+                      highlight
+                    ) => (
+                      <article
+                        key={
+                          highlight.title
+                        }
+                      >
+                        <h4>
+                          {
+                            highlight.title
+                          }
+                        </h4>
+
+                        <p>
+                          {
+                            highlight.text
+                          }
+                        </p>
+                      </article>
+                    )
+                  )}
+                </div>
+              </div>
+            )}
+
             <div>
               <h3>
                 What I worked on
@@ -2359,6 +3252,7 @@ function AnnotationCard({
     false,
   onClose,
   onProjectSelect,
+  onOpenSectionDetail,
 }: {
   section:
     PortfolioSection;
@@ -2372,6 +3266,11 @@ function AnnotationCard({
   onProjectSelect: (
     id:
       ProjectId
+  ) => void;
+
+  onOpenSectionDetail: (
+    id:
+      "about" | "credits"
   ) => void;
 }) {
   return (
@@ -2445,6 +3344,9 @@ function AnnotationCard({
           onProjectSelect={
             onProjectSelect
           }
+          onOpenSectionDetail={
+            onOpenSectionDetail
+          }
         />
       </div>
     </section>
@@ -2459,6 +3361,7 @@ function NumberHotspot({
   onSelect,
   onClose,
   onProjectSelect,
+  onOpenSectionDetail,
 }: {
   section:
     PortfolioSection;
@@ -2483,6 +3386,11 @@ function NumberHotspot({
   onProjectSelect: (
     id:
       ProjectId
+  ) => void;
+
+  onOpenSectionDetail: (
+    id:
+      "about" | "credits"
   ) => void;
 }) {
   return (
@@ -2552,6 +3460,9 @@ function NumberHotspot({
               onProjectSelect={
                 onProjectSelect
               }
+              onOpenSectionDetail={
+                onOpenSectionDetail
+              }
             />
           )}
       </div>
@@ -2568,6 +3479,7 @@ function AdventureSceneContent({
   activeId,
   onActiveChange,
   onProjectSelect,
+  onOpenSectionDetail,
   onSceneReady,
 }: {
   viewportWidth:
@@ -2586,6 +3498,11 @@ function AdventureSceneContent({
   onProjectSelect: (
     id:
       ProjectId
+  ) => void;
+
+  onOpenSectionDetail: (
+    id:
+      "about" | "credits"
   ) => void;
 
   onSceneReady?:
@@ -4162,6 +5079,9 @@ function AdventureSceneContent({
             onProjectSelect={
               onProjectSelect
             }
+            onOpenSectionDetail={
+              onOpenSectionDetail
+            }
           />
         )
       )}
@@ -4341,6 +5261,18 @@ export default function HeroScene({
       null
     );
 
+  const [
+    selectedSectionDetail,
+    setSelectedSectionDetail,
+  ] =
+    useState<
+      | "about"
+      | "credits"
+      | null
+    >(
+      null
+    );
+
   const activeSection =
     SECTIONS.find(
       (
@@ -4477,6 +5409,9 @@ export default function HeroScene({
             onProjectSelect={
               setSelectedProjectId
             }
+            onOpenSectionDetail={
+              setSelectedSectionDetail
+            }
             onSceneReady={
               onSceneReady
             }
@@ -4500,6 +5435,9 @@ export default function HeroScene({
               }}
               onProjectSelect={
                 setSelectedProjectId
+              }
+              onOpenSectionDetail={
+                setSelectedSectionDetail
               }
             />
           </div>
@@ -4543,6 +5481,17 @@ export default function HeroScene({
           )
         )}
       </nav>
+
+      <SectionDetailModal
+        detailId={
+          selectedSectionDetail
+        }
+        onClose={() => {
+          setSelectedSectionDetail(
+            null
+          );
+        }}
+      />
 
       <ProjectCaseStudyModal
         projectId={
@@ -5001,6 +5950,260 @@ export default function HeroScene({
           text-transform: uppercase;
         }
 
+        .adventure-detail-button,
+        .adventure-project-external-link {
+          display: inline-flex;
+          width: fit-content;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid rgba(219, 199, 255, 0.25);
+          border-radius: 999px;
+          background: rgba(219, 199, 255, 0.1);
+          padding: 9px 12px;
+          color: #f5edff;
+          cursor: pointer;
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 0.12em;
+          line-height: 1.35;
+          text-decoration: none;
+          text-transform: uppercase;
+          transition:
+            transform 180ms ease,
+            border-color 180ms ease,
+            background 180ms ease;
+        }
+
+        .adventure-detail-button:hover,
+        .adventure-project-external-link:hover {
+          transform: translateY(-2px);
+          border-color: rgba(219, 199, 255, 0.58);
+          background: rgba(219, 199, 255, 0.2);
+        }
+
+        .adventure-section-detail-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 110;
+          display: grid;
+          place-items: center;
+          overflow-y: auto;
+          background: rgba(3, 5, 12, 0.74);
+          padding: 22px;
+          backdrop-filter: blur(14px);
+        }
+
+        .adventure-section-detail-modal {
+          position: relative;
+          width: min(1120px, 100%);
+          max-height: min(920px, calc(100dvh - 44px));
+          overflow-y: auto;
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          border-radius: 24px;
+          background:
+            linear-gradient(
+              145deg,
+              rgba(13, 15, 28, 0.985),
+              rgba(31, 20, 43, 0.975)
+            );
+          box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6);
+          color: white;
+          padding: 26px;
+        }
+
+        .adventure-section-detail-header > p,
+        .adventure-detail-kicker {
+          margin: 0;
+          color: #dbc7ff;
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 0.25em;
+          text-transform: uppercase;
+        }
+
+        .adventure-section-detail-header h2 {
+          margin: 10px 50px 0 0;
+          font-size: clamp(2rem, 5vw, 4rem);
+          letter-spacing: -0.065em;
+          line-height: 0.98;
+        }
+
+        .adventure-section-detail-header strong {
+          display: block;
+          margin-top: 11px;
+          color: #f2dcff;
+          font-size: 13px;
+          letter-spacing: 0.09em;
+          line-height: 1.55;
+          text-transform: uppercase;
+        }
+
+        .adventure-section-detail-intro {
+          max-width: 840px;
+          margin: 16px 0 0;
+          color: rgba(255, 255, 255, 0.78);
+          font-size: 14px;
+          line-height: 1.75;
+        }
+
+        .adventure-section-block {
+          margin-top: 28px;
+        }
+
+        .adventure-section-block > h3 {
+          margin: 0 0 12px;
+          color: white;
+          font-size: 18px;
+        }
+
+        .adventure-detail-grid,
+        .adventure-skill-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .adventure-detail-grid--three {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          margin-top: 22px;
+        }
+
+        .adventure-detail-card,
+        .adventure-skill-card,
+        .adventure-experience-card,
+        .adventure-project-highlight-list article {
+          min-width: 0;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 16px;
+          background: rgba(255, 255, 255, 0.055);
+          padding: 14px;
+        }
+
+        .adventure-detail-card h3,
+        .adventure-detail-card h4,
+        .adventure-skill-card h4,
+        .adventure-experience-card h4,
+        .adventure-project-highlight-list h4 {
+          margin: 0;
+          color: white;
+          font-size: 14px;
+        }
+
+        .adventure-detail-card p,
+        .adventure-skill-card p,
+        .adventure-project-highlight-list p {
+          margin: 7px 0 0;
+          color: rgba(255, 255, 255, 0.72);
+          font-size: 12px;
+          line-height: 1.65;
+        }
+
+        .adventure-detail-card strong,
+        .adventure-experience-card strong {
+          display: block;
+          margin-top: 4px;
+          color: #dbc7ff;
+          font-size: 12px;
+        }
+
+        .adventure-detail-card ul,
+        .adventure-skill-card ul,
+        .adventure-experience-card ul {
+          display: grid;
+          gap: 5px;
+          margin: 10px 0 0;
+          padding-left: 17px;
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 12px;
+          line-height: 1.55;
+        }
+
+        .adventure-experience-list {
+          display: grid;
+          gap: 10px;
+        }
+
+        .adventure-experience-card {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 4px 14px;
+        }
+
+        .adventure-experience-card time {
+          color: rgba(255, 255, 255, 0.56);
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.04em;
+          text-align: right;
+        }
+
+        .adventure-experience-card p {
+          grid-column: 1 / -1;
+          margin: 8px 0 0;
+          color: rgba(255, 255, 255, 0.75);
+          font-size: 12px;
+          line-height: 1.55;
+        }
+
+        .adventure-experience-card ul {
+          grid-column: 1 / -1;
+        }
+
+        .adventure-skill-card .adventure-case-study-tags {
+          margin-top: 10px;
+        }
+
+        .adventure-contact-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 9px;
+        }
+
+        .adventure-contact-grid a {
+          overflow-wrap: anywhere;
+          border: 1px solid rgba(219, 199, 255, 0.18);
+          border-radius: 13px;
+          background: rgba(219, 199, 255, 0.08);
+          padding: 11px;
+          color: #eee1ff;
+          font-size: 12px;
+          font-weight: 800;
+          text-decoration: none;
+          transition:
+            transform 180ms ease,
+            background 180ms ease;
+        }
+
+        .adventure-contact-grid a:hover {
+          transform: translateY(-2px);
+          background: rgba(219, 199, 255, 0.17);
+        }
+
+        .adventure-detail-location {
+          margin: 12px 0 0;
+          color: rgba(255, 255, 255, 0.62);
+          font-size: 12px;
+        }
+
+        .adventure-case-study-overview {
+          display: grid;
+          gap: 8px;
+        }
+
+        .adventure-case-study-overview p,
+        .adventure-project-highlight-list p {
+          margin: 0;
+        }
+
+        .adventure-project-highlight-list {
+          display: grid;
+          gap: 8px;
+        }
+
+        .adventure-project-highlight-list p {
+          margin-top: 5px;
+        }
+
         .adventure-mobile-annotation-layer {
           pointer-events: none;
           position: absolute;
@@ -5025,6 +6228,31 @@ export default function HeroScene({
         }
 
         @media (max-width: 767px) {
+          .adventure-section-detail-backdrop {
+            padding: 12px;
+          }
+
+          .adventure-section-detail-modal {
+            max-height: calc(100dvh - 24px);
+            border-radius: 18px;
+            padding: 17px;
+          }
+
+          .adventure-detail-grid,
+          .adventure-detail-grid--three,
+          .adventure-skill-grid,
+          .adventure-contact-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .adventure-experience-card {
+            grid-template-columns: 1fr;
+          }
+
+          .adventure-experience-card time {
+            text-align: left;
+          }
+
           .adventure-bottom-nav {
             bottom: 13px;
             gap: 3px;
