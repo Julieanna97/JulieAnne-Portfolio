@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import {
   useEffect,
   useRef,
@@ -11,19 +10,6 @@ import {
   setAmbientAudioMuted,
 } from "@/lib/ambientAudio";
 
-const SushiAnimation = dynamic(
-  () =>
-    import("@lottiefiles/react-lottie-player").then(
-      (module) => module.Player
-    ),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="sushi-loader-placeholder" />
-    ),
-  }
-);
-
 export type PreloaderProps = {
   sceneReady: boolean;
   onEnter: () => void;
@@ -31,16 +17,12 @@ export type PreloaderProps = {
   musicSrc?: string;
 };
 
-const START_REVEAL_DELAY_MS =
-  180;
+const START_REVEAL_DELAY_MS = 220;
 
-function isAbortError(
-  error: unknown
-) {
+function isAbortError(error: unknown) {
   return (
     error instanceof DOMException &&
-    error.name ===
-      "AbortError"
+    error.name === "AbortError"
   );
 }
 
@@ -50,179 +32,125 @@ export default function Preloader({
   onFinished,
   musicSrc = "/music/lofivision-lost-in-tokyo-242003.mp3",
 }: PreloaderProps) {
-  const [
-    startVisible,
-    setStartVisible,
-  ] = useState(false);
+  const [startVisible, setStartVisible] = useState(false);
+  const enteredRef = useRef(false);
+  const finishFrameRef = useRef<number | null>(null);
 
-  const enteredRef =
-    useRef(false);
-
-  const finishFrameRef =
-    useRef<number | null>(
-      null
-    );
-
-  /*
-    Show Start only after HeroScene confirms that the 3D model,
-    camera, and controls are ready.
-  */
   useEffect(() => {
-    if (
-      !sceneReady
-    ) {
-      setStartVisible(
-        false
-      );
-
+    if (!sceneReady) {
+      setStartVisible(false);
       return;
     }
 
-    const revealTimer =
-      window.setTimeout(() => {
-        setStartVisible(
-          true
-        );
-      }, START_REVEAL_DELAY_MS);
+    const revealTimer = window.setTimeout(() => {
+      setStartVisible(true);
+    }, START_REVEAL_DELAY_MS);
 
     return () => {
-      window.clearTimeout(
-        revealTimer
-      );
+      window.clearTimeout(revealTimer);
     };
-  }, [
-    sceneReady,
-  ]);
+  }, [sceneReady]);
 
   useEffect(() => {
     return () => {
-      if (
-        finishFrameRef.current !==
-        null
-      ) {
-        window.cancelAnimationFrame(
-          finishFrameRef.current
-        );
+      if (finishFrameRef.current !== null) {
+        window.cancelAnimationFrame(finishFrameRef.current);
       }
     };
   }, []);
 
-  const handleStart =
-    () => {
-      if (
-        !sceneReady ||
-        !startVisible ||
-        enteredRef.current
-      ) {
-        return;
-      }
+  const handleStart = () => {
+    if (!sceneReady || !startVisible || enteredRef.current) {
+      return;
+    }
 
-      enteredRef.current =
-        true;
+    enteredRef.current = true;
 
-      /*
-        Start playback directly inside the visitor's click.
+    void playAmbientAudio(musicSrc, 0.1)
+      .then(() => {
+        setAmbientAudioMuted(false);
 
-        AbortError is harmless when a media element is replaced or paused
-        while an earlier play request is still resolving.
-      */
-      void playAmbientAudio(
-        musicSrc,
-        0.1
-      )
-        .then(() => {
-          setAmbientAudioMuted(
-            false
-          );
-
-          window.dispatchEvent(
-            new CustomEvent(
-              "ambient:set-muted",
-              {
-                detail: {
-                  muted:
-                    false,
-                },
-              }
-            )
-          );
-        })
-        .catch(
-          (
-            error
-          ) => {
-            if (
-              isAbortError(
-                error
-              )
-            ) {
-              return;
-            }
-
-            console.warn(
-              "Background audio could not be played. Continuing without music.",
-              error
-            );
-          }
+        window.dispatchEvent(
+          new CustomEvent("ambient:set-muted", {
+            detail: {
+              muted: false,
+            },
+          })
         );
+      })
+      .catch((error) => {
+        if (isAbortError(error)) {
+          return;
+        }
 
-      /*
-        Start the Three.js intro while the loader still covers the frame.
-      */
-      onEnter();
-
-      /*
-        Remove the loader on the following frame so the visitor immediately
-        sees the 3D intro animation.
-      */
-      finishFrameRef.current =
-        window.requestAnimationFrame(
-          () => {
-            onFinished();
-          }
+        console.warn(
+          "Background audio could not be played. Continuing without music.",
+          error
         );
-    };
+      });
+
+    onEnter();
+
+    finishFrameRef.current = window.requestAnimationFrame(() => {
+      onFinished();
+    });
+  };
 
   return (
-    <div className="sushi-loader">
-      <div
-        className="sushi-loader-animation"
-        aria-hidden="true"
-      >
-        <SushiAnimation
-          autoplay
-          loop
-          src="/animations/sushi-loader.json"
-          style={{
-            width:
-              "100%",
-
-            height:
-              "100%",
-          }}
-        />
+    <div className="tokyo-loader">
+      <div className="tokyo-loader-stars" aria-hidden="true">
+        {Array.from({ length: 14 }).map((_, index) => (
+          <span
+            key={index}
+            style={{
+              left: `${(index * 37 + 11) % 100}%`,
+              top: `${(index * 53 + 7) % 88}%`,
+              animationDelay: `-${(index * 0.42) % 3.4}s`,
+            }}
+          />
+        ))}
       </div>
 
+      <div
+        className="tokyo-loader-glow tokyo-loader-glow--pink"
+        aria-hidden="true"
+      />
+
+      <div
+        className="tokyo-loader-glow tokyo-loader-glow--cyan"
+        aria-hidden="true"
+      />
+
       <main
-        className="sushi-loader-content"
+        className="tokyo-loader-content"
         role="status"
         aria-live="polite"
-        aria-busy={
-          !sceneReady
-        }
+        aria-busy={!sceneReady}
         aria-label={
           sceneReady
-            ? "The interactive scene is ready"
-            : "Loading the interactive scene"
+            ? "The interactive portfolio is ready"
+            : "Loading the interactive portfolio"
         }
       >
-        {startVisible && (
+
+        {!startVisible ? (
+          <div className="tokyo-loader-loading">
+            <span>LOADING A LITTLE WORLD</span>
+
+            <div
+              className="tokyo-loader-dots"
+              aria-hidden="true"
+            >
+              <i />
+              <i />
+              <i />
+            </div>
+          </div>
+        ) : (
           <button
             type="button"
-            className="sushi-loader-start"
-            onClick={
-              handleStart
-            }
+            className="tokyo-loader-start"
+            onClick={handleStart}
           >
             Start
           </button>
@@ -230,318 +158,260 @@ export default function Preloader({
       </main>
 
       <style jsx>{`
-        .sushi-loader {
+        .tokyo-loader {
           position: fixed;
           inset: 0;
           z-index: 200;
+          display: grid;
           width: 100%;
           height: 100vh;
           height: 100dvh;
+          place-items: center;
           overflow: hidden;
-          background: #ffffff;
+          background:
+            radial-gradient(
+              circle at 20% 72%,
+              rgba(255, 96, 159, 0.14),
+              transparent 30%
+            ),
+            radial-gradient(
+              circle at 78% 66%,
+              rgba(82, 210, 255, 0.12),
+              transparent 34%
+            ),
+            linear-gradient(180deg, #080711 0%, #05050b 56%, #020307 100%);
         }
 
-        /*
-          The uploaded Lottie animation has a 2100 × 1200 canvas.
-
-          These calculations make the landscape animation cover the viewport
-          on desktop and mobile while cropping excess space evenly.
-        */
-        .sushi-loader-animation {
-          pointer-events: none;
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          width:
-            max(
-              100vw,
-              calc(100dvh * 1.75)
-            );
-          height:
-            max(
-              100dvh,
-              calc(100vw / 1.75)
-            );
-          transform:
-            translate(
-              -50%,
-              -50%
-            );
-        }
-
-        :global(.sushi-loader-placeholder) {
-          width: 100%;
-          height: 100%;
-          background: #ffffff;
-        }
-
-        .sushi-loader-content {
-          pointer-events: none;
+        .tokyo-loader-content {
           position: relative;
-          z-index: 2;
+          z-index: 3;
           display: grid;
-          width: 100%;
-          height: 100%;
-          align-items: end;
           justify-items: center;
-          padding:
-            max(
-              18px,
-              env(
-                safe-area-inset-top
-              )
-            )
-            max(
-              16px,
-              env(
-                safe-area-inset-right
-              )
-            )
-            max(
-              34px,
-              env(
-                safe-area-inset-bottom
-              )
-            )
-            max(
-              16px,
-              env(
-                safe-area-inset-left
-              )
-            );
+          padding: 24px;
+          text-align: center;
         }
 
-        .sushi-loader-start {
-          pointer-events: auto;
-          min-height: 54px;
-          margin-bottom:
-            clamp(
-              10px,
-              6dvh,
-              72px
-            );
+        .tokyo-loader-kicker {
+          margin: 0;
+          color: rgba(223, 202, 255, 0.78);
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 0.34em;
+          text-transform: uppercase;
+        }
+
+        .tokyo-loader-title {
+          margin: 12px 0 0;
+          color: #ffffff;
+          font-size: clamp(2.4rem, 8vw, 5.4rem);
+          font-weight: 900;
+          letter-spacing: -0.06em;
+          line-height: 0.92;
+          text-shadow:
+            0 0 18px rgba(255, 255, 255, 0.12),
+            0 0 30px rgba(255, 96, 159, 0.16);
+        }
+
+        .tokyo-loader-loading {
+          display: grid;
+          justify-items: center;
+          gap: 14px;
+          margin-top: 28px;
+          color: rgba(255, 255, 255, 0.82);
+          font-size: 22px;
+          font-weight: 900;
+          letter-spacing: 0.34em;
+          line-height: 1.2;
+          text-align: center;
+          text-transform: uppercase;
+        }
+
+        .tokyo-loader-dots {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+        }
+
+        .tokyo-loader-loading i {
+          width: 5px;
+          height: 5px;
+          border-radius: 999px;
+          background: #ff79ad;
+          box-shadow: 0 0 12px rgba(255, 121, 173, 0.68);
+          animation: tokyo-loader-dot 1.1s ease-in-out infinite;
+        }
+
+        .tokyo-loader-loading i:nth-child(2) {
+          animation-delay: 160ms;
+        }
+
+        .tokyo-loader-loading i:nth-child(3) {
+          animation-delay: 320ms;
+        }
+
+        .tokyo-loader-start {
+          margin-top: 28px;
           border: 0;
           background: transparent;
-          padding:
-            14px
-            30px
-            14px
-            35px;
+          padding: 12px 18px;
           color: #ffffff;
           cursor: pointer;
-          font-size: 20px;
+          font-size: 22px;
           font-weight: 900;
           letter-spacing: 0.34em;
           line-height: 1;
           text-shadow:
-            0 2px 10px
-              rgba(
-                22,
-                28,
-                38,
-                0.58
-              );
+            0 0 10px rgba(255, 255, 255, 0.46),
+            0 0 22px rgba(255, 121, 173, 0.46);
           text-transform: uppercase;
           touch-action: manipulation;
           -webkit-tap-highlight-color: transparent;
-          backdrop-filter:
-            blur(
-              8px
-            );
           animation:
-            sushi-start-reveal
-              720ms
-              cubic-bezier(
-                0.16,
-                1,
-                0.3,
-                1
-              )
+            tokyo-loader-start-reveal 680ms cubic-bezier(0.16, 1, 0.3, 1)
               both,
-            sushi-start-breathe
-              2.8s
-              ease-in-out
-              850ms
-              infinite;
+            tokyo-loader-start-breathe 2.6s ease-in-out 760ms infinite;
           transition:
-            text-shadow
-              180ms
-              ease,
-            transform
-              180ms
-              ease;
+            transform 180ms ease,
+            text-shadow 180ms ease;
         }
 
-        .sushi-loader-start:hover {
+        .tokyo-loader-start:hover {
+          transform: translateY(-3px) scale(1.05);
           text-shadow:
-            0 2px 10px
-              rgba(
-                22,
-                28,
-                38,
-                0.58
-              ),
-            0 0 18px
-              rgba(
-                255,
-                255,
-                255,
-                0.72
-              );
-          transform:
-            translateY(
-              -3px
-            )
-            scale(
-              1.04
-            );
+            0 0 13px rgba(255, 255, 255, 0.7),
+            0 0 28px rgba(255, 121, 173, 0.72);
         }
 
-        .sushi-loader-start:active {
-          transform:
-            scale(
-              0.97
-            );
+        .tokyo-loader-start:active {
+          transform: scale(0.97);
         }
 
-        .sushi-loader-start:focus-visible {
-          outline: 3px solid
-            rgba(
-              255,
-              255,
-              255,
-              0.88
-            );
+        .tokyo-loader-start:focus-visible {
+          outline: 2px solid rgba(255, 255, 255, 0.84);
           outline-offset: 5px;
         }
 
-        @keyframes sushi-start-reveal {
+        .tokyo-loader-stars {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+        }
+
+        .tokyo-loader-stars span {
+          position: absolute;
+          width: 3px;
+          height: 3px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.82);
+          box-shadow: 0 0 10px rgba(255, 255, 255, 0.54);
+          animation: tokyo-loader-star 3.4s ease-in-out infinite;
+        }
+
+        .tokyo-loader-glow {
+          position: absolute;
+          width: 34vw;
+          height: 34vw;
+          border-radius: 999px;
+          filter: blur(94px);
+          opacity: 0.36;
+        }
+
+        .tokyo-loader-glow--pink {
+          left: -12vw;
+          bottom: -6vw;
+          background: rgba(255, 76, 167, 0.38);
+        }
+
+        .tokyo-loader-glow--cyan {
+          right: -12vw;
+          top: -7vw;
+          background: rgba(75, 214, 255, 0.26);
+        }
+
+        @keyframes tokyo-loader-dot {
+          0%,
+          100% {
+            opacity: 0.34;
+            transform: scale(0.76);
+          }
+
+          50% {
+            opacity: 1;
+            transform: scale(1.12);
+          }
+        }
+
+        @keyframes tokyo-loader-star {
+          0%,
+          100% {
+            opacity: 0.18;
+            transform: scale(0.74);
+          }
+
+          50% {
+            opacity: 0.86;
+            transform: scale(1.12);
+          }
+        }
+
+        @keyframes tokyo-loader-start-reveal {
           from {
             opacity: 0;
-            filter:
-              blur(
-                8px
-              );
-            transform:
-              translateY(
-                22px
-              )
-              scale(
-                0.92
-              );
+            filter: blur(8px);
+            transform: translateY(18px) scale(0.92);
           }
 
           to {
             opacity: 1;
-            filter:
-              blur(
-                0
-              );
-            transform:
-              translateY(
-                0
-              )
-              scale(
-                1
-              );
+            filter: blur(0);
+            transform: translateY(0) scale(1);
           }
         }
 
-        @keyframes sushi-start-breathe {
+        @keyframes tokyo-loader-start-breathe {
           0%,
           100% {
-            text-shadow:
-              0 2px 10px
-                rgba(
-                  22,
-                  28,
-                  38,
-                  0.58
-                ),
-              0 0 10px
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.22
-                );
+            opacity: 0.78;
           }
 
           50% {
-            text-shadow:
-              0 2px 10px
-                rgba(
-                  22,
-                  28,
-                  38,
-                  0.58
-                ),
-              0 0 22px
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.58
-                );
+            opacity: 1;
           }
         }
 
-        @media (
-          max-width:
-            767px
-        ) {
-          .sushi-loader-content {
-            padding-bottom:
-              max(
-                22px,
-                env(
-                  safe-area-inset-bottom
-                )
-              );
+        @media (max-width: 767px) {
+          .tokyo-loader-content {
+            padding: 18px;
           }
 
-          .sushi-loader-start {
-            min-height: 50px;
-            margin-bottom:
-              clamp(
-                8px,
-                4dvh,
-                34px
-              );
-            padding:
-              13px
-              24px
-              13px
-              29px;
-            font-size: 18px;
-            letter-spacing:
-              0.3em;
+          .tokyo-loader-title {
+            font-size: clamp(2.9rem, 14vw, 4.8rem);
+          }
+
+          .tokyo-loader-loading {
+            max-width: min(92vw, 520px);
+            margin-top: 24px;
+            font-size: 20px;
+            letter-spacing: 0.26em;
+          }
+
+          .tokyo-loader-start {
+            margin-top: 24px;
+            font-size: 20px;
+          }
+
+          .tokyo-loader-glow {
+            width: 62vw;
+            height: 62vw;
+            filter: blur(72px);
           }
         }
 
-        @media (
-          max-height:
-            520px
-        ) {
-          .sushi-loader-start {
-            min-height: 44px;
-            margin-bottom: 0;
-            padding:
-              10px
-              22px
-              10px
-              27px;
-            font-size: 16px;
-          }
-        }
-
-        @media (
-          prefers-reduced-motion:
-            reduce
-        ) {
-          .sushi-loader-start {
+        @media (prefers-reduced-motion: reduce) {
+          .tokyo-loader-loading i,
+          .tokyo-loader-stars span,
+          .tokyo-loader-start {
             animation: none;
-            transition: none;
           }
         }
       `}</style>
