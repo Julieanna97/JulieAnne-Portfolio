@@ -1753,10 +1753,12 @@ const PROJECT_CASE_STUDIES: Record<
       "Degree Project",
 
     summary:
-      "A music-practice tracking platform designed to help musicians plan sessions, stay consistent, and review their progress. The application includes authentication, practice planning, statistics, and a subscription flow.",
+      "PracticePal is a calm music-practice planning and tracking platform designed to help musicians stay consistent without making the routine feel overwhelming. Users can set weekly targets, plan sessions, log practice quickly, review progress, and keep their goals visible in one place.",
 
     overview: [
-      "PracticePal was built as my degree project. It combines account management, planning tools, progress tracking, and a Pro subscription flow in one fullstack application.",
+      "The idea behind PracticePal was to make practice planning feel calm, clear, and easy to maintain. Instead of cluttering the experience with too many steps, the app keeps the most useful information visible: today's focus, weekly targets, streaks, completed minutes, and the next activity.",
+      "The core flow is simple: set a plan for the week, log each practice session in under a minute, then check the statistics and adjust the routine. This helps musicians build a practice habit they can realistically keep.",
+      "PracticePal was built as my degree project and combines account management, progress tracking, goal planning, statistics, and a Pro subscription flow in one fullstack application.",
     ],
 
     technologies: [
@@ -1769,14 +1771,49 @@ const PROJECT_CASE_STUDIES: Record<
     ],
 
     contributions: [
+      "Built a weekly planning flow for setting practice targets, session lengths, and visible goals.",
+      "Created a fast session-logging experience so musicians can record what they worked on without interrupting the practice routine.",
+      "Added streak tracking, weekly progress summaries, and statistics to make progress easier to understand.",
       "Built authentication with credentials and social-login options.",
-      "Created practice-session tracking, planning, and progress-statistics features.",
       "Integrated Stripe subscriptions and webhook handling for the Pro plan.",
-      "Used MongoDB for account, practice-session, and subscription data.",
+      "Used MongoDB for account, practice-session, planning, and subscription data.",
     ],
 
-    images:
-      [],
+    highlights: [
+      {
+        title:
+          "Weekly clarity",
+
+        text:
+          "Goals, planned minutes, completed time, streaks, and the next activity stay visible so every session starts with direction.",
+      },
+      {
+        title:
+          "Fast logging",
+
+        text:
+          "Users can record what they practiced in under a minute without slowing down the session itself.",
+      },
+      {
+        title:
+          "Readable progress",
+
+        text:
+          "Charts and summaries show momentum without making the dashboard feel cluttered or overwhelming.",
+      },
+    ],
+
+    images: [
+      "/projects/practicepal/image-1.png",
+      "/projects/practicepal/image-2.png",
+      "/projects/practicepal/image-3.png",
+    ],
+
+    externalUrl:
+      "https://practicepal-beige.vercel.app/",
+
+    externalLabel:
+      "Visit PracticePal ↗",
   },
 };
 const SECTIONS: PortfolioSection[] = [
