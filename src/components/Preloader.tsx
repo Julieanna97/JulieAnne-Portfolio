@@ -215,13 +215,13 @@ export default function Preloader({
         .tokyo-loader-loading {
           display: grid;
           justify-items: center;
-          gap: 14px;
+          gap: 16px;
           margin-top: 28px;
-          color: rgba(255, 255, 255, 0.82);
+          color: rgba(255, 255, 255, 0.72);
           font-size: 22px;
           font-weight: 900;
-          letter-spacing: 0.34em;
-          line-height: 1.2;
+          letter-spacing: 0.28em;
+          line-height: 1.35;
           text-align: center;
           text-transform: uppercase;
         }
@@ -229,24 +229,29 @@ export default function Preloader({
         .tokyo-loader-dots {
           display: inline-flex;
           align-items: center;
-          gap: 7px;
+          justify-content: center;
+          gap: 9px;
+          min-height: 15px;
         }
 
-        .tokyo-loader-loading i {
-          width: 5px;
-          height: 5px;
+        .tokyo-loader-dots i {
+          display: block;
+          width: 7px;
+          height: 7px;
           border-radius: 999px;
           background: #ff79ad;
-          box-shadow: 0 0 12px rgba(255, 121, 173, 0.68);
-          animation: tokyo-loader-dot 1.1s ease-in-out infinite;
+          box-shadow:
+            0 0 10px rgba(255, 121, 173, 0.72),
+            0 0 20px rgba(255, 121, 173, 0.32);
+          animation: tokyo-loader-dot 1.15s ease-in-out infinite;
         }
 
-        .tokyo-loader-loading i:nth-child(2) {
-          animation-delay: 160ms;
+        .tokyo-loader-dots i:nth-child(2) {
+          animation-delay: 150ms;
         }
 
-        .tokyo-loader-loading i:nth-child(3) {
-          animation-delay: 320ms;
+        .tokyo-loader-dots i:nth-child(3) {
+          animation-delay: 300ms;
         }
 
         .tokyo-loader-start {
@@ -331,13 +336,13 @@ export default function Preloader({
         @keyframes tokyo-loader-dot {
           0%,
           100% {
-            opacity: 0.34;
-            transform: scale(0.76);
+            opacity: 0.38;
+            transform: translateY(0) scale(0.82);
           }
 
           50% {
             opacity: 1;
-            transform: scale(1.12);
+            transform: translateY(-6px) scale(1.12);
           }
         }
 
@@ -390,9 +395,20 @@ export default function Preloader({
 
           .tokyo-loader-loading {
             max-width: min(92vw, 520px);
+            gap: 14px;
             margin-top: 24px;
             font-size: 20px;
-            letter-spacing: 0.26em;
+            letter-spacing: 0.22em;
+          }
+
+          .tokyo-loader-dots {
+            gap: 8px;
+            min-height: 14px;
+          }
+
+          .tokyo-loader-dots i {
+            width: 6px;
+            height: 6px;
           }
 
           .tokyo-loader-start {
@@ -408,7 +424,7 @@ export default function Preloader({
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .tokyo-loader-loading i,
+          .tokyo-loader-dots i,
           .tokyo-loader-stars span,
           .tokyo-loader-start {
             animation: none;
