@@ -4,6 +4,7 @@ export type ProjectId =
   | "sigma-autonomous-car"
   | "podmanager"
   | "practicepal"
+  | "asteroidwatch"
   | "worldbite-market";
 
 export type ProjectCaseStudy = {

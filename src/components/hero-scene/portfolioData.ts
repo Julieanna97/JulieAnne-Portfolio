@@ -223,9 +223,9 @@ export const PROJECT_CASE_STUDIES: Record<
     ],
 
     images: [
+      "/projects/practicepal/cover.png",
       "/projects/practicepal/image-1.png",
       "/projects/practicepal/image-2.png",
-      "/projects/practicepal/image-3.png",
     ],
 
     externalUrl: "https://practicepal-beige.vercel.app/",
@@ -234,6 +234,7 @@ export const PROJECT_CASE_STUDIES: Record<
     githubUrl: "https://github.com/Julieanna97/practicepal",
     githubLabel: "View GitHub repo ↗",
   },
+
 
   "worldbite-market": {
     id: "worldbite-market",
@@ -299,6 +300,72 @@ export const PROJECT_CASE_STUDIES: Record<
     externalLabel: "Visit WorldBite Market ↗",
 
     githubUrl: "https://github.com/Julieanna97/worldbite-market",
+    githubLabel: "View GitHub repo ↗",
+  },
+
+  asteroidwatch: {
+    id: "asteroidwatch",
+
+    title: "AsteroidWatch",
+
+    type: "NASA API Dashboard · Vanilla JavaScript Project",
+
+    role: "Frontend Developer & API Integration",
+
+    period: "Portfolio Project",
+
+    summary:
+      "AsteroidWatch is a polished NASA Near Earth Object dashboard built with HTML, CSS, and vanilla JavaScript. It lets users explore asteroid close approaches by date range or asteroid ID, then compare size, velocity, miss distance, and hazard status in a mission-log style interface.",
+
+    overview: [
+      "I redesigned this from a basic NASA API school project into a stronger portfolio piece with a darker space-themed visual direction, clearer dashboard sections, reusable JavaScript functions, and a more presentable user flow.",
+      "The app connects to NASA NeoWs data through an API route, supports date-range searching and asteroid ID lookup, shows dashboard metrics, renders detailed asteroid profile information, and stores the latest search in localStorage so results can persist between visits.",
+    ],
+
+    technologies: [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "NASA NeoWs API",
+      "REST API",
+      "localStorage",
+      "Responsive Design",
+    ],
+
+    contributions: [
+      "Built a responsive dashboard interface for querying NASA Near Earth Object data.",
+      "Added date-range search and single asteroid lookup flows using JavaScript form handling.",
+      "Rendered asteroid cards with estimated diameter, close approach date, miss distance, velocity, and hazard status.",
+      "Created a detail view for individual asteroids with orbital data and close approach history.",
+      "Added localStorage support so the latest mission log can be restored on revisit.",
+      "Improved the visual design into a polished space-themed mission log suitable for a portfolio case study.",
+    ],
+
+    highlights: [
+      {
+        title: "NASA data search",
+        text: "Users can scan a date range or look up a specific asteroid ID through the NASA NeoWs API.",
+      },
+      {
+        title: "Dashboard metrics",
+        text: "The UI summarizes total objects, hazardous objects, closest miss distance, and fastest velocity.",
+      },
+      {
+        title: "Mission-log UI",
+        text: "The results are presented in a focused, space-themed interface with clear status labels and detail views.",
+      },
+    ],
+
+    images: [
+      "/projects/asteroidwatch/cover.png",
+      "/projects/asteroidwatch/image-1.png",
+      "/projects/asteroidwatch/image-2.png",
+    ],
+
+    externalUrl: "https://asteroidwatch.vercel.app/",
+    externalLabel: "Visit AsteroidWatch ↗",
+
+    githubUrl: "https://github.com/Julieanna97/NASA-Near-Earth-Objects-API-Project",
     githubLabel: "View GitHub repo ↗",
   },
 };
@@ -572,4 +639,3 @@ export const CREDIT_GROUPS = [
     ],
   },
 ];
-
