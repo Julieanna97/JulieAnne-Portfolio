@@ -10,7 +10,7 @@ import { MOUSE, TOUCH, Vector3 } from "three";
 import gsap from "gsap";
 
 import MysteriousAdventureModel from "../../../models/MysteriousAdventureModel";
-import type { ProjectId, SectionId } from "../types";
+import type { PortfolioSection, ProjectId, SectionId } from "../types";
 import {
   ABOUT_CAMERA_MOBILE,
   CREDITS_CAMERA_MOBILE,
