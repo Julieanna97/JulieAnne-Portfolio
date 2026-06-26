@@ -29,7 +29,7 @@ const HeroScene =
   dynamic<HeroSceneProps>(
     () =>
       import(
-        "@/components/HeroScene"
+        "@/components/hero-scene/HeroScene"
       ).then(
         (module) =>
           module.default
@@ -39,7 +39,7 @@ const HeroScene =
       loading: () => null,
     }
   );
-
+  
 export default function HomePage() {
   const [
     bootChecked,

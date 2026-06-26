@@ -24,22 +24,22 @@ const projects = [
     tags: ["Next.js", "TypeScript", "FastAPI", "AI"],
   },
   {
-    title: "Study Planner App",
-    slug: "study-planner",
-    type: "Fullstack App",
-    image: "/projects/study-planner.png",
+    title: "PracticePal",
+    slug: "practicepal",
+    type: "Fullstack SaaS Project",
+    image: "/projects/practicepal/cover.png",
     description:
-      "A productivity app for organizing tasks, deadlines, notes, and study sessions.",
-    tags: ["React", "Next.js", "Database"],
+      "A fullstack practice planning app built with Next.js, MongoDB, authentication, Stripe subscriptions, and progress tracking for music practice sessions.",
+    tags: ["Next.js", "MongoDB", "Stripe", "Auth"],
   },
   {
-    title: "Creative UI Gallery",
-    slug: "creative-ui-gallery",
-    type: "UI Experiment",
-    image: "/projects/creative-ui.png",
+    title: "WorldBite Market",
+    slug: "worldbite-market",
+    type: "WordPress / WooCommerce Project",
+    image: "/projects/worldbite-market/cover.png",
     description:
-      "A collection of playful interface experiments using animation, glassmorphism, and soft visuals.",
-    tags: ["Framer Motion", "UI/UX", "Animation"],
+      "A custom WordPress and WooCommerce food marketplace built with PHP, MariaDB, phpMyAdmin, and Docker. I created a responsive theme, product catalogue, cart and checkout flow, and custom recipe collections.",
+    tags: ["WordPress", "PHP", "WooCommerce", "MariaDB", "Docker"],
   },
 ];
 
