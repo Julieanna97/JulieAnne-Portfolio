@@ -5,7 +5,8 @@ export type ProjectId =
   | "podmanager"
   | "practicepal"
   | "asteroidwatch"
-  | "worldbite-market";
+  | "worldbite-market"
+  | "ecommerce-rest-api";
 
 export type ProjectCaseStudy = {
   id: ProjectId;

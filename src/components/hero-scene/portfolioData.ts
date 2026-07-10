@@ -368,6 +368,74 @@ export const PROJECT_CASE_STUDIES: Record<
     githubUrl: "https://github.com/Julieanna97/NASA-Near-Earth-Objects-API-Project",
     githubLabel: "View GitHub repo ↗",
   },
+
+    "ecommerce-rest-api": {
+    id: "ecommerce-rest-api",
+
+    title: "E-commerce REST API",
+
+    type: "Backend API · TypeScript / MySQL Project",
+
+    role: "Backend Developer",
+
+    period: "Portfolio Project",
+
+    summary:
+      "A backend API for an e-commerce system built with TypeScript, Node.js, Express, and MySQL. The API handles products, customers, orders, order items, authentication, and Stripe checkout session routes.",
+
+    overview: [
+      "I revisited this school backend project and turned it into a more portfolio-ready API by cleaning up the project setup, connecting it to an online MySQL database, and deploying it as a live backend service.",
+      "The project focuses on REST API structure, database-backed routes, environment variables, authentication flow, and payment-session handling through Stripe routes.",
+      "For deployment, I moved the database from local XAMPP/phpMyAdmin to Aiven MySQL and hosted the Express API on Vercel so the project can be viewed online without needing my local machine running.",
+    ],
+
+    technologies: [
+      "TypeScript",
+      "Node.js",
+      "Express",
+      "MySQL",
+      "Aiven",
+      "Vercel",
+      "JWT",
+      "Stripe",
+    ],
+
+    contributions: [
+      "Built REST API routes for products, customers, orders, and order items.",
+      "Connected the API to a MySQL database using environment variables for safer configuration.",
+      "Added user authentication routes for register, login, refresh token, and clearing tokens.",
+      "Included Stripe checkout session routes for hosted and embedded payment flows.",
+      "Migrated the local database from XAMPP/phpMyAdmin to Aiven MySQL so the API can work online.",
+      "Prepared the backend for Vercel deployment and cleaned TypeScript build issues for a smoother production deploy.",
+    ],
+
+    highlights: [
+      {
+        title: "Live backend API",
+        text: "The API can be tested online through routes such as /products, /customers, and /orders.",
+      },
+      {
+        title: "Database-backed routes",
+        text: "Product, customer, order, and order item data are stored and retrieved from MySQL.",
+      },
+      {
+        title: "Deployment upgrade",
+        text: "The project was moved from local-only XAMPP testing to an online setup with Aiven MySQL and Vercel.",
+      },
+    ],
+
+    images: [
+      "/projects/ecommerce-rest-api/cover.png",
+      "/projects/ecommerce-rest-api/image-1.png",
+      "/projects/ecommerce-rest-api/image-2.png",
+    ],
+
+    externalUrl: "https://julie-ecommerce-api.vercel.app/",
+    externalLabel: "Open live API ↗",
+
+    githubUrl: "https://github.com/Julieanna97/ecommerce-api-new",
+    githubLabel: "View GitHub repo ↗",
+  },
 };
 
 export const ABOUT_EXPERIENCE = [
@@ -524,26 +592,25 @@ export const ABOUT_SKILL_GROUPS = [
     ],
   },
   {
-    title:
-      "Databases",
-
+    title: "Databases",
     items: [
       "SQL",
+      "MySQL",
       "MongoDB",
       "MariaDB",
+      "Aiven",
       "phpMyAdmin",
       "NoSQL",
     ],
   },
   {
-    title:
-      "Tools & Platforms",
-
+    title: "Tools & Platforms",
     items: [
       "Git",
       "Jira",
       "VS Code",
       "Docker",
+      "Vercel",
       "Azure",
       "WordPress",
       "Linux / Ubuntu",
