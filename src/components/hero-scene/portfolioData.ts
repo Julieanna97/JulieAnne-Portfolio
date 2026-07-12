@@ -504,6 +504,82 @@ export const PROJECT_CASE_STUDIES: Record<
     githubUrl: "https://github.com/Julieanna97/bookshop-frontend",
     githubLabel: "View GitHub repo ↗",
   },
+
+    "restaurant-booking": {
+    id: "restaurant-booking",
+
+    title: "Seoulful Flavor Restaurant Booking",
+
+    type: "Group Project · Booking System",
+
+    role: "Frontend, Contact Page & Booking API Logic",
+
+    period: "School Group Project",
+
+    summary:
+      "A group restaurant booking project built with React, TypeScript, and Vite. My main contributions were creating the contact page and working on the booking system logic, including checking available bookings from the API and showing the correct remaining seats for each selected date and time.",
+
+    overview: [
+      "Seoulful Flavor is a fictional Korean BBQ restaurant website with a table booking system.",
+      "This was a school group project built together with two other group members.",
+      "My main contributions were building the contact page and working on the booking system logic behind the reservation flow.",
+      "The booking system connects to a restaurant API to check existing bookings and calculate how many seats are still available for a selected date and time.",
+      "For example, if a selected time slot has 14 seats left, the app should show that real remaining availability instead of a static or guessed result.",
+      "I also prepared the project for my portfolio by fixing TypeScript build errors, updating the admin demo login, changing the site title and favicon, and deploying it to Vercel.",
+    ],
+
+    technologies: [
+      "React",
+      "TypeScript",
+      "Vite",
+      "REST API",
+      "React Router",
+      "CSS",
+      "Vercel",
+    ],
+
+    contributions: [
+      "Created the contact page for the restaurant website.",
+      "Worked on the booking system logic and API integration.",
+      "Connected the booking flow to the restaurant API.",
+      "Helped check existing bookings for a selected date and time.",
+      "Worked on calculating and showing the correct remaining seat availability.",
+      "Handled parts of the reservation flow, including date selection, guest count, time slot selection, and customer details.",
+      "Helped make the project ready for deployment by fixing TypeScript build errors and Vercel routing issues.",
+      "Updated the admin demo login so hiring managers can test the admin booking view more easily.",
+    ],
+
+    highlights: [
+      {
+        title: "Booking availability logic",
+        text: "The booking system checks existing reservations from the API and shows the real remaining seat availability for each selected date and time.",
+      },
+      {
+        title: "API-connected reservation flow",
+        text: "Users can choose a date, guest count, and time slot, then submit a reservation through the connected restaurant API.",
+      },
+      {
+        title: "Contact page",
+        text: "I created the contact page as part of the restaurant website experience.",
+      },
+      {
+        title: "Admin demo",
+        text: "The project includes a demo admin view where bookings can be reviewed. Demo password: demo-admin.",
+      },
+    ],
+
+    images: [
+      "/projects/restaurant/cover.png",
+      "/projects/restaurant/image-1.png",
+      "/projects/restaurant/image-2.png",
+    ],
+
+    externalUrl: "https://seoulful-flavor-booking.vercel.app/",
+    externalLabel: "Visit live site ↗",
+
+    githubUrl: "https://github.com/Julieanna97/seoulful-flavor-booking",
+    githubLabel: "View GitHub repo ↗",
+  },
 };
 
 export const ABOUT_EXPERIENCE = [
