@@ -436,6 +436,74 @@ export const PROJECT_CASE_STUDIES: Record<
     githubUrl: "https://github.com/Julieanna97/ecommerce-api-new",
     githubLabel: "View GitHub repo ↗",
   },
+
+    bookshop: {
+    id: "bookshop",
+
+    title: "Boklusen Bookshop",
+
+    type: "Group Project · Frontend/API Integration",
+
+    role: "Frontend & API Integration Developer",
+
+    period: "School Group Project",
+
+    summary:
+      "A group project for an online bookshop built with HTML, CSS, JavaScript, Node.js, Express, and MongoDB. My main contribution was connecting the frontend to the backend API, fetching book data, and displaying the books dynamically on the site.",
+
+    overview: [
+      "Boklusen is a fictional online bookshop where users can browse books, view product details, add books to the cart, and continue to a demo checkout flow.",
+      "This was a school group project with three group members. My main focus was making sure the frontend could fetch book data from the API and display the books correctly on the page.",
+      "I later updated the project for my portfolio by deploying the backend to Vercel, connecting it to MongoDB Atlas, adding more book data, translating the site to English, and adding a demo checkout flow.",
+    ],
+
+    technologies: [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "Node.js",
+      "Express",
+      "MongoDB",
+      "Mongoose",
+      "Vercel",
+    ],
+
+    contributions: [
+      "Worked mainly on displaying the books dynamically on the frontend using data from the backend API.",
+      "Connected the frontend to the products API and made sure book data loaded correctly.",
+      "Helped render book cards with information such as title, author, category, price, and cover image.",
+      "Worked on the user flow from browsing books to viewing product details and adding books to the cart.",
+      "Updated the project for portfolio use by connecting it to a deployed backend and adding a demo checkout flow.",
+      "Translated the site text to English to make it more accessible for portfolio visitors.",
+    ],
+
+    highlights: [
+      {
+        title: "API-connected book display",
+        text: "The book list is loaded dynamically from the backend API instead of being hardcoded in the frontend.",
+      },
+      {
+        title: "Cart and demo checkout",
+        text: "Users can add books to the cart, review their order, and complete a demo checkout flow.",
+      },
+      {
+        title: "Group project role",
+        text: "My main contribution was frontend/API integration and making sure the book data displayed correctly.",
+      },
+    ],
+
+    images: [
+      "/projects/bookshop/cover.png",
+      "/projects/bookshop/image-1.png",
+      "/projects/bookshop/image-2.png",
+    ],
+
+    externalUrl: "https://bookshop-frontend-dun.vercel.app/",
+    externalLabel: "Visit live site ↗",
+
+    githubUrl: "https://github.com/Julieanna97/bookshop-frontend",
+    githubLabel: "View GitHub repo ↗",
+  },
 };
 
 export const ABOUT_EXPERIENCE = [

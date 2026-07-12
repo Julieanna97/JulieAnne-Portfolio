@@ -6,7 +6,8 @@ export type ProjectId =
   | "practicepal"
   | "asteroidwatch"
   | "worldbite-market"
-  | "ecommerce-rest-api";
+  | "ecommerce-rest-api"
+  | "bookshop";
 
 export type ProjectCaseStudy = {
   id: ProjectId;
