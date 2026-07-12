@@ -505,7 +505,7 @@ export const PROJECT_CASE_STUDIES: Record<
     githubLabel: "View GitHub repo ↗",
   },
 
-    "restaurant-booking": {
+  "restaurant-booking": {
     id: "restaurant-booking",
 
     title: "Seoulful Flavor Restaurant Booking",
@@ -517,15 +517,17 @@ export const PROJECT_CASE_STUDIES: Record<
     period: "School Group Project",
 
     summary:
-      "A group restaurant booking project built with React, TypeScript, and Vite. My main contributions were creating the contact page and working on the booking system logic, including checking available bookings from the API and showing the correct remaining seats for each selected date and time.",
+      "A group restaurant booking project built with React, TypeScript, and Vite. My main contributions were creating the contact page and working on the booking system logic, including checking existing bookings from the API, showing the correct remaining availability for each selected date and time, and sending confirmed bookings back to the API so the booking data could update.",
 
     overview: [
       "Seoulful Flavor is a fictional Korean BBQ restaurant website with a table booking system.",
       "This was a school group project built together with two other group members.",
       "My main contributions were building the contact page and working on the booking system logic behind the reservation flow.",
-      "The booking system connects to a restaurant API to check existing bookings and calculate how many seats are still available for a selected date and time.",
-      "For example, if a selected time slot has 14 seats left, the app should show that real remaining availability instead of a static or guessed result.",
-      "I also prepared the project for my portfolio by fixing TypeScript build errors, updating the admin demo login, changing the site title and favicon, and deploying it to Vercel.",
+      "The booking system connects to a restaurant API to check existing bookings for a selected date and time.",
+      "Based on the API data, the app calculates how many seats or tables are still available instead of showing a static or guessed result.",
+      "For example, if a selected date and time has 14 spots left, the app should show that real remaining availability based on the current booking data.",
+      "When a user confirms a reservation, the booking request is sent back to the API so the reservation is stored and future availability checks can reflect the updated amount.",
+      "I also prepared the project for my portfolio by fixing TypeScript build errors, updating the admin demo login, changing the site title and favicon, fixing Vercel routing, and deploying it to Vercel.",
     ],
 
     technologies: [
@@ -542,8 +544,11 @@ export const PROJECT_CASE_STUDIES: Record<
       "Created the contact page for the restaurant website.",
       "Worked on the booking system logic and API integration.",
       "Connected the booking flow to the restaurant API.",
-      "Helped check existing bookings for a selected date and time.",
-      "Worked on calculating and showing the correct remaining seat availability.",
+      "Fetched existing bookings for a selected date and time.",
+      "Worked on calculating and showing the correct remaining availability based on current booking data.",
+      "Handled the logic for showing real availability, such as displaying 14 spots left when that was the actual amount available.",
+      "Sent confirmed booking requests back to the API so reservations could be stored.",
+      "Helped make sure newly created bookings affected future availability checks, so the system could deduct the booked amount correctly.",
       "Handled parts of the reservation flow, including date selection, guest count, time slot selection, and customer details.",
       "Helped make the project ready for deployment by fixing TypeScript build errors and Vercel routing issues.",
       "Updated the admin demo login so hiring managers can test the admin booking view more easily.",
@@ -552,11 +557,15 @@ export const PROJECT_CASE_STUDIES: Record<
     highlights: [
       {
         title: "Booking availability logic",
-        text: "The booking system checks existing reservations from the API and shows the real remaining seat availability for each selected date and time.",
+        text: "The booking system checks existing reservations from the API and shows the real remaining availability for each selected date and time.",
       },
       {
-        title: "API-connected reservation flow",
-        text: "Users can choose a date, guest count, and time slot, then submit a reservation through the connected restaurant API.",
+        title: "Create booking request",
+        text: "When a reservation is confirmed, the app sends the booking request back to the API so the booking is stored and future availability checks reflect the updated data.",
+      },
+      {
+        title: "Real remaining seats",
+        text: "The app calculates availability from existing booking data, so users see the actual remaining amount instead of a static number.",
       },
       {
         title: "Contact page",
