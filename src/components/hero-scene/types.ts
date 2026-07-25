@@ -1,9 +1,13 @@
-export type SectionId = "about" | "projects" | "credits";
+export type SectionId =
+  | "about"
+  | "projects"
+  | "credits";
 
 export type ProjectId =
   | "sigma-autonomous-car"
   | "podmanager"
   | "practicepal"
+  | "naile-ecommerce"
   | "asteroidwatch"
   | "worldbite-market"
   | "ecommerce-rest-api"

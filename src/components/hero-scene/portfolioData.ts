@@ -1,24 +1,22 @@
-import type { ProjectCaseStudy, ProjectId } from "./types";
+import type {
+  ProjectCaseStudy,
+  ProjectId,
+} from "./types";
 
 export const PROJECT_CASE_STUDIES: Record<
   ProjectId,
   ProjectCaseStudy
 > = {
   "sigma-autonomous-car": {
-    id:
-      "sigma-autonomous-car",
+    id: "sigma-autonomous-car",
 
-    title:
-      "Sigma Autonomous Car",
+    title: "Sigma Autonomous Car",
 
-    type:
-      "Embedded / Robotics Project",
+    type: "Embedded / Robotics Project",
 
-    role:
-      "Embedded Software Developer Intern",
+    role: "Embedded Software Developer Intern",
 
-    period:
-      "September 2023 – October 2023",
+    period: "September 2023 – October 2023",
 
     summary:
       "A hands-on autonomous RC-car project where I worked through the full build process — from planning the electrical schematic and assembling the hardware to programming the car, testing its behavior, and refining how it responded to different situations.",
@@ -48,23 +46,17 @@ export const PROJECT_CASE_STUDIES: Record<
 
     highlights: [
       {
-        title:
-          "What I worked on",
-
+        title: "What I worked on",
         text:
           "Electrical schematic planning, physical assembly, wiring, programming, testing, and debugging.",
       },
       {
-        title:
-          "Skills used",
-
+        title: "Skills used",
         text:
           "Circuit planning, hardware assembly, embedded programming, sensor integration, debugging, and system testing.",
       },
       {
-        title:
-          "What I learned",
-
+        title: "What I learned",
         text:
           "How electrical design, hardware components, and software logic work together in an autonomous system.",
       },
@@ -82,20 +74,16 @@ export const PROJECT_CASE_STUDIES: Record<
   },
 
   podmanager: {
-    id:
-      "podmanager",
+    id: "podmanager",
 
-    title:
-      "PodManager.ai",
+    title: "PodManager.ai",
 
     type:
       "Production Internship · Fullstack Development",
 
-    role:
-      "Fullstack Developer Intern",
+    role: "Fullstack Developer Intern",
 
-    period:
-      "September 2025 – April 2026",
+    period: "September 2025 – April 2026",
 
     summary:
       "I worked as a fullstack intern on PodManager.ai, an AI-powered podcast platform. My work focused on media-editing features, publishing controls, and improving an existing production codebase.",
@@ -127,16 +115,12 @@ export const PROJECT_CASE_STUDIES: Record<
 
     highlights: [
       {
-        title:
-          "Main focus",
-
+        title: "Main focus",
         text:
           "Podcast editing: audio waveform, video track strip, music, sound effects, and publish controls.",
       },
       {
-        title:
-          "Impact",
-
+        title: "Impact",
         text:
           "Helped make editing and publishing podcast episodes more flexible and easier to navigate.",
       },
@@ -156,11 +140,9 @@ export const PROJECT_CASE_STUDIES: Record<
   },
 
   practicepal: {
-    id:
-      "practicepal",
+    id: "practicepal",
 
-    title:
-      "PracticePal",
+    title: "PracticePal",
 
     type:
       "Fullstack Web Application · Degree Project",
@@ -168,8 +150,7 @@ export const PROJECT_CASE_STUDIES: Record<
     role:
       "Creator & Fullstack Developer",
 
-    period:
-      "Degree Project",
+    period: "Degree Project",
 
     summary:
       "PracticePal is a calm music-practice planning and tracking platform designed to help musicians stay consistent without making the routine feel overwhelming. Users can set weekly targets, plan sessions, log practice quickly, review progress, and keep their goals visible in one place.",
@@ -200,23 +181,17 @@ export const PROJECT_CASE_STUDIES: Record<
 
     highlights: [
       {
-        title:
-          "Weekly clarity",
-
+        title: "Weekly clarity",
         text:
           "Goals, planned minutes, completed time, streaks, and the next activity stay visible so every session starts with direction.",
       },
       {
-        title:
-          "Fast logging",
-
+        title: "Fast logging",
         text:
           "Users can record what they practiced in under a minute without slowing down the session itself.",
       },
       {
-        title:
-          "Readable progress",
-
+        title: "Readable progress",
         text:
           "Charts and summaries show momentum without making the dashboard feel cluttered or overwhelming.",
       },
@@ -228,24 +203,132 @@ export const PROJECT_CASE_STUDIES: Record<
       "/projects/practicepal/image-2.png",
     ],
 
-    externalUrl: "https://practicepal-beige.vercel.app/",
-    externalLabel: "Visit PracticePal ↗",
+    externalUrl:
+      "https://practicepal-beige.vercel.app/",
 
-    githubUrl: "https://github.com/Julieanna97/practicepal",
-    githubLabel: "View GitHub repo ↗",
+    externalLabel:
+      "Visit PracticePal ↗",
+
+    githubUrl:
+      "https://github.com/Julieanna97/practicepal",
+
+    githubLabel:
+      "View GitHub repo ↗",
   },
 
+  "naile-ecommerce": {
+    id: "naile-ecommerce",
+
+    title: "Nailé E-commerce Store",
+
+    type:
+      "Individual School Project · Search API & Fullstack E-commerce",
+
+    role:
+      "Fullstack Developer",
+
+    period:
+      "School Project · Portfolio Upgrade",
+
+    summary:
+      "Nailé is a fullstack e-commerce application that began as an individual school assignment focused on Google Custom Search JSON API integration. The search flow used results from a selected external e-commerce website and matched them to products stored in my own shop, allowing visitors to continue to internal product pages. I later expanded the project with Stripe checkout, shipping calculations, worldwide delivery information, order management, and a responsive admin dashboard.",
+
+    overview: [
+      "This project began as an individual school assignment called Search API. The task was to extend an existing e-commerce application with an integration to Google's Custom Search JSON API.",
+      "Because a newly deployed shop may not immediately be indexed by Google, products and images from an existing e-commerce website could be saved in the shop's own database. A Google Programmable Search Engine was then restricted to that external website so its results matched products available in the shop.",
+      "I worked with logic that connected external Google search results to matching products stored in my own e-commerce database. This meant visitors could open an internal Nailé product page instead of being redirected to the external store.",
+      "The assignment also included migrating the local MySQL database to a cloud service and deploying the React client and Express API as separate applications.",
+      "After the school assignment, I redesigned and expanded the project into a more complete portfolio application with a branded storefront, product catalogue, shopping cart, Stripe checkout, worldwide delivery selection, shipping rules, order confirmation, and a read-only admin dashboard.",
+      "The current live portfolio version uses the application's own product API for catalogue search instead of depending on Google indexing or an external search provider.",
+    ],
+
+    technologies: [
+      "React",
+      "TypeScript",
+      "Vite",
+      "React Router",
+      "Axios",
+      "Google Custom Search JSON API",
+      "Google Programmable Search Engine",
+      "Node.js",
+      "Express",
+      "MySQL",
+      "Aiven",
+      "Stripe",
+      "REST API",
+      "Vercel",
+    ],
+
+    contributions: [
+      "Integrated Google Custom Search JSON API into an existing e-commerce client as part of an individual school assignment.",
+      "Configured a Google Programmable Search Engine to restrict results to a selected external e-commerce website.",
+      "Presented search results with product images, descriptive text, and navigation links.",
+      "Created matching logic that connected external search results to corresponding products stored in the shop's own database.",
+      "Migrated the MySQL database to Aiven so the application could access its data online.",
+      "Deployed the React frontend and Express backend separately on Vercel and configured production environment variables and CORS.",
+      "Connected the React frontend to a TypeScript, Express, and MySQL REST API for products, customers, orders, and order items.",
+      "Later replaced the externally dependent search experience with catalogue search powered by the application's own product API.",
+      "Integrated Stripe-hosted checkout and created an order-confirmation flow.",
+      "Implemented a 49 SEK shipping fee for orders below 499 SEK and free shipping for orders from 499 SEK.",
+      "Added worldwide country selection and customer delivery information to the checkout form.",
+      "Built a responsive read-only admin dashboard for reviewing orders, customers, products, inventory, collections, reviews, and analytics.",
+      "Added order summaries and detailed order views showing the product subtotal, shipping fee, payment status, and final total.",
+    ],
+
+    highlights: [
+      {
+        title:
+          "Google Search API integration",
+        text:
+          "The original school assignment used Google Custom Search results from a selected external shop and matched those results to products in the Nailé database.",
+      },
+      {
+        title:
+          "Fullstack cloud deployment",
+        text:
+          "The React client, Express API, and cloud-hosted MySQL database were deployed and configured as separate connected services.",
+      },
+      {
+        title:
+          "Expanded e-commerce experience",
+        text:
+          "The project was later developed into a complete shopping flow with Stripe checkout, shipping rules, order confirmation, and an administration dashboard.",
+      },
+    ],
+
+    images: [
+      "/projects/naile-ecommerce/cover.png",
+      "/projects/naile-ecommerce/image-1.png",
+      "/projects/naile-ecommerce/image-2.png",
+      "/projects/naile-ecommerce/image-3.png",
+    ],
+
+    externalUrl:
+      "https://naileshop.vercel.app/",
+
+    externalLabel:
+      "Visit Nailé store ↗",
+
+    githubUrl:
+      "https://github.com/Julieanna97/client",
+
+    githubLabel:
+      "View frontend repo ↗",
+  },
 
   "worldbite-market": {
     id: "worldbite-market",
 
     title: "WorldBite Market",
 
-    type: "WordPress / WooCommerce Project",
+    type:
+      "WordPress / WooCommerce Project",
 
-    role: "WordPress & PHP Developer",
+    role:
+      "WordPress & PHP Developer",
 
-    period: "Portfolio Project",
+    period:
+      "Portfolio Project",
 
     summary:
       "WorldBite Market is a custom WordPress and WooCommerce food marketplace built with PHP, MariaDB, phpMyAdmin, and Docker. I created a responsive theme, product catalogue, cart and checkout flow, and custom recipe collections.",
@@ -277,16 +360,22 @@ export const PROJECT_CASE_STUDIES: Record<
 
     highlights: [
       {
-        title: "Custom WordPress theme",
-        text: "Designed and built a responsive theme for a global food marketplace.",
+        title:
+          "Custom WordPress theme",
+        text:
+          "Designed and built a responsive theme for a global food marketplace.",
       },
       {
-        title: "WooCommerce flow",
-        text: "Added product browsing, cart, checkout, and marketplace-style shop pages.",
+        title:
+          "WooCommerce flow",
+        text:
+          "Added product browsing, cart, checkout, and marketplace-style shop pages.",
       },
       {
-        title: "Docker setup",
-        text: "Ran WordPress, MariaDB, and phpMyAdmin together in a local Docker environment.",
+        title:
+          "Docker setup",
+        text:
+          "Ran WordPress, MariaDB, and phpMyAdmin together in a local Docker environment.",
       },
     ],
 
@@ -296,11 +385,17 @@ export const PROJECT_CASE_STUDIES: Record<
       "/projects/worldbite-market/image-2.png",
     ],
 
-    externalUrl: "https://worldbitemarket.freedev.app/",
-    externalLabel: "Visit WorldBite Market ↗",
+    externalUrl:
+      "https://worldbitemarket.freedev.app/",
 
-    githubUrl: "https://github.com/Julieanna97/worldbite-market",
-    githubLabel: "View GitHub repo ↗",
+    externalLabel:
+      "Visit WorldBite Market ↗",
+
+    githubUrl:
+      "https://github.com/Julieanna97/worldbite-market",
+
+    githubLabel:
+      "View GitHub repo ↗",
   },
 
   asteroidwatch: {
@@ -308,11 +403,14 @@ export const PROJECT_CASE_STUDIES: Record<
 
     title: "AsteroidWatch",
 
-    type: "NASA API Dashboard · Vanilla JavaScript Project",
+    type:
+      "NASA API Dashboard · Vanilla JavaScript Project",
 
-    role: "Frontend Developer & API Integration",
+    role:
+      "Frontend Developer & API Integration",
 
-    period: "Portfolio Project",
+    period:
+      "Portfolio Project",
 
     summary:
       "AsteroidWatch is a polished NASA Near Earth Object dashboard built with HTML, CSS, and vanilla JavaScript. It lets users explore asteroid close approaches by date range or asteroid ID, then compare size, velocity, miss distance, and hazard status in a mission-log style interface.",
@@ -343,16 +441,22 @@ export const PROJECT_CASE_STUDIES: Record<
 
     highlights: [
       {
-        title: "NASA data search",
-        text: "Users can scan a date range or look up a specific asteroid ID through the NASA NeoWs API.",
+        title:
+          "NASA data search",
+        text:
+          "Users can scan a date range or look up a specific asteroid ID through the NASA NeoWs API.",
       },
       {
-        title: "Dashboard metrics",
-        text: "The UI summarizes total objects, hazardous objects, closest miss distance, and fastest velocity.",
+        title:
+          "Dashboard metrics",
+        text:
+          "The UI summarizes total objects, hazardous objects, closest miss distance, and fastest velocity.",
       },
       {
-        title: "Mission-log UI",
-        text: "The results are presented in a focused, space-themed interface with clear status labels and detail views.",
+        title:
+          "Mission-log UI",
+        text:
+          "The results are presented in a focused, space-themed interface with clear status labels and detail views.",
       },
     ],
 
@@ -362,23 +466,32 @@ export const PROJECT_CASE_STUDIES: Record<
       "/projects/asteroidwatch/image-2.png",
     ],
 
-    externalUrl: "https://asteroidwatch.vercel.app/",
-    externalLabel: "Visit AsteroidWatch ↗",
+    externalUrl:
+      "https://asteroidwatch.vercel.app/",
 
-    githubUrl: "https://github.com/Julieanna97/NASA-Near-Earth-Objects-API-Project",
-    githubLabel: "View GitHub repo ↗",
+    externalLabel:
+      "Visit AsteroidWatch ↗",
+
+    githubUrl:
+      "https://github.com/Julieanna97/NASA-Near-Earth-Objects-API-Project",
+
+    githubLabel:
+      "View GitHub repo ↗",
   },
 
-    "ecommerce-rest-api": {
+  "ecommerce-rest-api": {
     id: "ecommerce-rest-api",
 
     title: "E-commerce REST API",
 
-    type: "Backend API · TypeScript / MySQL Project",
+    type:
+      "Backend API · TypeScript / MySQL Project",
 
-    role: "Backend Developer",
+    role:
+      "Backend Developer",
 
-    period: "Portfolio Project",
+    period:
+      "Portfolio Project",
 
     summary:
       "A backend API for an e-commerce system built with TypeScript, Node.js, Express, and MySQL. The API handles products, customers, orders, order items, authentication, and Stripe checkout session routes.",
@@ -411,16 +524,22 @@ export const PROJECT_CASE_STUDIES: Record<
 
     highlights: [
       {
-        title: "Live backend API",
-        text: "The API can be tested online through routes such as /products, /customers, and /orders.",
+        title:
+          "Live backend API",
+        text:
+          "The API can be tested online through routes such as /products, /customers, and /orders.",
       },
       {
-        title: "Database-backed routes",
-        text: "Product, customer, order, and order item data are stored and retrieved from MySQL.",
+        title:
+          "Database-backed routes",
+        text:
+          "Product, customer, order, and order item data are stored and retrieved from MySQL.",
       },
       {
-        title: "Deployment upgrade",
-        text: "The project was moved from local-only XAMPP testing to an online setup with Aiven MySQL and Vercel.",
+        title:
+          "Deployment upgrade",
+        text:
+          "The project was moved from local-only XAMPP testing to an online setup with Aiven MySQL and Vercel.",
       },
     ],
 
@@ -430,23 +549,33 @@ export const PROJECT_CASE_STUDIES: Record<
       "/projects/ecommerce-rest-api/image-2.png",
     ],
 
-    externalUrl: "https://julie-ecommerce-api.vercel.app/",
-    externalLabel: "Open live API ↗",
+    externalUrl:
+      "https://julie-ecommerce-api.vercel.app/",
 
-    githubUrl: "https://github.com/Julieanna97/ecommerce-api-new",
-    githubLabel: "View GitHub repo ↗",
+    externalLabel:
+      "Open live API ↗",
+
+    githubUrl:
+      "https://github.com/Julieanna97/ecommerce-api-new",
+
+    githubLabel:
+      "View GitHub repo ↗",
   },
 
-    bookshop: {
+  bookshop: {
     id: "bookshop",
 
-    title: "Boklusen Bookshop",
+    title:
+      "Boklusen Bookshop",
 
-    type: "Group Project · Frontend/API Integration",
+    type:
+      "Group Project · Frontend/API Integration",
 
-    role: "Frontend & API Integration Developer",
+    role:
+      "Frontend & API Integration Developer",
 
-    period: "School Group Project",
+    period:
+      "School Group Project",
 
     summary:
       "A group project for an online bookshop built with HTML, CSS, JavaScript, Node.js, Express, and MongoDB. My main contribution was connecting the frontend to the backend API, fetching book data, and displaying the books dynamically on the site.",
@@ -479,16 +608,22 @@ export const PROJECT_CASE_STUDIES: Record<
 
     highlights: [
       {
-        title: "API-connected book display",
-        text: "The book list is loaded dynamically from the backend API instead of being hardcoded in the frontend.",
+        title:
+          "API-connected book display",
+        text:
+          "The book list is loaded dynamically from the backend API instead of being hardcoded in the frontend.",
       },
       {
-        title: "Cart and demo checkout",
-        text: "Users can add books to the cart, review their order, and complete a demo checkout flow.",
+        title:
+          "Cart and demo checkout",
+        text:
+          "Users can add books to the cart, review their order, and complete a demo checkout flow.",
       },
       {
-        title: "Group project role",
-        text: "My main contribution was frontend/API integration and making sure the book data displayed correctly.",
+        title:
+          "Group project role",
+        text:
+          "My main contribution was frontend/API integration and making sure the book data displayed correctly.",
       },
     ],
 
@@ -498,23 +633,33 @@ export const PROJECT_CASE_STUDIES: Record<
       "/projects/bookshop/image-2.png",
     ],
 
-    externalUrl: "https://bookshop-frontend-dun.vercel.app/",
-    externalLabel: "Visit live site ↗",
+    externalUrl:
+      "https://bookshop-frontend-dun.vercel.app/",
 
-    githubUrl: "https://github.com/Julieanna97/bookshop-frontend",
-    githubLabel: "View GitHub repo ↗",
+    externalLabel:
+      "Visit live site ↗",
+
+    githubUrl:
+      "https://github.com/Julieanna97/bookshop-frontend",
+
+    githubLabel:
+      "View GitHub repo ↗",
   },
 
   "restaurant-booking": {
     id: "restaurant-booking",
 
-    title: "Seoulful Flavor Restaurant Booking",
+    title:
+      "Seoulful Flavor Restaurant Booking",
 
-    type: "Group Project · Booking System",
+    type:
+      "Group Project · Booking System",
 
-    role: "Frontend, Contact Page & Booking API Logic",
+    role:
+      "Frontend, Contact Page & Booking API Logic",
 
-    period: "School Group Project",
+    period:
+      "School Group Project",
 
     summary:
       "A group restaurant booking project built with React, TypeScript, and Vite. My main contributions were creating the contact page and working on the booking system logic, including checking existing bookings from the API, showing the correct remaining availability for each selected date and time, and sending confirmed bookings back to the API so the booking data could update.",
@@ -556,24 +701,34 @@ export const PROJECT_CASE_STUDIES: Record<
 
     highlights: [
       {
-        title: "Booking availability logic",
-        text: "The booking system checks existing reservations from the API and shows the real remaining availability for each selected date and time.",
+        title:
+          "Booking availability logic",
+        text:
+          "The booking system checks existing reservations from the API and shows the real remaining availability for each selected date and time.",
       },
       {
-        title: "Create booking request",
-        text: "When a reservation is confirmed, the app sends the booking request back to the API so the booking is stored and future availability checks reflect the updated data.",
+        title:
+          "Create booking request",
+        text:
+          "When a reservation is confirmed, the app sends the booking request back to the API so the booking is stored and future availability checks reflect the updated data.",
       },
       {
-        title: "Real remaining seats",
-        text: "The app calculates availability from existing booking data, so users see the actual remaining amount instead of a static number.",
+        title:
+          "Real remaining seats",
+        text:
+          "The app calculates availability from existing booking data, so users see the actual remaining amount instead of a static number.",
       },
       {
-        title: "Contact page",
-        text: "I created the contact page as part of the restaurant website experience.",
+        title:
+          "Contact page",
+        text:
+          "I created the contact page as part of the restaurant website experience.",
       },
       {
-        title: "Admin demo",
-        text: "The project includes a demo admin view where bookings can be reviewed. Demo password: demo-admin.",
+        title:
+          "Admin demo",
+        text:
+          "The project includes a demo admin view where bookings can be reviewed. Demo password: demo-admin.",
       },
     ],
 
@@ -583,11 +738,17 @@ export const PROJECT_CASE_STUDIES: Record<
       "/projects/restaurant/image-2.png",
     ],
 
-    externalUrl: "https://seoulful-flavor-booking.vercel.app/",
-    externalLabel: "Visit live site ↗",
+    externalUrl:
+      "https://seoulful-flavor-booking.vercel.app/",
 
-    githubUrl: "https://github.com/Julieanna97/seoulful-flavor-booking",
-    githubLabel: "View GitHub repo ↗",
+    externalLabel:
+      "Visit live site ↗",
+
+    githubUrl:
+      "https://github.com/Julieanna97/seoulful-flavor-booking",
+
+    githubLabel:
+      "View GitHub repo ↗",
   },
 };
 
@@ -745,7 +906,9 @@ export const ABOUT_SKILL_GROUPS = [
     ],
   },
   {
-    title: "Databases",
+    title:
+      "Databases",
+
     items: [
       "SQL",
       "MySQL",
@@ -757,7 +920,9 @@ export const ABOUT_SKILL_GROUPS = [
     ],
   },
   {
-    title: "Tools & Platforms",
+    title:
+      "Tools & Platforms",
+
     items: [
       "Git",
       "Jira",
