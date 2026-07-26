@@ -8,6 +8,7 @@ import { BlendFunction } from "postprocessing";
 import type { PerspectiveCamera } from "three";
 import { MOUSE, TOUCH, Vector3 } from "three";
 import gsap from "gsap";
+import NavigationSign from "./NavigationSign";
 
 import MysteriousAdventureModel from "../../../models/MysteriousAdventureModel";
 import type { PortfolioSection, ProjectId, SectionId } from "../types";
@@ -1434,6 +1435,12 @@ export default function AdventureSceneContent({
         Render the portfolio introduction directly on the rooftop concrete.
       */}
       <GroundGraffiti />
+
+      <NavigationSign
+        position={[5.35, 0.03, 2]}
+        scale={1.25}
+        message={"CLICK A MARKER\nDRAG TO MOVE\nSCROLL TO ZOOM"}
+      />
 
       <group
         onClick={
