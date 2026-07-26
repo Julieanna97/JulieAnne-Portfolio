@@ -459,7 +459,6 @@ export default function NavigationSign({
         side={1}
         message={message}
       />
-
       <SignFace
         side={-1}
         message={message}
