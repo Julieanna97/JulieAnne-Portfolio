@@ -8,7 +8,8 @@ import { BlendFunction } from "postprocessing";
 import type { PerspectiveCamera } from "three";
 import { MOUSE, TOUCH, Vector3 } from "three";
 import gsap from "gsap";
-import NavigationSign from "./NavigationSign";
+import SakuraAtmosphere from "./SakuraAtmosphere";
+import ExistingStreetSignOverlay from "./ExistingStreetSignOverlay";
 
 import MysteriousAdventureModel from "../../../models/MysteriousAdventureModel";
 import type { PortfolioSection, ProjectId, SectionId } from "../types";
@@ -19,11 +20,11 @@ import {
   HOME_CAMERA_DESKTOP,
   HOME_CAMERA_MOBILE,
   HOME_TARGET,
-  INTRO_CAMERA,
+  INTRO_CAMERA_DESKTOP,
+  INTRO_CAMERA_MOBILE,
   INTRO_STREET_CAMERA_DESKTOP,
   INTRO_STREET_CAMERA_MOBILE,
   INTRO_STREET_TARGET,
-  INTRO_TARGET,
   INTRO_ZOOM_DURATION,
   PROJECTS_CAMERA_MOBILE,
   SECTIONS,
@@ -86,6 +87,18 @@ export default function AdventureSceneContent({
   const readyRef =
     useRef(
       false
+    );
+
+  /*
+    Tracks whether a section was previously open. This lets every close path
+    return the camera to the exact original whole-building view.
+  */
+  const previousActiveIdRef =
+    useRef<
+      | SectionId
+      | null
+    >(
+      activeId
     );
 
   const introTimelineRef =
@@ -583,360 +596,6 @@ export default function AdventureSceneContent({
                     nextTarget
                   );
 
-                  setMoving(
-                    false
-                  );
-                },
-            }
-          );
-
-        timeline.to(
-          camera.position,
-          {
-            x:
-              nextCamera[
-                0
-              ],
-
-            y:
-              nextCamera[
-                1
-              ],
-
-            z:
-              nextCamera[
-                2
-              ],
-
-            duration,
-
-            ease:
-              "power3.inOut",
-          },
-          0
-        );
-
-        timeline.to(
-          controls.target,
-          {
-            x:
-              nextTarget[
-                0
-              ],
-
-            y:
-              nextTarget[
-                1
-              ],
-
-            z:
-              nextTarget[
-                2
-              ],
-
-            duration,
-
-            ease:
-              "power3.inOut",
-          },
-          0
-        );
-      },
-      [
-        camera,
-        lockCamera,
-        stopCameraTweens,
-      ]
-    );
-
-  /*
-    Closing a popup only hides the text card.
-
-    The camera stays exactly where it is.
-    There is no zoom-out, rotation, or return to the full-model view.
-  */
-  const closeAnnotation =
-    useCallback(
-      () => {
-        onActiveChange(
-          null
-        );
-      },
-      [
-        onActiveChange,
-      ]
-    );
-
-  /*
-    One continuous sideways movement for About Me.
-  */
-  const moveToAboutDoor =
-    useCallback(
-      (
-        section:
-          PortfolioSection
-      ) => {
-        const controls =
-          controlsRef.current;
-
-        if (
-          !controls
-        ) {
-          return;
-        }
-
-        const finalCamera =
-          compact
-            ? ABOUT_CAMERA_MOBILE
-            : section.camera;
-
-        stopCameraTweens();
-
-        setMoving(
-          true
-        );
-
-        const timeline =
-          gsap.timeline(
-            {
-              onUpdate:
-                () => {
-                  controls.update();
-                },
-
-              onComplete:
-                () => {
-                  lockCamera(
-                    finalCamera,
-                    section.focus
-                  );
-
-                  setMoving(
-                    false
-                  );
-                },
-            }
-          );
-
-        timeline.to(
-          camera.position,
-          {
-            x:
-              finalCamera[
-                0
-              ],
-
-            y:
-              finalCamera[
-                1
-              ],
-
-            z:
-              finalCamera[
-                2
-              ],
-
-            duration:
-              1.65,
-
-            ease:
-              "power3.inOut",
-          },
-          0
-        );
-
-        timeline.to(
-          controls.target,
-          {
-            x:
-              section.focus[
-                0
-              ],
-
-            y:
-              section.focus[
-                1
-              ],
-
-            z:
-              section.focus[
-                2
-              ],
-
-            duration:
-              1.65,
-
-            ease:
-              "power3.inOut",
-          },
-          0
-        );
-      },
-      [
-        camera,
-        compact,
-        lockCamera,
-        stopCameraTweens,
-      ]
-    );
-
-  /*
-    One continuous low storefront movement for Projects.
-  */
-  const moveToProjectsStorefront =
-    useCallback(
-      (
-        section:
-          PortfolioSection
-      ) => {
-        const controls =
-          controlsRef.current;
-
-        if (
-          !controls
-        ) {
-          return;
-        }
-
-        const finalCamera =
-          compact
-            ? PROJECTS_CAMERA_MOBILE
-            : section.camera;
-
-        stopCameraTweens();
-
-        setMoving(
-          true
-        );
-
-        const timeline =
-          gsap.timeline(
-            {
-              onUpdate:
-                () => {
-                  controls.update();
-                },
-
-              onComplete:
-                () => {
-                  lockCamera(
-                    finalCamera,
-                    section.focus
-                  );
-
-                  setMoving(
-                    false
-                  );
-                },
-            }
-          );
-
-        timeline.to(
-          camera.position,
-          {
-            x:
-              finalCamera[
-                0
-              ],
-
-            y:
-              finalCamera[
-                1
-              ],
-
-            z:
-              finalCamera[
-                2
-              ],
-
-            duration:
-              1.55,
-
-            ease:
-              "power3.inOut",
-          },
-          0
-        );
-
-        timeline.to(
-          controls.target,
-          {
-            x:
-              section.focus[
-                0
-              ],
-
-            y:
-              section.focus[
-                1
-              ],
-
-            z:
-              section.focus[
-                2
-              ],
-
-            duration:
-              1.55,
-
-            ease:
-              "power3.inOut",
-          },
-          0
-        );
-      },
-      [
-        camera,
-        compact,
-        lockCamera,
-        stopCameraTweens,
-      ]
-    );
-
-  /*
-    Direct Credits rooftop movement.
-  */
-  const moveToCreditsRooftop =
-    useCallback(
-      (
-        section:
-          PortfolioSection
-      ) => {
-        const controls =
-          controlsRef.current;
-
-        if (
-          !controls
-        ) {
-          return;
-        }
-
-        const finalCamera =
-          compact
-            ? CREDITS_CAMERA_MOBILE
-            : section.camera;
-
-        stopCameraTweens();
-
-        setMoving(
-          true
-        );
-
-        const timeline =
-          gsap.timeline(
-            {
-              onUpdate:
-                () => {
-                  controls.update();
-                },
-
-              onComplete:
-                () => {
-                  lockCamera(
-                    finalCamera,
-                    section.focus
-                  );
-
                   introTimelineRef.current =
                     null;
 
@@ -964,22 +623,21 @@ export default function AdventureSceneContent({
           camera.position,
           {
             x:
-              finalCamera[
+              nextCamera[
                 0
               ],
 
             y:
-              finalCamera[
+              nextCamera[
                 1
               ],
 
             z:
-              finalCamera[
+              nextCamera[
                 2
               ],
 
-            duration:
-              1.35,
+            duration,
 
             ease:
               "power3.inOut",
@@ -991,22 +649,21 @@ export default function AdventureSceneContent({
           controls.target,
           {
             x:
-              section.focus[
+              nextTarget[
                 0
               ],
 
             y:
-              section.focus[
+              nextTarget[
                 1
               ],
 
             z:
-              section.focus[
+              nextTarget[
                 2
               ],
 
-            duration:
-              1.35,
+            duration,
 
             ease:
               "power3.inOut",
@@ -1016,9 +673,152 @@ export default function AdventureSceneContent({
       },
       [
         camera,
-        compact,
         lockCamera,
         stopCameraTweens,
+      ]
+    );
+
+  /*
+    Smoothly restore the exact camera position and target from sceneConfig.
+  */
+  const returnToHome =
+    useCallback(
+      () => {
+        moveCamera(
+          homeCamera,
+          HOME_TARGET,
+          1.15
+        );
+      },
+      [
+        homeCamera,
+        moveCamera,
+      ]
+    );
+
+  /*
+    The X button only closes the selected card. The activeId effect below
+    performs the zoom-out so this also works for any other external close path.
+  */
+  const closeAnnotation =
+    useCallback(
+      () => {
+        if (
+          moving
+        ) {
+          return;
+        }
+
+        onActiveChange(
+          null
+        );
+      },
+      [
+        moving,
+        onActiveChange,
+      ]
+    );
+
+  /*
+    Whenever a section changes from open to closed, return to the original
+    whole-building view instead of leaving OrbitControls at the section target.
+  */
+  useEffect(() => {
+    const previousActiveId =
+      previousActiveIdRef.current;
+
+    previousActiveIdRef.current =
+      activeId;
+
+    const sectionWasClosed =
+      previousActiveId !== null &&
+      activeId === null;
+
+    if (
+      sectionWasClosed
+    ) {
+      returnToHome();
+    }
+  }, [
+    activeId,
+    returnToHome,
+  ]);
+
+  /*
+    One continuous sideways movement for About Me.
+  */
+  const moveToAboutDoor =
+    useCallback(
+      (
+        section:
+          PortfolioSection
+      ) => {
+        const finalCamera =
+          compact
+            ? ABOUT_CAMERA_MOBILE
+            : section.camera;
+
+        moveCamera(
+          finalCamera,
+          section.focus,
+          1.65
+        );
+      },
+      [
+        compact,
+        moveCamera,
+      ]
+    );
+
+  /*
+    One continuous low storefront movement for Projects.
+  */
+  const moveToProjectsStorefront =
+    useCallback(
+      (
+        section:
+          PortfolioSection
+      ) => {
+        const finalCamera =
+          compact
+            ? PROJECTS_CAMERA_MOBILE
+            : section.camera;
+
+        moveCamera(
+          finalCamera,
+          section.focus,
+          1.55
+        );
+      },
+      [
+        compact,
+        moveCamera,
+      ]
+    );
+
+  /*
+    Direct Credits rooftop movement.
+  */
+  const moveToCreditsRooftop =
+    useCallback(
+      (
+        section:
+          PortfolioSection
+      ) => {
+        const finalCamera =
+          compact
+            ? CREDITS_CAMERA_MOBILE
+            : section.camera;
+
+        moveCamera(
+          finalCamera,
+          section.focus,
+          1.35
+        );
+      },
+      [
+        compact,
+        moveCamera,
       ]
     );
 
@@ -1146,125 +946,226 @@ export default function AdventureSceneContent({
     There is no midpoint, overlap, pause, or automatic zoom-out.
   */
   useEffect(() => {
-    const handleIntro =
-      () => {
-        const controls =
-          controlsRef.current;
+    const handleIntro = () => {
+      const controls =
+        controlsRef.current;
 
-        if (
-          !controls
-        ) {
-          return;
-        }
+      if (!controls) {
+        return;
+      }
 
-        const closeupCamera =
-          compact
-            ? INTRO_STREET_CAMERA_MOBILE
-            : INTRO_STREET_CAMERA_DESKTOP;
+      const startCamera =
+        compact
+          ? INTRO_CAMERA_MOBILE
+          : INTRO_CAMERA_DESKTOP;
 
-        stopCameraTweens();
+      const finalCamera =
+        compact
+          ? INTRO_STREET_CAMERA_MOBILE
+          : INTRO_STREET_CAMERA_DESKTOP;
 
-        setMoving(
-          true
+      stopCameraTweens();
+      setMoving(true);
+
+      /*
+        One stable pivot gives a proper orbit around the building.
+      */
+      const orbitTarget =
+        new Vector3(
+          INTRO_STREET_TARGET[0],
+          INTRO_STREET_TARGET[1],
+          INTRO_STREET_TARGET[2]
         );
 
-        lockCamera(
-          INTRO_CAMERA,
-          INTRO_TARGET
-        );
+      const startOffset =
+        new Vector3(
+          startCamera[0],
+          startCamera[1],
+          startCamera[2]
+        ).sub(orbitTarget);
 
-        const timeline =
-          gsap.timeline(
-            {
-              onUpdate:
-                () => {
-                  controls.update();
-                },
+      const finalOffset =
+        new Vector3(
+          finalCamera[0],
+          finalCamera[1],
+          finalCamera[2]
+        ).sub(orbitTarget);
 
-              onComplete:
-                () => {
-                  lockCamera(
-                    closeupCamera,
-                    INTRO_STREET_TARGET
-                  );
+      const orbitState = {
+        angle:
+          Math.atan2(
+            startOffset.x,
+            startOffset.z
+          ),
 
-                  introTimelineRef.current =
-                    null;
+        horizontalRadius:
+          Math.hypot(
+            startOffset.x,
+            startOffset.z
+          ),
 
-                  setMoving(
-                    false
-                  );
-                },
-
-              onInterrupt:
-                () => {
-                  introTimelineRef.current =
-                    null;
-
-                  setMoving(
-                    false
-                  );
-                },
-            }
-          );
-
-        introTimelineRef.current =
-          timeline;
-
-        timeline.to(
-          camera.position,
-          {
-            x:
-              closeupCamera[
-                0
-              ],
-
-            y:
-              closeupCamera[
-                1
-              ],
-
-            z:
-              closeupCamera[
-                2
-              ],
-
-            duration:
-              INTRO_ZOOM_DURATION,
-
-            ease:
-              "power2.out",
-          },
-          0
-        );
-
-        timeline.to(
-          controls.target,
-          {
-            x:
-              INTRO_STREET_TARGET[
-                0
-              ],
-
-            y:
-              INTRO_STREET_TARGET[
-                1
-              ],
-
-            z:
-              INTRO_STREET_TARGET[
-                2
-              ],
-
-            duration:
-              INTRO_ZOOM_DURATION,
-
-            ease:
-              "power2.out",
-          },
-          0
-        );
+        height:
+          startCamera[1],
       };
+
+      let finalAngle =
+        Math.atan2(
+          finalOffset.x,
+          finalOffset.z
+        );
+
+      /*
+        Force the camera to rotate forward around the building,
+        rather than taking the shorter route backward.
+      */
+      while (
+        finalAngle <=
+        orbitState.angle
+      ) {
+        finalAngle +=
+          Math.PI * 2;
+      }
+
+      const finalHorizontalRadius =
+        Math.hypot(
+          finalOffset.x,
+          finalOffset.z
+        );
+
+      /*
+        Save approximately 11 degrees for the finishing movement.
+        This gives the animation an extra rotation near the end.
+      */
+      const finishingRotation =
+        (Math.PI * 11) / 180;
+
+      const mainRotationEnd =
+        finalAngle -
+        finishingRotation;
+
+      const applyCameraPosition = () => {
+        camera.position.set(
+          orbitTarget.x +
+            Math.sin(
+              orbitState.angle
+            ) *
+              orbitState.horizontalRadius,
+
+          orbitState.height,
+
+          orbitTarget.z +
+            Math.cos(
+              orbitState.angle
+            ) *
+              orbitState.horizontalRadius
+        );
+
+        controls.target.copy(
+          orbitTarget
+        );
+
+        controls.update();
+      };
+
+      /*
+        Begin from the higher, closer camera.
+      */
+      lockCamera(
+        startCamera,
+        INTRO_STREET_TARGET
+      );
+
+      const timeline =
+        gsap.timeline({
+          onComplete: () => {
+            lockCamera(
+              finalCamera,
+              INTRO_STREET_TARGET
+            );
+
+            introTimelineRef.current =
+              null;
+
+            setMoving(false);
+          },
+
+          onInterrupt: () => {
+            introTimelineRef.current =
+              null;
+
+            setMoving(false);
+          },
+        });
+
+      introTimelineRef.current =
+        timeline;
+
+      /*
+        Main movement:
+        - rotate around the model,
+        - zoom outward,
+        - descend from the higher opening angle.
+      */
+      timeline.to(
+        orbitState,
+        {
+          angle:
+            mainRotationEnd,
+
+          horizontalRadius:
+            finalHorizontalRadius *
+            0.98,
+
+          /*
+            Stop slightly above the final camera height.
+          */
+          height:
+            finalCamera[1] +
+            0.65,
+
+          duration:
+            INTRO_ZOOM_DURATION *
+            0.76,
+
+          ease:
+            "power1.inOut",
+
+          onUpdate:
+            applyCameraPosition,
+        },
+        0
+      );
+
+      /*
+        Finishing movement:
+        - rotate a little farther,
+        - move slightly downward,
+        - reach the exact final zoom distance.
+      */
+      timeline.to(
+        orbitState,
+        {
+          angle:
+            finalAngle,
+
+          horizontalRadius:
+            finalHorizontalRadius,
+
+          height:
+            finalCamera[1],
+
+          duration:
+            INTRO_ZOOM_DURATION *
+            0.24,
+
+          ease:
+            "power1.out",
+
+          onUpdate:
+            applyCameraPosition,
+        }
+      );
+    };
 
     window.addEventListener(
       "adventure:intro",
@@ -1436,11 +1337,9 @@ export default function AdventureSceneContent({
       */}
       <GroundGraffiti />
 
-      <NavigationSign
-        position={[5.35, 0.03, 2]}
-        scale={1.25}
-        message={"CLICK A MARKER\nDRAG TO MOVE\nSCROLL TO ZOOM"}
-      />
+      <ExistingStreetSignOverlay />
+
+      <SakuraAtmosphere />
 
       <group
         onClick={
@@ -1713,73 +1612,83 @@ export default function AdventureSceneContent({
       </EffectComposer>
 
       <OrbitControls
-        ref={
-          controlsRef
-        }
+        ref={controlsRef}
         makeDefault
+
+        /*
+          Lock all manual movement while a section is open or while a camera
+          transition is running. The X button therefore performs only the
+          controlled zoom-out to the original home view.
+        */
         enabled={
-          !moving
+          !moving &&
+          activeId === null
         }
-        enablePan
-        screenSpacePanning
-        enableZoom
+
+        enablePan={false}
         enableRotate
+        enableZoom
+
         mouseButtons={{
           LEFT:
-            MOUSE.PAN,
+            MOUSE.ROTATE,
 
           MIDDLE:
             MOUSE.DOLLY,
 
+          /*
+            Panning is disabled, so right drag does nothing.
+          */
           RIGHT:
-            MOUSE.ROTATE,
+            MOUSE.PAN,
         }}
-        minDistance={
-          compact
-            ? 8.5
-            : 7.2
-        }
-        maxDistance={
-          compact
-            ? 42
-            : 34
-        }
-        minPolarAngle={
-          Math.PI /
-          7
-        }
-        maxPolarAngle={
-          Math.PI /
-          2.05
-        }
-        zoomSpeed={
-          compact
-            ? 0.9
-            : 0.5
-        }
-        rotateSpeed={
-          compact
-            ? 0.38
-            : 0.48
-        }
-        panSpeed={
-          compact
-            ? 0.72
-            : 0.58
-        }
+
         touches={{
           ONE:
-            TOUCH.PAN,
+            TOUCH.ROTATE,
 
           TWO:
             TOUCH.DOLLY_ROTATE,
         }}
+
+        minDistance={
+          compact
+            ? 8.5
+            : 7
+        }
+
+        maxDistance={
+          compact
+            ? 48
+            : 40
+        }
+
+        minPolarAngle={
+          Math.PI / 7
+        }
+
+        maxPolarAngle={
+          Math.PI / 2.02
+        }
+
+        zoomSpeed={
+          compact
+            ? 0.95
+            : 0.72
+        }
+
+        rotateSpeed={
+          compact
+            ? 0.58
+            : 0.72
+        }
+
         enableDamping={
-          !moving
+          !moving &&
+          activeId === null
         }
-        dampingFactor={
-          0.08
-        }
+
+        dampingFactor={0.075}
       />
     </>
   );

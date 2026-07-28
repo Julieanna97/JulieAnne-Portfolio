@@ -1,77 +1,61 @@
 import { Text } from "@react-three/drei";
-import NavigationSign from "./NavigationSign";
 
 export default function GroundGraffiti() {
   const name = "JULIE ANNE\nCANTILLEP";
 
   return (
     <group position={[9, 0, -2.5]}>
-      {/* Upright navigation sign positioned near the portfolio title. */}
-      <NavigationSign
-        position={[-0.35, 0.025, -2.3]}
-        rotation={[0, -Math.PI / 7, 0]}
-        scale={1.2}
-        message={"CLICK &\nDRAG"}
-      />
-
-      {/* Text lying flat on the ground. */}
       <group
-        position={[0, 0.045, 0]}
+        position={[0, 0.04, 0]}
         rotation={[-Math.PI / 2, 0, Math.PI / 2]}
       >
+        {/* Black shadow */}
         <Text
-          position={[0.065, -0.055, 0.004]}
-          fontSize={0.7}
+          position={[0.08, -0.08, 0.006]}
+          fontSize={0.72}
           maxWidth={8}
           lineHeight={0.9}
           letterSpacing={-0.045}
           anchorX="center"
           anchorY="middle"
-          color="#ff609f"
-          fillOpacity={0.3}
-        >
-          {name}
-        </Text>
-
-        <Text
-          position={[0, 0.06, 0.012]}
-          fontSize={0.7}
-          maxWidth={8}
-          lineHeight={0.9}
-          letterSpacing={-0.045}
-          anchorX="center"
-          anchorY="middle"
-          color="#f7f1ed"
-          outlineWidth={0.018}
-          outlineColor="#260d18"
-          outlineOpacity={0.68}
+          color="#000000"
           fillOpacity={0.9}
         >
           {name}
         </Text>
 
-        <mesh position={[0, -1.02, 0.008]}>
-          <planeGeometry args={[4.6, 0.055]} />
-
-          <meshBasicMaterial
-            color="#ff79ad"
-            transparent
-            opacity={0.48}
-          />
-        </mesh>
-
+        {/* Main name */}
         <Text
-          position={[0, -1.26, 0.012]}
-          fontSize={0.17}
+          position={[0, 0.02, 0.012]}
+          fontSize={0.72}
           maxWidth={8}
-          lineHeight={1}
-          letterSpacing={0.18}
+          lineHeight={0.9}
+          letterSpacing={-0.045}
           anchorX="center"
           anchorY="middle"
-          color="#f2d7ff"
-          fillOpacity={0.82}
+          color="#fff8ff"
+          outlineWidth={0.012}
+          outlineColor="#31101f"
+          outlineOpacity={0.55}
+          fillOpacity={0.98}
         >
-          FULLSTACK DEVELOPER
+          {name}
+        </Text>
+
+        {/* Subtitle underneath */}
+        <Text
+          position={[0, -1.38, 0.012]}
+          fontSize={0.2}
+          maxWidth={8}
+          lineHeight={1.35}
+          letterSpacing={0.14}
+          anchorX="center"
+          anchorY="middle"
+          textAlign="center"
+          color="#f3ebff"
+          fillOpacity={0.94}
+        >
+          {`FULLSTACK DEVELOPER\nEMBEDDED SOFTWARE DEVELOPER\nAI DATA SPECIALIST\n3D WEB`}
         </Text>
       </group>
     </group>

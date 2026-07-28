@@ -11,6 +11,7 @@ import AdventureSceneContent from "./scene/AdventureSceneContent";
 import AnnotationCard from "./annotations/AnnotationCard";
 import SectionDetailModal from "./modals/SectionDetailModal";
 import ProjectCaseStudyModal from "./modals/ProjectCaseStudyModal";
+import SakuraThemeStyles from "./SakuraThemeStyles";
 
 export type HeroSceneProps = {
   onSceneReady?:
@@ -1109,6 +1110,8 @@ export default function HeroScene({
           }
         }
       `}</style>
+
+      <SakuraThemeStyles />
     </section>
   );
 }

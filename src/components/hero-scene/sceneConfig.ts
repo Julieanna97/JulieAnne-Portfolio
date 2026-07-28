@@ -1,109 +1,149 @@
 import type { PortfolioSection } from "./types";
 
+/*
+  Keep this disabled when you are not positioning lights or meshes.
+  This removes the cyan debugging spheres.
+*/
 export const ENABLE_LIGHT_DEBUGGER =
-  true;
+  false;
 
 /* -------------------------------------------------------------------------- */
-/* Camera positions                                                           */
+/* Main whole-building camera                                                 */
 /* -------------------------------------------------------------------------- */
 
+/*
+  Final desktop position after the intro.
+
+  This is closer to the building than the previous camera position,
+  while still leaving enough room to see the roof and floor text.
+*/
 export const HOME_CAMERA_DESKTOP: [
   number,
   number,
   number,
 ] = [
-  19.4,
-  10.45,
-  24.6,
+  20.6,
+  9.6,
+  16.8,
 ];
 
+/*
+  Mobile needs a little more distance because the viewport is narrower.
+*/
 export const HOME_CAMERA_MOBILE: [
   number,
   number,
   number,
 ] = [
-  24.8,
-  13.8,
-  31.4,
+  26.2,
+  12.7,
+  21.4,
 ];
 
+/*
+  OrbitControls rotates around this position.
+
+  The Y value keeps the pivot near the vertical center of the
+  complete building rather than near the street.
+*/
 export const HOME_TARGET: [
   number,
   number,
   number,
 ] = [
   0,
-  4.18,
+  5.7,
   0,
 ];
 
+/* -------------------------------------------------------------------------- */
+/* Intro camera                                                               */
+/* -------------------------------------------------------------------------- */
+
 /*
-  Initial wide shot shown when the intro starts.
+  The intro begins closer, higher, and on the opposite side.
+
+  The custom intro animation should rotate around the building,
+  descend slightly, and zoom outward toward the final home camera.
 */
-export const INTRO_CAMERA: [
+export const INTRO_CAMERA_DESKTOP: [
   number,
   number,
   number,
 ] = [
-  -25,
-  17.5,
-  29,
+  -13.8,
+  15.8,
+  4.6,
 ];
 
+export const INTRO_CAMERA_MOBILE: [
+  number,
+  number,
+  number,
+] = [
+  -17.4,
+  19.2,
+  5.8,
+];
+
+/*
+  Kept for compatibility with any remaining code that imports
+  INTRO_TARGET.
+*/
 export const INTRO_TARGET: [
   number,
   number,
   number,
 ] = [
   0,
-  5.2,
+  5.7,
   0,
 ];
 
 /*
-  Final intro view.
-
-  The camera moves directly here without an intermediate waypoint.
-  It remains here after the intro finishes.
+  The intro and manual OrbitControls use the same centered pivot.
 */
 export const INTRO_STREET_TARGET: [
   number,
   number,
   number,
 ] = [
-  5,
-  1.62,
-  1.25,
+  0,
+  5.7,
+  0,
 ];
 
+/*
+  Final desktop position after the intro rotation.
+*/
 export const INTRO_STREET_CAMERA_DESKTOP: [
   number,
   number,
   number,
 ] = [
-  11.75,
-  2.72,
-  1.25,
+  20.6,
+  9.6,
+  16.8,
 ];
 
+/*
+  Final mobile position after the intro rotation.
+*/
 export const INTRO_STREET_CAMERA_MOBILE: [
   number,
   number,
   number,
 ] = [
-  14.4,
-  3.85,
-  1.25,
+  26.2,
+  12.7,
+  21.4,
 ];
 
 /*
-  A short direct movement makes the zoom start immediately.
-
-  Increase this slightly for a calmer animation or decrease it for a faster
-  transition.
+  Faster intro movement, close to the speed of the inspiration site.
 */
 export const INTRO_ZOOM_DURATION =
-  2;
+  1.55;
 
 /* -------------------------------------------------------------------------- */
 /* About Me doorway camera                                                    */
@@ -194,7 +234,7 @@ export const PROJECTS_FOCUS: [
 ];
 
 /* -------------------------------------------------------------------------- */
-/* Credits rooftop cat camera                                                 */
+/* Credits rooftop camera                                                     */
 /* -------------------------------------------------------------------------- */
 
 export const CREDITS_HOTSPOT: [
@@ -237,7 +277,9 @@ export const CREDITS_CAMERA_MOBILE: [
   8.95,
 ];
 
-
+/* -------------------------------------------------------------------------- */
+/* Portfolio sections                                                         */
+/* -------------------------------------------------------------------------- */
 
 export const SECTIONS: PortfolioSection[] = [
   {

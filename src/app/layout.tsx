@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Pacifico, Plus_Jakarta_Sans } from "next/font/google";
+import {
+  Poppins,
+  Plus_Jakarta_Sans,
+  Space_Mono,
+} from "next/font/google";
 import "./globals.css";
 
 const bodyFont = Plus_Jakarta_Sans({
@@ -8,16 +12,22 @@ const bodyFont = Plus_Jakarta_Sans({
   variable: "--font-body",
 });
 
-const displayFont = Pacifico({
+const displayFont = Poppins({
   subsets: ["latin"],
-  weight: "400",
+  weight: ["600", "700", "800", "900"],
   variable: "--font-display",
 });
 
+const monoFont = Space_Mono({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-mono",
+});
+
 export const metadata: Metadata = {
-  title: "Julie Anne Cantillep | Fullstack Developer",
+  title: "Julie Anne's Town",
   description:
-    "A cozy pastel portfolio website for Julie Anne Cantillep, Fullstack Developer.",
+    "An immersive Tokyo-night portfolio by Julie Anne Cantillep, Fullstack Developer.",
 };
 
 export default function RootLayout({
@@ -31,20 +41,19 @@ export default function RootLayout({
         <Script id="theme-init" strategy="beforeInteractive">
           {`(() => {
             try {
-              const storageKey = 'portfolioTheme';
-              const storedTheme = window.localStorage.getItem(storageKey);
-              const prefersNight = window.matchMedia('(prefers-color-scheme: dark)').matches;
-              const resolvedTheme = storedTheme === 'night' || (!storedTheme && prefersNight) ? 'twilight' : 'day';
-              document.documentElement.dataset.theme = resolvedTheme === 'twilight' ? 'twilight' : 'day';
-              document.documentElement.style.colorScheme = resolvedTheme === 'twilight' ? 'dark' : 'light';
+              document.documentElement.dataset.theme = 'twilight';
+              document.documentElement.style.colorScheme = 'dark';
             } catch (error) {
-              document.documentElement.dataset.theme = 'day';
-              document.documentElement.style.colorScheme = 'light';
+              document.documentElement.dataset.theme = 'twilight';
+              document.documentElement.style.colorScheme = 'dark';
             }
           })();`}
         </Script>
       </head>
-      <body className={`${bodyFont.variable} ${displayFont.variable} font-body`}>
+
+      <body
+        className={`${bodyFont.variable} ${displayFont.variable} ${monoFont.variable} font-body`}
+      >
         {children}
       </body>
     </html>
