@@ -4,15 +4,21 @@ import {
   MeshReflectorMaterial,
 } from "@react-three/drei";
 import {
+  useFrame,
   useThree,
 } from "@react-three/fiber";
 import {
   useEffect,
   useMemo,
+  useRef,
 } from "react";
 import {
   CanvasTexture,
+  DoubleSide,
   LinearFilter,
+  Mesh,
+  MeshBasicMaterial,
+  PlaneGeometry,
   SRGBColorSpace,
 } from "three";
 
@@ -547,6 +553,610 @@ function createBakedFloorTexture() {
   return texture;
 }
 
+
+const FLOOR_SURFACE_Y =
+  -0.043;
+
+function createSakuraPetalTexture() {
+  if (
+    typeof document ===
+    "undefined"
+  ) {
+    return null;
+  }
+
+  const canvas =
+    document.createElement(
+      "canvas"
+    );
+
+  canvas.width =
+    128;
+
+  canvas.height =
+    128;
+
+  const context =
+    canvas.getContext(
+      "2d"
+    );
+
+  if (!context) {
+    return null;
+  }
+
+  context.clearRect(
+    0,
+    0,
+    128,
+    128
+  );
+
+  context.translate(
+    64,
+    64
+  );
+
+  /*
+    Rounded Sakura-petal silhouette.
+
+    The canvas outside this shape remains fully transparent, so the
+    individual meshes do not show square cards against the black scene.
+  */
+  context.beginPath();
+
+  context.moveTo(
+    0,
+    -29
+  );
+
+  context.bezierCurveTo(
+    17,
+    -28,
+    29,
+    -12,
+    19,
+    9
+  );
+
+  context.bezierCurveTo(
+    13,
+    22,
+    5,
+    30,
+    0,
+    37
+  );
+
+  context.bezierCurveTo(
+    -5,
+    30,
+    -13,
+    22,
+    -19,
+    9
+  );
+
+  context.bezierCurveTo(
+    -29,
+    -12,
+    -17,
+    -28,
+    0,
+    -29
+  );
+
+  context.closePath();
+
+  const gradient =
+    context.createLinearGradient(
+      0,
+      -30,
+      0,
+      38
+    );
+
+  gradient.addColorStop(
+    0,
+    "rgba(255, 247, 252, 1)"
+  );
+
+  gradient.addColorStop(
+    0.42,
+    "rgba(255, 195, 226, 1)"
+  );
+
+  gradient.addColorStop(
+    1,
+    "rgba(255, 112, 186, 1)"
+  );
+
+  context.fillStyle =
+    gradient;
+
+  context.shadowColor =
+    "rgba(255, 93, 181, 0.34)";
+
+  context.shadowBlur =
+    8;
+
+  context.fill();
+
+  context.shadowBlur =
+    0;
+
+  context.beginPath();
+
+  context.moveTo(
+    0,
+    -18
+  );
+
+  context.lineTo(
+    0,
+    20
+  );
+
+  context.strokeStyle =
+    "rgba(255, 255, 255, 0.26)";
+
+  context.lineWidth =
+    2;
+
+  context.stroke();
+
+  const texture =
+    new CanvasTexture(
+      canvas
+    );
+
+  texture.colorSpace =
+    SRGBColorSpace;
+
+  texture.minFilter =
+    LinearFilter;
+
+  texture.magFilter =
+    LinearFilter;
+
+  texture.needsUpdate =
+    true;
+
+  return texture;
+}
+
+type FloorPetal = {
+  x: number;
+  y: number;
+  z: number;
+  speed: number;
+  sway: number;
+  wobble: number;
+  driftX: number;
+  driftZ: number;
+  spinX: number;
+  spinY: number;
+  spinZ: number;
+  scaleX: number;
+  scaleY: number;
+  seed: number;
+};
+
+function FloorFallingSakuraPetals({
+  compact,
+}: {
+  compact: boolean;
+}) {
+  const petalRefs =
+    useRef<
+      (
+        | Mesh
+        | null
+      )[]
+    >(
+      []
+    );
+
+  const petalTexture =
+    useMemo(
+      () =>
+        createSakuraPetalTexture(),
+      []
+    );
+
+  const petalGeometry =
+    useMemo(
+      () =>
+        new PlaneGeometry(
+          1,
+          1
+        ),
+      []
+    );
+
+  const petalMaterial =
+    useMemo(() => {
+      if (
+        !petalTexture
+      ) {
+        return null;
+      }
+
+      return new MeshBasicMaterial(
+        {
+          map:
+            petalTexture,
+
+          alphaMap:
+            petalTexture,
+
+          color:
+            "#ffd0e6",
+
+          transparent:
+            true,
+
+          opacity:
+            0.82,
+
+          alphaTest:
+            0.055,
+
+          side:
+            DoubleSide,
+
+          depthTest:
+            true,
+
+          depthWrite:
+            false,
+
+          toneMapped:
+            false,
+        }
+      );
+    }, [
+      petalTexture,
+    ]);
+
+  const petalCount =
+    compact
+      ? 26
+      : 80;
+
+  const petals =
+    useMemo<FloorPetal[]>(
+      () =>
+        Array.from(
+          {
+            length:
+              petalCount,
+          },
+          (
+            _,
+            index
+          ) => ({
+            x:
+              -24 +
+              seededRandom(
+                index *
+                  13 +
+                  1
+              ) *
+                48,
+
+            y:
+              1.2 +
+              seededRandom(
+                index *
+                  13 +
+                  2
+              ) *
+                14.8,
+
+            z:
+              -24 +
+              seededRandom(
+                index *
+                  13 +
+                  3
+              ) *
+                47,
+
+            speed:
+              0.34 +
+              seededRandom(
+                index *
+                  13 +
+                  4
+              ) *
+                0.54,
+
+            sway:
+              0.24 +
+              seededRandom(
+                index *
+                  13 +
+                  5
+              ) *
+                0.5,
+
+            wobble:
+              0.55 +
+              seededRandom(
+                index *
+                  13 +
+                  6
+              ) *
+                1.15,
+
+            driftX:
+              -0.13 +
+              seededRandom(
+                index *
+                  13 +
+                  7
+              ) *
+                0.18,
+
+            driftZ:
+              -0.055 +
+              seededRandom(
+                index *
+                  13 +
+                  8
+              ) *
+                0.11,
+
+            spinX:
+              -1.15 +
+              seededRandom(
+                index *
+                  13 +
+                  9
+              ) *
+                2.3,
+
+            spinY:
+              -0.9 +
+              seededRandom(
+                index *
+                  13 +
+                  10
+              ) *
+                1.8,
+
+            spinZ:
+              -1.45 +
+              seededRandom(
+                index *
+                  13 +
+                  11
+              ) *
+                2.9,
+
+            scaleX:
+              0.1 +
+              seededRandom(
+                index *
+                  13 +
+                  12
+              ) *
+                0.08,
+
+            scaleY:
+              0.15 +
+              seededRandom(
+                index *
+                  13 +
+                  13
+              ) *
+                0.11,
+
+            seed:
+              seededRandom(
+                index *
+                  13 +
+                  14
+              ) *
+              1000,
+          })),
+      [
+        petalCount,
+      ]
+    );
+
+  useEffect(() => {
+    return () => {
+      petalGeometry.dispose();
+      petalMaterial?.dispose();
+      petalTexture?.dispose();
+    };
+  }, [
+    petalGeometry,
+    petalMaterial,
+    petalTexture,
+  ]);
+
+  useFrame(
+    (
+      state,
+      delta
+    ) => {
+      petals.forEach(
+        (
+          petal,
+          index
+        ) => {
+          const mesh =
+            petalRefs.current[
+              index
+            ];
+
+          if (!mesh) {
+            return;
+          }
+
+          petal.y -=
+            petal.speed *
+            delta;
+
+          petal.x +=
+            (
+              Math.sin(
+                state.clock
+                  .elapsedTime *
+                  petal.wobble +
+                  petal.seed
+              ) *
+                petal.sway +
+              petal.driftX
+            ) *
+            delta;
+
+          petal.z +=
+            petal.driftZ *
+            delta;
+
+          /*
+            Recycle the petal just before it can pass beneath the
+            reflective concrete surface.
+          */
+          if (
+            petal.y <=
+            FLOOR_SURFACE_Y +
+              0.025
+          ) {
+            petal.x =
+              -24 +
+              Math.random() *
+                48;
+
+            petal.y =
+              12 +
+              Math.random() *
+                5;
+
+            petal.z =
+              -24 +
+              Math.random() *
+                47;
+          }
+
+          if (
+            petal.x <
+            -28
+          ) {
+            petal.x =
+              26;
+          }
+
+          if (
+            petal.x >
+            28
+          ) {
+            petal.x =
+              -26;
+          }
+
+          mesh.position.set(
+            petal.x,
+            petal.y,
+            petal.z
+          );
+
+          mesh.rotation.x +=
+            petal.spinX *
+            delta;
+
+          mesh.rotation.y +=
+            petal.spinY *
+            delta;
+
+          mesh.rotation.z +=
+            petal.spinZ *
+            delta;
+        }
+      );
+    }
+  );
+
+  if (
+    !petalMaterial
+  ) {
+    return null;
+  }
+
+  return (
+    <group>
+      {petals.map(
+        (
+          petal,
+          index
+        ) => (
+          <mesh
+            key={
+              index
+            }
+            ref={(
+              element
+            ) => {
+              petalRefs.current[
+                index
+              ] =
+                element;
+            }}
+            geometry={
+              petalGeometry
+            }
+            material={
+              petalMaterial
+            }
+            position={[
+              petal.x,
+              petal.y,
+              petal.z,
+            ]}
+            rotation={[
+              seededRandom(
+                index *
+                  5 +
+                  1
+              ) *
+                Math.PI,
+
+              seededRandom(
+                index *
+                  5 +
+                  2
+              ) *
+                Math.PI,
+
+              seededRandom(
+                index *
+                  5 +
+                  3
+              ) *
+                Math.PI,
+            ]}
+            scale={[
+              petal.scaleX,
+              petal.scaleY,
+              1,
+            ]}
+            frustumCulled={
+              false
+            }
+            renderOrder={
+              20
+            }
+          />
+        )
+      )}
+    </group>
+  );
+}
+
 export default function ConcreteRooftopGround() {
   const viewportWidth =
     useThree(
@@ -698,6 +1308,19 @@ export default function ConcreteRooftopGround() {
           dithering
         />
       </mesh>
+
+      {/*
+        World-space version of the old fullscreen Sakura animation.
+
+        These petals now fall above the actual concrete and recycle before
+        passing through it, so they remain part of the 3D scene rather than
+        the removed HTML background.
+      */}
+      <FloorFallingSakuraPetals
+        compact={
+          compact
+        }
+      />
     </>
   );
 }
