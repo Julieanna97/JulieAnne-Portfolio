@@ -6,7 +6,6 @@ import { ACESFilmicToneMapping, SRGBColorSpace } from "three";
 
 import type { ProjectId, SectionId } from "./types";
 import { HOME_CAMERA_DESKTOP, HOME_CAMERA_MOBILE, SECTIONS } from "./sceneConfig";
-import NightBackdrop from "./scene/NightBackdrop";
 import AdventureSceneContent from "./scene/AdventureSceneContent";
 import AnnotationCard from "./annotations/AnnotationCard";
 import SectionDetailModal from "./modals/SectionDetailModal";
@@ -116,9 +115,13 @@ export default function HeroScene({
     };
 
   return (
-    <section className="adventure-scene-shell">
-      <NightBackdrop />
-
+    <section
+      className="adventure-scene-shell"
+      style={{
+        background:
+          "#000000",
+      }}
+    >
       <Canvas
         shadows
         dpr={
@@ -157,7 +160,7 @@ export default function HeroScene({
             false,
 
           alpha:
-            true,
+            false,
 
           powerPreference:
             "high-performance",
@@ -173,6 +176,11 @@ export default function HeroScene({
 
           gl.toneMappingExposure =
             0.92;
+
+          gl.setClearColor(
+            "#000000",
+            1
+          );
         }}
         style={{
           touchAction:

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useThree, type ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, Stars } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import { Bloom, EffectComposer, SSAO, Vignette } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import type { PerspectiveCamera } from "three";
@@ -10,6 +10,7 @@ import { MOUSE, TOUCH, Vector3 } from "three";
 import gsap from "gsap";
 import SakuraAtmosphere from "./SakuraAtmosphere";
 import ExistingStreetSignOverlay from "./ExistingStreetSignOverlay";
+import FloatingHeart from "./FloatingHeart";
 
 import MysteriousAdventureModel from "../../../models/MysteriousAdventureModel";
 import type { PortfolioSection, ProjectId, SectionId } from "../types";
@@ -1220,10 +1221,17 @@ export default function AdventureSceneContent({
 
   return (
     <>
+      <color
+        attach="background"
+        args={[
+          "#000000",
+        ]}
+      />
+
       <fog
         attach="fog"
         args={[
-          "#010106",
+          "#000000",
           30,
           74,
         ]}
@@ -1308,28 +1316,6 @@ export default function AdventureSceneContent({
         }
       />
 
-      <Stars
-        radius={
-          78
-        }
-        depth={
-          38
-        }
-        count={
-          900
-        }
-        factor={
-          2.35
-        }
-        saturation={
-          0
-        }
-        fade
-        speed={
-          0.22
-        }
-      />
-
       <ConcreteRooftopGround />
 
       {/*
@@ -1340,6 +1326,15 @@ export default function AdventureSceneContent({
       <ExistingStreetSignOverlay />
 
       <SakuraAtmosphere />
+
+      <FloatingHeart
+        position={[
+          0,
+          15.2,
+          0,
+        ]}
+        scale={0.72}
+      />
 
       <group
         onClick={
