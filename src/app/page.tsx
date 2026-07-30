@@ -181,7 +181,7 @@ export default function HomePage() {
             onFinished={() => {
               setShowPreloader(false);
             }}
-            musicSrc="/music/lofivision-lost-in-tokyo-242003.mp3"
+            musicSrc="/music/puyopuyomegafan1234-japanese-jazz-2-385180.mp3"
           />
         )}
 

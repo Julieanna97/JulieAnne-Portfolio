@@ -30,7 +30,7 @@ export default function Preloader({
   sceneReady,
   onEnter,
   onFinished,
-  musicSrc = "/music/lofivision-lost-in-tokyo-242003.mp3",
+  musicSrc = "/music/puyopuyomegafan1234-japanese-jazz-2-385180.mp3",
 }: PreloaderProps) {
   const [entered, setEntered] =
     useState(false);
