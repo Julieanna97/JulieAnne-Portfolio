@@ -394,7 +394,6 @@ export default function HeroScene({
           color: #fff;
           backdrop-filter: blur(15px);
           -webkit-overflow-scrolling: touch;
-          animation: adventure-card-enter 220ms ease both;
         }
 
         .adventure-annotation-close {
@@ -441,18 +440,6 @@ export default function HeroScene({
 
         .adventure-annotation-card-copy p {
           margin: 0;
-        }
-
-        @keyframes adventure-card-enter {
-          from {
-            opacity: 0;
-            transform: translateX(-8px) translateY(4px) scale(0.97);
-          }
-
-          to {
-            opacity: 1;
-            transform: translateX(0) translateY(0) scale(1);
-          }
         }
 
         .adventure-bottom-nav {

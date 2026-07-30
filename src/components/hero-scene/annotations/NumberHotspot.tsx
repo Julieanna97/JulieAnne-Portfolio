@@ -5,7 +5,6 @@ import {
 } from "@react-three/drei";
 
 import {
-  AnimatePresence,
   motion,
 } from "framer-motion";
 
@@ -130,28 +129,19 @@ export default function NumberHotspot({
           </span>
         </motion.button>
 
-        {/*
-         * Default sync behavior is sufficient here.
-         * mode="wait" is unnecessary because each
-         * hotspot can only contain one card.
-         */}
-        <AnimatePresence
-          initial={false}
-        >
-          {cardIsVisible && (
-            <AnnotationCard
-              key={`${section.id}-annotation-card`}
-              section={section}
-              onClose={onClose}
-              onProjectSelect={
-                onProjectSelect
-              }
-              onOpenSectionDetail={
-                onOpenSectionDetail
-              }
-            />
-          )}
-        </AnimatePresence>
+        {cardIsVisible ? (
+          <AnnotationCard
+            key={`${section.id}-annotation-card`}
+            section={section}
+            onClose={onClose}
+            onProjectSelect={
+              onProjectSelect
+            }
+            onOpenSectionDetail={
+              onOpenSectionDetail
+            }
+          />
+        ) : null}
       </div>
     </Html>
   );

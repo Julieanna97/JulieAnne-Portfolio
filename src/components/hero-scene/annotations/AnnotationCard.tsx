@@ -47,82 +47,26 @@ export default function AnnotationCard({
       : -38;
 
   const initialState =
-    reduceMotion
+    mobile
       ? {
           opacity: 0,
-        }
-      : mobile
-        ? {
-            opacity: 0,
-            y: 46,
-            scale: 0.84,
-            rotateX: 6,
-            filter:
-              "blur(6px)",
-          }
-        : {
-            opacity: 0,
-            x: hotspotOffset,
-            y: 14,
-            scale: 0.7,
-
-            rotate:
-              cardSide ===
-              "left"
-                ? 4
-                : -4,
-
-            filter:
-              "blur(7px)",
-          };
-
-  const openState =
-    reduceMotion
-      ? {
-          opacity: 1,
-        }
-      : {
-          opacity: 1,
-          x: 0,
-          y: 0,
-          scale: 1,
-          rotate: 0,
-          rotateX: 0,
-          filter:
-            "blur(0px)",
-        };
-
-  /*
-   * Exit deliberately does not return to the opening
-   * spring state. It simply fades away, preventing the
-   * small bouncing box that appeared after closing.
-   */
-  const exitState =
-    reduceMotion
-      ? {
-          opacity: 0,
-
-          transition: {
-            duration: 0.01,
-          },
+          y: 46,
+          scale: 0.84,
+          rotateX: 6,
+          filter: "blur(6px)",
         }
       : {
           opacity: 0,
-          y: 3,
-          scale: 0.98,
-          filter:
-            "blur(2px)",
+          x: hotspotOffset,
+          y: 14,
+          scale: 0.7,
 
-          transition: {
-            duration: 0.14,
+          rotate:
+            cardSide === "left"
+              ? 4
+              : -4,
 
-            ease: [
-              0.4,
-              0,
-              1,
-              1,
-            ] as const,
-          },
+          filter: "blur(7px)",
         };
 
   return (
@@ -132,9 +76,7 @@ export default function AnnotationCard({
           ? "adventure-annotation-card--mobile"
           : ""
       }`}
-      data-card-side={
-        cardSide
-      }
+      data-card-side={cardSide}
       role="dialog"
       aria-modal={
         mobile
@@ -142,13 +84,24 @@ export default function AnnotationCard({
           : undefined
       }
       aria-labelledby={`annotation-title-${section.id}`}
-      initial={initialState}
-      animate={openState}
-      exit={exitState}
+      initial={
+        reduceMotion
+          ? false
+          : initialState
+      }
+      animate={{
+        opacity: 1,
+        x: 0,
+        y: 0,
+        scale: 1,
+        rotate: 0,
+        rotateX: 0,
+        filter: "blur(0px)",
+      }}
       transition={
         reduceMotion
           ? {
-              duration: 0.01,
+              duration: 0,
             }
           : {
               opacity: {
@@ -198,7 +151,7 @@ export default function AnnotationCard({
                   1,
                   0.36,
                   1,
-                ],
+                ] as const,
               },
             }
       }
@@ -206,12 +159,14 @@ export default function AnnotationCard({
         transformOrigin:
           mobile
             ? "center bottom"
-            : cardSide ===
-                "left"
+            : cardSide === "left"
               ? "right 48px"
               : "left 48px",
 
         perspective: 900,
+      }}
+      onPointerDown={(event) => {
+        event.stopPropagation();
       }}
       onClick={(event) => {
         event.stopPropagation();
@@ -225,16 +180,18 @@ export default function AnnotationCard({
       <button
         type="button"
         className="adventure-annotation-close"
+        onPointerDown={(event) => {
+          event.stopPropagation();
+        }}
         onClick={(event) => {
           event.stopPropagation();
-
-          /*
-           * Remove mouse focus before AnimatePresence
-           * begins the exit. Otherwise :focus-within
-           * keeps the large outline visible.
-           */
           event.currentTarget.blur();
 
+          /*
+           * The parent state is cleared immediately.
+           * There is no exit animation and therefore
+           * no second lingering card.
+           */
           onClose();
         }}
         aria-label={`Close ${section.title}`}
@@ -272,7 +229,7 @@ export default function AnnotationCard({
                   1,
                   0.36,
                   1,
-                ],
+                ] as const,
               }
         }
       >
