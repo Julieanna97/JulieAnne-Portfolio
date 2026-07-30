@@ -1,6 +1,7 @@
 "use client";
 
 import { Html } from "@react-three/drei";
+import { AnimatePresence, motion } from "framer-motion";
 import type { PortfolioSection, ProjectId } from "../types";
 import AnnotationCard from "./AnnotationCard";
 
@@ -14,108 +15,94 @@ export default function NumberHotspot({
   onProjectSelect,
   onOpenSectionDetail,
 }: {
-  section:
-    PortfolioSection;
-
-  disabled:
-    boolean;
-
-  selected:
-    boolean;
-
-  showCard:
-    boolean;
-
-  onSelect: (
-    section:
-      PortfolioSection
-  ) => void;
-
-  onClose:
-    () => void;
-
-  onProjectSelect: (
-    id:
-      ProjectId
-  ) => void;
-
-  onOpenSectionDetail: (
-    id:
-      "about" | "credits"
-  ) => void;
+  section: PortfolioSection;
+  disabled: boolean;
+  selected: boolean;
+  showCard: boolean;
+  onSelect: (section: PortfolioSection) => void;
+  onClose: () => void;
+  onProjectSelect: (id: ProjectId) => void;
+  onOpenSectionDetail: (id: "about" | "credits") => void;
 }) {
   return (
     <Html
-      position={
-        section.hotspot
-      }
+      position={section.hotspot}
       center
-      zIndexRange={[
-        40,
-        0,
-      ]}
+      zIndexRange={[40, 0]}
       style={{
-        pointerEvents:
-          "auto",
+        pointerEvents: "auto",
       }}
     >
       <div
         className={`adventure-annotation-wrap ${
-          selected
-            ? "is-open"
-            : ""
+          selected ? "is-open" : ""
         }`}
       >
-        <button
+        <motion.button
           type="button"
           className={`adventure-number ${
-            selected
-              ? "is-selected"
-              : ""
+            selected ? "is-selected" : ""
           }`}
-          disabled={
-            disabled
-          }
-          onClick={(
-            event
-          ) => {
+          disabled={disabled}
+          onClick={(event) => {
             event.stopPropagation();
-
-            onSelect(
-              section
-            );
+            onSelect(section);
           }}
           aria-label={`Open ${section.title}`}
+          aria-expanded={selected && showCard}
+          whileHover={
+            disabled
+              ? undefined
+              : {
+                  scale: 1.12,
+                  rotate: -3,
+                }
+          }
+          whileTap={
+            disabled
+              ? undefined
+              : {
+                  scale: 0.82,
+                  rotate: 3,
+                }
+          }
+          animate={
+            selected
+              ? {
+                  scale: 1.08,
+                  rotate: 0,
+                }
+              : {
+                  scale: 1,
+                  rotate: 0,
+                }
+          }
+          transition={{
+            type: "spring",
+            stiffness: 420,
+            damping: 24,
+            mass: 0.7,
+          }}
         >
           <span className="adventure-number-ripple" />
-
           <span className="adventure-number-ripple ripple-two" />
 
           <span className="adventure-number-core">
-            {
-              section.markerNumber ??
-              section.number
-            }
+            {section.markerNumber ?? section.number}
           </span>
-        </button>
+        </motion.button>
 
-        {selected &&
-          showCard && (
+        <AnimatePresence initial={false}>
+          {selected && showCard && (
             <AnnotationCard
-              section={
-                section
-              }
-              onClose={
-                onClose
-              }
-              onProjectSelect={
-                onProjectSelect
-              }
-              onOpenSectionDetail={
-                onOpenSectionDetail
-              }
+              key={section.id}
+              section={section}
+              onClose={onClose}
+              onProjectSelect={onProjectSelect}
+              onOpenSectionDetail={onOpenSectionDetail}
             />
           )}
+        </AnimatePresence>
       </div>
     </Html>
   );

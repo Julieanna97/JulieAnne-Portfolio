@@ -1,148 +1,125 @@
-import type { ProjectCaseStudy, ProjectId, SectionId } from "../types";
+import type {
+  ProjectCaseStudy,
+  ProjectId,
+  SectionId,
+} from "../types";
 import { PROJECT_CASE_STUDIES } from "../portfolioData";
+
+type AnnotationContentProps = {
+  id: SectionId;
+  onProjectSelect: (id: ProjectId) => void;
+  onOpenSectionDetail: (id: "about" | "credits") => void;
+};
 
 export default function AnnotationContent({
   id,
   onProjectSelect,
   onOpenSectionDetail,
-}: {
-  id:
-    SectionId;
-
-  onProjectSelect: (
-    id:
-      ProjectId
-  ) => void;
-
-  onOpenSectionDetail: (
-    id:
-      "about" | "credits"
-  ) => void;
-}) {
-  if (
-    id ===
-    "about"
-  ) {
+}: AnnotationContentProps) {
+  if (id === "about") {
     return (
       <>
-        <p>
-          Hi, I&apos;m Julie Anne — a software developer who enjoys turning ideas
-          into clean, useful, and visually thoughtful digital experiences.
+        <p className="adventure-annotation-lead">
+          I turn ideas into useful, thoughtful, and visually polished digital
+          experiences.
         </p>
 
         <p>
-          I like building projects that feel easy to use, but still have personality
-          through small details, smooth interactions, and polished design choices.
-        </p>
-
-        <p>
-          My work combines fullstack development, creative problem-solving, and a
-          curiosity for learning new tools by building real projects.
+          My work combines fullstack development, embedded systems, creative
+          problem-solving, and an interest in interactions that make software
+          feel more personal.
         </p>
 
         <button
           type="button"
           className="adventure-detail-button"
-          onClick={(
-            event
-          ) => {
+          onClick={(event) => {
             event.stopPropagation();
-
-            onOpenSectionDetail(
-              "about"
-            );
+            onOpenSectionDetail("about");
           }}
         >
-          View full profile →
+          <span>More</span>
+          <span
+            className="adventure-button-arrow"
+            aria-hidden="true"
+          >
+            →
+          </span>
         </button>
       </>
     );
   }
 
-  if (
-    id ===
-    "projects"
-  ) {
+  if (id === "projects") {
+    const projects = Object.values(
+      PROJECT_CASE_STUDIES,
+    ) as ProjectCaseStudy[];
+
     return (
-      <>
-        {(
-          Object.values(
-            PROJECT_CASE_STUDIES
-          ) as ProjectCaseStudy[]
-        ).map(
-          (
-            project
-          ) => (
-            <button
-              key={
-                project.id
-              }
-              type="button"
-              className="adventure-project-card-button"
-              onClick={(
-                event
-              ) => {
-                event.stopPropagation();
+      <div className="adventure-project-preview-list">
+        {projects.map((project, index) => (
+          <button
+            key={project.id}
+            type="button"
+            className="adventure-project-card-button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onProjectSelect(project.id);
+            }}
+          >
+            <span className="adventure-project-index">
+              {String(index + 1).padStart(2, "0")}
+            </span>
 
-                onProjectSelect(
-                  project.id
-                );
-              }}
-            >
-              <strong>
-                {
-                  project.title
-                }
-              </strong>
+            <span className="adventure-project-card-main">
+              <strong>{project.title}</strong>
 
-              <span>
-                {
-                  project.technologies
-                    .slice(
-                      0,
-                      5
-                    )
-                    .join(
-                      " · "
-                    )
-                }
+              <span className="adventure-project-technologies">
+                {project.technologies
+                  .slice(0, 5)
+                  .join(" · ")}
               </span>
+            </span>
 
-              <em>
-                Open case study →
-              </em>
-            </button>
-          )
-        )}
-      </>
+            <span
+              className="adventure-project-card-arrow"
+              aria-hidden="true"
+            >
+              →
+            </span>
+          </button>
+        ))}
+      </div>
     );
   }
 
   return (
     <>
-      <p>
-        Portfolio concept and implementation by Julie Anne Cantillep.
+      <p className="adventure-annotation-lead">
+        An interactive portfolio built as a responsive 3D environment rather
+        than a traditional landing page.
       </p>
 
       <p>
-        Built with Next.js, TypeScript, React Three Fiber, Drei, Three.js,
-        GSAP, and a custom responsive 3D interface.
+        Created with Next.js, TypeScript, React Three Fiber, Drei, Three.js,
+        GSAP, Framer Motion, and custom responsive interface work.
       </p>
 
       <button
         type="button"
         className="adventure-detail-button"
-        onClick={(
-          event
-        ) => {
+        onClick={(event) => {
           event.stopPropagation();
-
-          onOpenSectionDetail(
-            "credits"
-          );
+          onOpenSectionDetail("credits");
         }}
       >
-        View full credits →
+        <span>More</span>
+        <span
+          className="adventure-button-arrow"
+          aria-hidden="true"
+        >
+          →
+        </span>
       </button>
     </>
   );
