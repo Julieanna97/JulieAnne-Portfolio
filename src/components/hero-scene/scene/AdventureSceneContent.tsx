@@ -118,6 +118,33 @@ export default function AdventureSceneContent({
       false
     );
 
+    /*
+    * Idle camera rotation starts only after the opening
+    * intro finishes. Once the visitor interacts with the
+    * camera or selects a hotspot, it remains disabled.
+    */
+    const [
+      idleRotationEnabled,
+      setIdleRotationEnabled,
+    ] = useState(false);
+
+    const visitorInteractedRef =
+      useRef(false);
+
+    const stopIdleRotation =
+      useCallback(() => {
+        if (
+          visitorInteractedRef.current
+        ) {
+          return;
+        }
+
+        visitorInteractedRef.current =
+          true;
+
+        setIdleRotationEnabled(false);
+      }, []);
+
   const [
     debugClickPoint,
     setDebugClickPoint,
@@ -835,6 +862,8 @@ export default function AdventureSceneContent({
           return;
         }
 
+        stopIdleRotation();
+
         onActiveChange(
           section.id
         );
@@ -884,6 +913,7 @@ export default function AdventureSceneContent({
         moveToCreditsRooftop,
         moving,
         onActiveChange,
+        stopIdleRotation,
       ]
     );
 
@@ -1088,6 +1118,18 @@ export default function AdventureSceneContent({
               null;
 
             setMoving(false);
+
+            /*
+            * Begin the gentle orbit only when the visitor
+            * has not already interacted with the scene.
+            */
+            if (
+              !visitorInteractedRef.current
+            ) {
+              setIdleRotationEnabled(
+                true
+              );
+            }
           },
 
           onInterrupt: () => {
@@ -1609,6 +1651,18 @@ export default function AdventureSceneContent({
       <OrbitControls
         ref={controlsRef}
         makeDefault
+
+        autoRotate={
+          idleRotationEnabled &&
+          !moving &&
+          activeId === null
+        }
+
+        autoRotateSpeed={1.6}
+
+        onStart={
+          stopIdleRotation
+        }
 
         /*
           Lock all manual movement while a section is open or while a camera
