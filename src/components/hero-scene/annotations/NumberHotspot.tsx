@@ -98,7 +98,7 @@ export default function NumberHotspot({
             disabled
               ? undefined
               : {
-                  scale: 0.82,
+                  scale: 0.84,
                   rotate: 3,
                 }
           }
@@ -130,17 +130,19 @@ export default function NumberHotspot({
           </span>
         </motion.button>
 
+        {/*
+         * Default sync behavior is sufficient here.
+         * mode="wait" is unnecessary because each
+         * hotspot can only contain one card.
+         */}
         <AnimatePresence
           initial={false}
-          mode="wait"
         >
           {cardIsVisible && (
             <AnnotationCard
-              key={section.id}
+              key={`${section.id}-annotation-card`}
               section={section}
-              onClose={
-                onClose
-              }
+              onClose={onClose}
               onProjectSelect={
                 onProjectSelect
               }

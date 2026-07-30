@@ -16,9 +16,11 @@ type AnnotationCardProps = {
   section: PortfolioSection;
   mobile?: boolean;
   onClose: () => void;
+
   onProjectSelect: (
     id: ProjectId,
   ) => void;
+
   onOpenSectionDetail: (
     id: "about" | "credits",
   ) => void;
@@ -44,87 +46,82 @@ export default function AnnotationCard({
       ? 38
       : -38;
 
-  const cardVariants =
+  const initialState =
     reduceMotion
       ? {
-          closed: {
+          opacity: 0,
+        }
+      : mobile
+        ? {
             opacity: 0,
-          },
+            y: 46,
+            scale: 0.84,
+            rotateX: 6,
+            filter:
+              "blur(6px)",
+          }
+        : {
+            opacity: 0,
+            x: hotspotOffset,
+            y: 14,
+            scale: 0.7,
 
-          open: {
-            opacity: 1,
-          },
+            rotate:
+              cardSide ===
+              "left"
+                ? 4
+                : -4,
+
+            filter:
+              "blur(7px)",
+          };
+
+  const openState =
+    reduceMotion
+      ? {
+          opacity: 1,
         }
       : {
-          closed: mobile
-            ? {
-                opacity: 0,
-                y: 52,
-                scale: 0.82,
-                rotateX: 7,
-                filter:
-                  "blur(7px)",
-              }
-            : {
-                opacity: 0,
-                x: hotspotOffset,
-                y: 15,
-                scale: 0.62,
-
-                rotate:
-                  cardSide ===
-                  "left"
-                    ? 5
-                    : -5,
-
-                filter:
-                  "blur(8px)",
-              },
-
-          open: {
-            opacity: 1,
-            x: 0,
-            y: 0,
-            scale: 1,
-            rotate: 0,
-            rotateX: 0,
-            filter:
-              "blur(0px)",
-          },
+          opacity: 1,
+          x: 0,
+          y: 0,
+          scale: 1,
+          rotate: 0,
+          rotateX: 0,
+          filter:
+            "blur(0px)",
         };
 
-  const contentVariants =
+  /*
+   * Exit deliberately does not return to the opening
+   * spring state. It simply fades away, preventing the
+   * small bouncing box that appeared after closing.
+   */
+  const exitState =
     reduceMotion
       ? {
-          closed: {
-            opacity: 0,
-          },
+          opacity: 0,
 
-          open: {
-            opacity: 1,
+          transition: {
+            duration: 0.01,
           },
         }
       : {
-          closed: {
-            opacity: 0,
-            y: 12,
-          },
+          opacity: 0,
+          y: 3,
+          scale: 0.98,
+          filter:
+            "blur(2px)",
 
-          open: {
-            opacity: 1,
-            y: 0,
+          transition: {
+            duration: 0.14,
 
-            transition: {
-              duration: 0.32,
-              delay: 0.09,
-
-              ease: [
-                0.22,
-                1,
-                0.36,
-                1,
-              ],
-            },
+            ease: [
+              0.4,
+              0,
+              1,
+              1,
+            ] as const,
           },
         };
 
@@ -145,36 +142,13 @@ export default function AnnotationCard({
           : undefined
       }
       aria-labelledby={`annotation-title-${section.id}`}
-      variants={cardVariants}
-      initial="closed"
-      animate="open"
-      exit="closed"
-      whileHover={
-        reduceMotion ||
-        mobile
-          ? undefined
-          : {
-              y: -6,
-              scale: 1.012,
-
-              rotate:
-                cardSide ===
-                "left"
-                  ? -0.35
-                  : 0.35,
-
-              transition: {
-                type: "spring",
-                stiffness: 390,
-                damping: 24,
-                mass: 0.65,
-              },
-            }
-      }
+      initial={initialState}
+      animate={openState}
+      exit={exitState}
       transition={
         reduceMotion
           ? {
-              duration: 0.1,
+              duration: 0.01,
             }
           : {
               opacity: {
@@ -184,35 +158,35 @@ export default function AnnotationCard({
               x: {
                 type: "spring",
                 stiffness: 430,
-                damping: 23,
+                damping: 25,
                 mass: 0.72,
               },
 
               y: {
                 type: "spring",
                 stiffness: 430,
-                damping: 23,
+                damping: 25,
                 mass: 0.72,
               },
 
               scale: {
                 type: "spring",
                 stiffness: 430,
-                damping: 21,
+                damping: 23,
                 mass: 0.72,
               },
 
               rotate: {
                 type: "spring",
                 stiffness: 390,
-                damping: 24,
+                damping: 25,
                 mass: 0.72,
               },
 
               rotateX: {
                 type: "spring",
                 stiffness: 360,
-                damping: 24,
+                damping: 25,
                 mass: 0.75,
               },
 
@@ -255,10 +229,12 @@ export default function AnnotationCard({
           event.stopPropagation();
 
           /*
-           * Remove the card immediately from the
-           * selected state. AnimatePresence performs
-           * the single exit animation.
+           * Remove mouse focus before AnimatePresence
+           * begins the exit. Otherwise :focus-within
+           * keeps the large outline visible.
            */
+          event.currentTarget.blur();
+
           onClose();
         }}
         aria-label={`Close ${section.title}`}
@@ -270,8 +246,34 @@ export default function AnnotationCard({
 
       <motion.div
         className="adventure-annotation-card-inner"
-        variants={
-          contentVariants
+        initial={
+          reduceMotion
+            ? false
+            : {
+                opacity: 0,
+                y: 12,
+              }
+        }
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+        transition={
+          reduceMotion
+            ? {
+                duration: 0,
+              }
+            : {
+                duration: 0.3,
+                delay: 0.08,
+
+                ease: [
+                  0.22,
+                  1,
+                  0.36,
+                  1,
+                ],
+              }
         }
       >
         <header className="adventure-annotation-card-header">

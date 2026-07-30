@@ -2500,7 +2500,7 @@ export default function SakuraThemeStyles() {
       /*
       * Keyboard users receive the same framed treatment.
       */
-      .adventure-annotation-card:focus-within {
+      .adventure-annotation-card:has(:focus-visible) {
         border-color:
           rgba(
             105,
@@ -2553,9 +2553,9 @@ export default function SakuraThemeStyles() {
       */
       .adventure-annotation-card::after {
         transition:
-          border-color 240ms ease,
-          filter 240ms ease,
-          opacity 240ms ease;
+          border-color 160ms ease,
+          box-shadow 160ms ease,
+          background 160ms ease;
       }
 
       @media (
