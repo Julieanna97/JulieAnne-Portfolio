@@ -1,9 +1,41 @@
 "use client";
 
-import { Html } from "@react-three/drei";
-import { AnimatePresence, motion } from "framer-motion";
-import type { PortfolioSection, ProjectId } from "../types";
+import {
+  Html,
+} from "@react-three/drei";
+
+import {
+  AnimatePresence,
+  motion,
+} from "framer-motion";
+
+import type {
+  PortfolioSection,
+  ProjectId,
+} from "../types";
+
 import AnnotationCard from "./AnnotationCard";
+
+type NumberHotspotProps = {
+  section: PortfolioSection;
+  disabled: boolean;
+  selected: boolean;
+  showCard: boolean;
+
+  onSelect: (
+    section: PortfolioSection,
+  ) => void;
+
+  onClose: () => void;
+
+  onProjectSelect: (
+    id: ProjectId,
+  ) => void;
+
+  onOpenSectionDetail: (
+    id: "about" | "credits",
+  ) => void;
+};
 
 export default function NumberHotspot({
   section,
@@ -14,42 +46,46 @@ export default function NumberHotspot({
   onClose,
   onProjectSelect,
   onOpenSectionDetail,
-}: {
-  section: PortfolioSection;
-  disabled: boolean;
-  selected: boolean;
-  showCard: boolean;
-  onSelect: (section: PortfolioSection) => void;
-  onClose: () => void;
-  onProjectSelect: (id: ProjectId) => void;
-  onOpenSectionDetail: (id: "about" | "credits") => void;
-}) {
+}: NumberHotspotProps) {
+  const cardIsVisible =
+    selected && showCard;
+
   return (
     <Html
       position={section.hotspot}
       center
-      zIndexRange={[40, 0]}
+      zIndexRange={[
+        40,
+        0,
+      ]}
       style={{
         pointerEvents: "auto",
       }}
     >
       <div
         className={`adventure-annotation-wrap ${
-          selected ? "is-open" : ""
+          selected
+            ? "is-open"
+            : ""
         }`}
       >
         <motion.button
           type="button"
           className={`adventure-number ${
-            selected ? "is-selected" : ""
+            selected
+              ? "is-selected"
+              : ""
           }`}
           disabled={disabled}
           onClick={(event) => {
             event.stopPropagation();
+
             onSelect(section);
           }}
           aria-label={`Open ${section.title}`}
-          aria-expanded={selected && showCard}
+          aria-expanded={
+            cardIsVisible
+          }
           whileHover={
             disabled
               ? undefined
@@ -85,21 +121,32 @@ export default function NumberHotspot({
           }}
         >
           <span className="adventure-number-ripple" />
+
           <span className="adventure-number-ripple ripple-two" />
 
           <span className="adventure-number-core">
-            {section.markerNumber ?? section.number}
+            {section.markerNumber ??
+              section.number}
           </span>
         </motion.button>
 
-        <AnimatePresence initial={false}>
-          {selected && showCard && (
+        <AnimatePresence
+          initial={false}
+          mode="wait"
+        >
+          {cardIsVisible && (
             <AnnotationCard
               key={section.id}
               section={section}
-              onClose={onClose}
-              onProjectSelect={onProjectSelect}
-              onOpenSectionDetail={onOpenSectionDetail}
+              onClose={
+                onClose
+              }
+              onProjectSelect={
+                onProjectSelect
+              }
+              onOpenSectionDetail={
+                onOpenSectionDetail
+              }
             />
           )}
         </AnimatePresence>

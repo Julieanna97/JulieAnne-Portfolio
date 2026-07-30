@@ -2410,6 +2410,554 @@ export default function SakuraThemeStyles() {
           transition-duration: 0.01ms;
         }
       }
+
+      /* ======================================================================== */
+      /* CARD POP, HOVER FRAME AND MORE BUTTON                                    */
+      /* ======================================================================== */
+
+      .adventure-annotation-card {
+        /*
+        * Framer Motion controls the card transform.
+        * CSS controls only its visual hover treatment.
+        */
+        border: 1px solid
+          rgba(232, 144, 255, 0.24);
+
+        will-change:
+          transform,
+          opacity,
+          filter;
+
+        transition:
+          border-color 240ms ease,
+          box-shadow 280ms ease,
+          background 240ms ease;
+      }
+
+      .adventure-annotation-card-inner {
+        position: relative;
+        z-index: 1;
+      }
+
+      /*
+      * Rounded exterior outline inspired by the
+      * reference card.
+      */
+      @media (
+        hover: hover
+      ) and (
+        pointer: fine
+      ) {
+        .adventure-annotation-card:hover {
+          border-color:
+            rgba(
+              255,
+              126,
+              205,
+              0.76
+            );
+
+          box-shadow:
+            0 0 0 1px
+              rgba(
+                255,
+                255,
+                255,
+                0.06
+              )
+              inset,
+            0 0 0 3px
+              rgba(
+                255,
+                104,
+                183,
+                0.26
+              ),
+            0 0 0 7px
+              rgba(
+                154,
+                92,
+                255,
+                0.09
+              ),
+            0 0 32px
+              rgba(
+                255,
+                63,
+                159,
+                0.2
+              ),
+            0 34px 85px
+              rgba(
+                0,
+                0,
+                0,
+                0.64
+              );
+        }
+      }
+
+      /*
+      * Keyboard users receive the same framed treatment.
+      */
+      .adventure-annotation-card:focus-within {
+        border-color:
+          rgba(
+            105,
+            223,
+            255,
+            0.72
+          );
+
+        box-shadow:
+          0 0 0 1px
+            rgba(
+              255,
+              255,
+              255,
+              0.06
+            )
+            inset,
+          0 0 0 3px
+            rgba(
+              105,
+              223,
+              255,
+              0.2
+            ),
+          0 0 0 7px
+            rgba(
+              154,
+              92,
+              255,
+              0.08
+            ),
+          0 0 31px
+            rgba(
+              105,
+              223,
+              255,
+              0.12
+            ),
+          0 34px 85px
+            rgba(
+              0,
+              0,
+              0,
+              0.64
+            );
+      }
+
+      /*
+      * Make the connector react with the card.
+      */
+      .adventure-annotation-card::after {
+        transition:
+          border-color 240ms ease,
+          filter 240ms ease,
+          opacity 240ms ease;
+      }
+
+      @media (
+        hover: hover
+      ) and (
+        pointer: fine
+      ) {
+        .adventure-annotation-card:hover::after {
+          border-top-color:
+            rgba(
+              255,
+              126,
+              205,
+              1
+            );
+
+          filter:
+            drop-shadow(
+              0 0 7px
+                rgba(
+                  255,
+                  95,
+                  183,
+                  0.8
+                )
+            );
+
+          opacity: 1;
+        }
+      }
+
+      .adventure-card-pin {
+        transition:
+          background 220ms ease,
+          box-shadow 220ms ease,
+          transform 220ms ease;
+      }
+
+      @media (
+        hover: hover
+      ) and (
+        pointer: fine
+      ) {
+        .adventure-annotation-card:hover
+          .adventure-card-pin {
+          background:
+            var(
+              --portfolio-cyan,
+              #69dfff
+            );
+
+          box-shadow:
+            0 0 0 3px
+              rgba(
+                105,
+                223,
+                255,
+                0.13
+              ),
+            0 0 18px
+              rgba(
+                105,
+                223,
+                255,
+                0.75
+              );
+
+          transform: scale(1.18);
+        }
+      }
+
+      /* ------------------------------------------------------------------------ */
+      /* Selected hotspot confirmation pop                                        */
+      /* ------------------------------------------------------------------------ */
+
+      .adventure-number.is-selected {
+        animation:
+          adventure-hotspot-confirm
+          440ms
+          cubic-bezier(
+            0.2,
+            1.5,
+            0.35,
+            1
+          );
+      }
+
+      @keyframes adventure-hotspot-confirm {
+        0% {
+          transform: scale(1);
+        }
+
+        34% {
+          transform:
+            scale(0.82)
+            rotate(-5deg);
+        }
+
+        68% {
+          transform:
+            scale(1.18)
+            rotate(3deg);
+        }
+
+        100% {
+          transform:
+            scale(1)
+            rotate(0deg);
+        }
+      }
+
+      /* ------------------------------------------------------------------------ */
+      /* Reference-style More button                                              */
+      /* ------------------------------------------------------------------------ */
+
+      .adventure-detail-button {
+        position: relative;
+
+        display: inline-flex;
+
+        width: fit-content;
+        min-width: 164px;
+        min-height: 46px;
+
+        align-items: center;
+        justify-content: center;
+
+        gap: 0;
+
+        overflow: hidden;
+
+        border: 1px solid
+          rgba(
+            255,
+            139,
+            213,
+            0.34
+          );
+
+        border-radius: 999px;
+
+        background:
+          linear-gradient(
+            105deg,
+            var(
+              --portfolio-violet,
+              #9a5cff
+            ),
+            var(
+              --portfolio-orange-dark,
+              #ff3f9f
+            )
+          );
+
+        box-shadow:
+          0 0 18px
+            rgba(
+              255,
+              75,
+              175,
+              0.21
+            ),
+          0 9px 24px
+            rgba(
+              0,
+              0,
+              0,
+              0.32
+            );
+
+        padding:
+          0
+          25px
+          0
+          46px;
+
+        color: #ffffff;
+
+        transition:
+          transform 200ms ease,
+          border-color 200ms ease,
+          background 240ms ease,
+          box-shadow 240ms ease,
+          filter 200ms ease;
+      }
+
+      .adventure-detail-button::before {
+        content: "";
+
+        position: absolute;
+        inset: 0;
+
+        background:
+          linear-gradient(
+            110deg,
+            transparent 15%,
+            rgba(
+              255,
+              255,
+              255,
+              0.17
+            )
+            48%,
+            transparent 80%
+          );
+
+        opacity: 0;
+
+        transform:
+          translateX(-110%);
+
+        transition:
+          opacity 220ms ease,
+          transform 520ms
+            cubic-bezier(
+              0.22,
+              1,
+              0.36,
+              1
+            );
+
+        pointer-events: none;
+      }
+
+      .adventure-button-label {
+        position: relative;
+        z-index: 2;
+
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .adventure-button-arrow {
+        position: absolute;
+        top: 50%;
+        left: 18px;
+        z-index: 2;
+
+        display: grid;
+
+        width: 22px;
+        height: 22px;
+
+        place-items: center;
+
+        border-radius: 999px;
+
+        background:
+          rgba(
+            255,
+            255,
+            255,
+            0.15
+          );
+
+        color: #ffffff;
+
+        font-family:
+          Arial,
+          sans-serif;
+
+        font-size: 20px;
+        font-weight: 400;
+        line-height: 1;
+
+        transform:
+          translateY(-52%);
+
+        transition:
+          color 200ms ease,
+          background 200ms ease,
+          transform 200ms ease;
+      }
+
+      .adventure-detail-button:hover {
+        border-color:
+          rgba(
+            105,
+            223,
+            255,
+            0.65
+          );
+
+        background:
+          linear-gradient(
+            105deg,
+            #8b52ed,
+            #ff4ba8
+          );
+
+        box-shadow:
+          0 0 0 3px
+            rgba(
+              255,
+              104,
+              183,
+              0.13
+            ),
+          0 0 28px
+            rgba(
+              255,
+              75,
+              175,
+              0.36
+            ),
+          0 12px 28px
+            rgba(
+              0,
+              0,
+              0,
+              0.4
+            );
+
+        filter: brightness(1.08);
+
+        transform:
+          translateY(-3px);
+      }
+
+      .adventure-detail-button:hover::before {
+        opacity: 1;
+
+        transform:
+          translateX(110%);
+      }
+
+      .adventure-detail-button:hover
+        .adventure-button-arrow {
+        background:
+          rgba(
+            255,
+            255,
+            255,
+            0.24
+          );
+
+        transform:
+          translateY(-52%)
+          translateX(3px);
+      }
+
+      .adventure-detail-button:active {
+        transform:
+          translateY(-1px)
+          scale(0.97);
+      }
+
+      .adventure-detail-button:focus-visible {
+        outline: 3px solid
+          var(
+            --portfolio-cyan,
+            #69dfff
+          );
+
+        outline-offset: 4px;
+      }
+
+      /* ------------------------------------------------------------------------ */
+      /* Mobile and reduced motion                                                */
+      /* ------------------------------------------------------------------------ */
+
+      @media (
+        max-width: 767px
+      ) {
+        .adventure-detail-button {
+          min-width: 150px;
+          min-height: 44px;
+
+          padding-right: 22px;
+          padding-left: 43px;
+        }
+
+        .adventure-button-arrow {
+          left: 15px;
+        }
+      }
+
+      @media (
+        prefers-reduced-motion:
+          reduce
+      ) {
+        .adventure-number.is-selected {
+          animation: none;
+        }
+
+        .adventure-annotation-card,
+        .adventure-annotation-card::after,
+        .adventure-card-pin,
+        .adventure-detail-button,
+        .adventure-detail-button::before,
+        .adventure-button-arrow {
+          transition-duration:
+            0.01ms;
+        }
+
+        .adventure-detail-button:hover::before {
+          opacity: 0;
+        }
+      }
     `}</style>
   );
 }
