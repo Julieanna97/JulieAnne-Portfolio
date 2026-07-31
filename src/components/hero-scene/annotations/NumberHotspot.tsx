@@ -13,9 +13,7 @@ import type {
   ProjectId,
 } from "../types";
 
-import AnnotationCard from "./AnnotationCard";
-
-type NumberHotspotProps = {
+export type NumberHotspotProps = {
   section: PortfolioSection;
   disabled: boolean;
   selected: boolean;
@@ -32,7 +30,9 @@ type NumberHotspotProps = {
   ) => void;
 
   onOpenSectionDetail: (
-    id: "about" | "credits",
+    id:
+      | "about"
+      | "credits",
   ) => void;
 };
 
@@ -40,15 +40,8 @@ export default function NumberHotspot({
   section,
   disabled,
   selected,
-  showCard,
   onSelect,
-  onClose,
-  onProjectSelect,
-  onOpenSectionDetail,
 }: NumberHotspotProps) {
-  const cardIsVisible =
-    selected && showCard;
-
   return (
     <Html
       position={section.hotspot}
@@ -76,15 +69,23 @@ export default function NumberHotspot({
               : ""
           }`}
           disabled={disabled}
+          onPointerDown={(event) => {
+            /*
+             * Prevent the marker click from also starting
+             * an OrbitControls drag.
+             */
+            event.stopPropagation();
+          }}
           onClick={(event) => {
             event.stopPropagation();
 
-            onSelect(section);
+            if (!disabled) {
+              onSelect(section);
+            }
           }}
-          aria-label={`Open ${section.title}`}
-          aria-expanded={
-            cardIsVisible
-          }
+          aria-label={`Focus ${section.title}`}
+          aria-pressed={selected}
+          aria-expanded={false}
           whileHover={
             disabled
               ? undefined
@@ -104,7 +105,7 @@ export default function NumberHotspot({
           animate={
             selected
               ? {
-                  scale: 1.08,
+                  scale: 1.1,
                   rotate: 0,
                 }
               : {
@@ -128,21 +129,18 @@ export default function NumberHotspot({
               section.number}
           </span>
         </motion.button>
-
-        {cardIsVisible ? (
-          <AnnotationCard
-            key={`${section.id}-annotation-card`}
-            section={section}
-            onClose={onClose}
-            onProjectSelect={
-              onProjectSelect
-            }
-            onOpenSectionDetail={
-              onOpenSectionDetail
-            }
-          />
-        ) : null}
       </div>
+
+      <style jsx global>{`
+        .adventure-number {
+          pointer-events: auto;
+        }
+
+        .adventure-number:disabled {
+          pointer-events: none;
+          cursor: wait;
+        }
+      `}</style>
     </Html>
   );
 }

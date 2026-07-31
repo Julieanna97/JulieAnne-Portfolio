@@ -1,15 +1,19 @@
 "use client";
 
 import dynamic from "next/dynamic";
+
 import {
   useEffect,
   useState,
 } from "react";
+
 import {
   Volume2,
   VolumeX,
 } from "lucide-react";
+
 import Preloader from "@/components/Preloader";
+
 import {
   getAmbientAudioMuted,
   setAmbientAudioMuted,
@@ -20,11 +24,11 @@ type HeroSceneProps = {
 };
 
 /*
-  Declare HeroScene's accepted props explicitly.
-
-  This prevents TypeScript from incorrectly treating the dynamically imported
-  component as a component with no props.
-*/
+ * Declare HeroScene's accepted props explicitly.
+ *
+ * This prevents TypeScript from treating the dynamically
+ * imported component as a component with no props.
+ */
 const HeroScene =
   dynamic<HeroSceneProps>(
     () =>
@@ -32,14 +36,14 @@ const HeroScene =
         "@/components/hero-scene/HeroScene"
       ).then(
         (module) =>
-          module.default
+          module.default,
       ),
     {
       ssr: false,
       loading: () => null,
-    }
+    },
   );
-  
+
 export default function HomePage() {
   const [
     bootChecked,
@@ -67,11 +71,9 @@ export default function HomePage() {
   ] = useState(false);
 
   /*
-    Mount the Three.js scene immediately behind the loader.
-
-    This allows the loading bar to track the model while the large orange
-    remains visible on top.
-  */
+   * Mount the Three.js scene immediately behind the
+   * loader so it can initialize before Enter is clicked.
+   */
   useEffect(() => {
     document.documentElement.dataset.theme =
       "twilight";
@@ -84,13 +86,51 @@ export default function HomePage() {
     setBootChecked(true);
   }, []);
 
+  /*
+   * Safety fallback.
+   *
+   * Normally HeroScene calls onSceneReady as soon as the
+   * controls and scene are mounted. If that callback fails,
+   * allow Enter to appear after 12 seconds instead of
+   * leaving the visitor on an infinite loading screen.
+   */
+  useEffect(() => {
+    if (
+      !sceneMounted ||
+      sceneReady
+    ) {
+      return;
+    }
+
+    const safetyTimer =
+      window.setTimeout(() => {
+        console.warn(
+          "Scene readiness timed out. Showing the Enter button.",
+        );
+
+        setSceneReady(true);
+      }, 12000);
+
+    return () => {
+      window.clearTimeout(
+        safetyTimer,
+      );
+    };
+  }, [
+    sceneMounted,
+    sceneReady,
+  ]);
+
+  /*
+   * Read and update the shared ambient-audio mute state.
+   */
   useEffect(() => {
     setMusicMuted(
-      getAmbientAudioMuted()
+      getAmbientAudioMuted(),
     );
 
     const handleMute = (
-      event: Event
+      event: Event,
     ) => {
       const customEvent =
         event as CustomEvent<{
@@ -98,41 +138,40 @@ export default function HomePage() {
         }>;
 
       const nextMuted =
-        customEvent.detail?.muted ??
-        true;
+        customEvent.detail
+          ?.muted ?? true;
 
       setAmbientAudioMuted(
-        nextMuted
+        nextMuted,
       );
 
       setMusicMuted(
-        nextMuted
+        nextMuted,
       );
     };
 
     window.addEventListener(
       "ambient:set-muted",
-      handleMute
+      handleMute,
     );
 
     return () => {
       window.removeEventListener(
         "ambient:set-muted",
-        handleMute
+        handleMute,
       );
     };
   }, []);
 
   /*
-    Start the intro immediately after Enter is clicked.
-
-    Preloader.tsx removes its white overlay on the following frame.
-  */
+   * Start the camera intro immediately after Enter
+   * is clicked.
+   */
   const handleEntered = () => {
     window.dispatchEvent(
       new CustomEvent(
-        "adventure:intro"
-      )
+        "adventure:intro",
+      ),
     );
   };
 
@@ -147,17 +186,20 @@ export default function HomePage() {
                 !musicMuted;
 
               setAmbientAudioMuted(
-                nextMuted
+                nextMuted,
               );
 
               setMusicMuted(
-                nextMuted
+                nextMuted,
               );
             }}
             className="fixed z-[160] inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-[#0d1020]/70 text-white shadow-lg backdrop-blur-xl transition hover:-translate-y-0.5"
             style={{
-              bottom: "max(1rem, env(safe-area-inset-bottom))",
-              right: "max(1rem, env(safe-area-inset-right))",
+              bottom:
+                "max(1rem, env(safe-area-inset-bottom))",
+
+              right:
+                "max(1rem, env(safe-area-inset-right))",
             }}
             aria-label={
               musicMuted
@@ -177,9 +219,13 @@ export default function HomePage() {
         showPreloader && (
           <Preloader
             sceneReady={sceneReady}
-            onEnter={handleEntered}
+            onEnter={
+              handleEntered
+            }
             onFinished={() => {
-              setShowPreloader(false);
+              setShowPreloader(
+                false,
+              );
             }}
             musicSrc="/music/puyopuyomegafan1234-japanese-jazz-2-385180.mp3"
           />
@@ -190,7 +236,9 @@ export default function HomePage() {
           <main className="h-screen h-[100dvh] w-full overflow-hidden bg-[#010106]">
             <HeroScene
               onSceneReady={() => {
-                setSceneReady(true);
+                setSceneReady(
+                  true,
+                );
               }}
             />
           </main>

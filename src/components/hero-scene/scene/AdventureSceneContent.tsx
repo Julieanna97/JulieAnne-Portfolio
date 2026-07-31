@@ -1,19 +1,52 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useThree, type ThreeEvent } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import { Bloom, EffectComposer, SSAO, Vignette } from "@react-three/postprocessing";
-import { BlendFunction } from "postprocessing";
-import type { PerspectiveCamera } from "three";
-import { MOUSE, TOUCH, Vector3 } from "three";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  useThree,
+  type ThreeEvent,
+} from "@react-three/fiber";
+
+import {
+  OrbitControls,
+} from "@react-three/drei";
+
+import {
+  Bloom,
+  EffectComposer,
+  SSAO,
+  Vignette,
+} from "@react-three/postprocessing";
+
+import {
+  BlendFunction,
+} from "postprocessing";
+
+import type {
+  PerspectiveCamera,
+} from "three";
+
+import {
+  MOUSE,
+  TOUCH,
+  Vector3,
+} from "three";
+
 import gsap from "gsap";
-import SakuraAtmosphere from "./SakuraAtmosphere";
-import ExistingStreetSignOverlay from "./ExistingStreetSignOverlay";
-import FloatingHeart from "./FloatingHeart";
 
 import MysteriousAdventureModel from "../../../models/MysteriousAdventureModel";
-import type { PortfolioSection, ProjectId, SectionId } from "../types";
+
+import type {
+  PortfolioSection,
+  ProjectId,
+  SectionId,
+} from "../types";
+
 import {
   ABOUT_CAMERA_MOBILE,
   CREDITS_CAMERA_MOBILE,
@@ -32,24 +65,20 @@ import {
 } from "../sceneConfig";
 
 import NumberHotspot from "../annotations/NumberHotspot";
-import GroundGraffiti from "./GroundGraffiti";
+
+import BackAlleyPinkGlow from "./BackAlleyPinkGlow";
 import ConcreteRooftopGround from "./ConcreteRooftopGround";
+import ExistingStreetSignOverlay from "./ExistingStreetSignOverlay";
+import FloatingHeart from "./FloatingHeart";
+import GroundGraffiti from "./GroundGraffiti";
+import RooftopVideoAdvertisement from "./RooftopVideoAdvertisement";
+import SakuraAtmosphere from "./SakuraAtmosphere";
+import SquareWallVideoAdvertisement from "./SquareWallVideoAdvertisement";
 import TokyoStreetLampGlow from "./TokyoStreetLampGlow";
 import TrainStreetLampGlow from "./TrainStreetLampGlow";
-import BackAlleyPinkGlow from "./BackAlleyPinkGlow";
-import RooftopVideoAdvertisement from "./RooftopVideoAdvertisement";
-import SquareWallVideoAdvertisement from "./SquareWallVideoAdvertisement";
 
-export default function AdventureSceneContent({
-  viewportWidth,
-  activeId,
-  onActiveChange,
-  onProjectSelect,
-  onOpenSectionDetail,
-  onSceneReady,
-}: {
-  viewportWidth:
-    number;
+export type AdventureSceneContentProps = {
+  viewportWidth: number;
 
   activeId:
     | SectionId
@@ -58,120 +87,182 @@ export default function AdventureSceneContent({
   onActiveChange: (
     id:
       | SectionId
-      | null
+      | null,
   ) => void;
 
   onProjectSelect: (
-    id:
-      ProjectId
+    id: ProjectId,
   ) => void;
 
   onOpenSectionDetail: (
     id:
-      "about" | "credits"
+      | "about"
+      | "credits",
   ) => void;
 
-  onSceneReady?:
-    () => void;
-}) {
+  interactionPaused?: boolean;
+
+  onSceneReady?: () => void;
+};
+
+type CameraPosition = [
+  number,
+  number,
+  number,
+];
+
+type CameraTarget = [
+  number,
+  number,
+  number,
+];
+
+const MANUAL_HOTSPOT_EVENT =
+  "adventure:manual-hotspot";
+
+const FOCUS_STATE_EVENT =
+  "adventure:focus-state";
+
+const RETURN_HOME_EVENT =
+  "adventure:return-home";
+
+export default function AdventureSceneContent({
+  viewportWidth,
+  activeId,
+  onActiveChange,
+  onProjectSelect,
+  onOpenSectionDetail,
+  interactionPaused = false,
+  onSceneReady,
+}: AdventureSceneContentProps) {
   const {
     camera,
     scene,
-  } =
-    useThree();
+  } = useThree();
 
   const controlsRef =
-    useRef<any>(
-      null
-    );
+    useRef<any>(null);
 
   const readyRef =
-    useRef(
-      false
+    useRef(false);
+
+  const readyFrameOneRef =
+    useRef<number | null>(
+      null,
     );
 
-  /*
-    Tracks whether a section was previously open. This lets every close path
-    return the camera to the exact original whole-building view.
-  */
-  const previousActiveIdRef =
-    useRef<
-      | SectionId
-      | null
-    >(
-      activeId
+  const readyFrameTwoRef =
+    useRef<number | null>(
+      null,
     );
 
-  const introTimelineRef =
+  const cameraTimelineRef =
     useRef<
-      | gsap.core.Timeline
-      | null
-    >(
-      null
-    );
+      gsap.core.Timeline | null
+    >(null);
 
   const [
     moving,
     setMoving,
+  ] = useState(false);
+
+  const [
+    focusedSectionId,
+    setFocusedSectionId,
   ] =
-    useState(
-      false
+    useState<SectionId | null>(
+      null,
     );
 
-    /*
-    * Idle camera rotation starts only after the opening
-    * intro finishes. Once the visitor interacts with the
-    * camera or selects a hotspot, it remains disabled.
-    */
-    const [
-      idleRotationEnabled,
-      setIdleRotationEnabled,
-    ] = useState(false);
+  const [
+    idleRotationEnabled,
+    setIdleRotationEnabled,
+  ] = useState(false);
 
-    const visitorInteractedRef =
-      useRef(false);
-
-    const stopIdleRotation =
-      useCallback(() => {
-        if (
-          visitorInteractedRef.current
-        ) {
-          return;
-        }
-
-        visitorInteractedRef.current =
-          true;
-
-        setIdleRotationEnabled(false);
-      }, []);
+  const visitorInteractedRef =
+    useRef(false);
 
   const [
     debugClickPoint,
     setDebugClickPoint,
   ] =
-    useState<
-      | [
-          number,
-          number,
-          number,
-        ]
-      | null
-    >(
-      null
+    useState<CameraPosition | null>(
+      null,
     );
 
   const compact =
-    viewportWidth <
-    768;
+    viewportWidth < 768;
 
   const homeCamera =
     compact
       ? HOME_CAMERA_MOBILE
       : HOME_CAMERA_DESKTOP;
 
+  const handleControlsReady =
+    useCallback(
+      (controls: any | null) => {
+        controlsRef.current =
+          controls;
+
+        if (
+          !controls ||
+          readyRef.current
+        ) {
+          return;
+        }
+
+        readyRef.current = true;
+
+        /*
+        * Set the initial camera immediately after
+        * OrbitControls has actually mounted.
+        */
+        camera.position.set(
+          ...homeCamera,
+        );
+
+        controls.target.set(
+          ...HOME_TARGET,
+        );
+
+        controls.update();
+
+        /*
+        * Allow the completed Three.js frame to render
+        * before displaying Enter.
+        */
+        readyFrameOneRef.current =
+          window.requestAnimationFrame(
+            () => {
+              readyFrameTwoRef.current =
+                window.requestAnimationFrame(
+                  () => {
+                    onSceneReady?.();
+                  },
+                );
+            },
+          );
+      },
+      [
+        camera,
+        homeCamera,
+        onSceneReady,
+      ],
+    );
+
+  const stopIdleRotation =
+    useCallback(() => {
+      visitorInteractedRef.current =
+        true;
+
+      setIdleRotationEnabled(
+        false,
+      );
+    }, []);
+
   const handleLightDebugClick = (
     event:
-      ThreeEvent<MouseEvent>
+      ThreeEvent<MouseEvent>,
   ) => {
     if (
       !ENABLE_LIGHT_DEBUGGER
@@ -181,315 +272,119 @@ export default function AdventureSceneContent({
 
     event.stopPropagation();
 
-    const {
-      x,
-      y,
-      z,
-    } =
-      event.point;
+    const clickedPosition:
+      CameraPosition = [
+        Number(
+          event.point.x.toFixed(
+            3,
+          ),
+        ),
 
-    const clickedPosition: [
-      number,
-      number,
-      number,
-    ] = [
-      Number(
-        x.toFixed(
-          3
-        )
-      ),
+        Number(
+          event.point.y.toFixed(
+            3,
+          ),
+        ),
 
-      Number(
-        y.toFixed(
-          3
-        )
-      ),
-
-      Number(
-        z.toFixed(
-          3
-        )
-      ),
-    ];
-
-    const worldNormal =
-      event.face?.normal?.clone();
-
-    if (
-      worldNormal
-    ) {
-      worldNormal.transformDirection(
-        event.object.matrixWorld
-      );
-    }
+        Number(
+          event.point.z.toFixed(
+            3,
+          ),
+        ),
+      ];
 
     setDebugClickPoint(
-      clickedPosition
+      clickedPosition,
     );
 
     console.group(
       "%cLIGHT POSITION DEBUG",
-      "color: #ff70c8; font-weight: 800;"
+      "color: #ff70c8; font-weight: 800;",
     );
 
     console.log(
       "Clicked mesh:",
       event.object.name ||
-        "(unnamed mesh)"
+        "(unnamed mesh)",
     );
 
     console.log(
       "World position:",
-      clickedPosition
+      clickedPosition,
     );
-
-    if (
-      worldNormal
-    ) {
-      console.log(
-        "World normal:",
-        [
-          Number(
-            worldNormal.x.toFixed(
-              3
-            )
-          ),
-
-          Number(
-            worldNormal.y.toFixed(
-              3
-            )
-          ),
-
-          Number(
-            worldNormal.z.toFixed(
-              3
-            )
-          ),
-        ]
-      );
-    }
 
     const nearbyLights: Array<{
-      name:
-        string;
+      name: string;
+      type: string;
+      distance: number;
+      position: string;
+    }> = [];
 
-      type:
-        string;
+    scene.traverse((object) => {
+      const possibleLight =
+        object as typeof object & {
+          isLight?: boolean;
+        };
 
-      color:
-        string;
-
-      intensity:
-        | number
-        | string;
-
-      range:
-        | number
-        | string;
-
-      distanceFromClick:
-        number;
-
-      worldPosition:
-        string;
-    }> =
-      [];
-
-    scene.traverse(
-      (
-        object
-      ) => {
-        const possibleLight =
-          object as typeof object & {
-            isLight?:
-              boolean;
-
-            color?: {
-              getHexString?: () => string;
-            };
-
-            intensity?:
-              number;
-
-            distance?:
-              number;
-          };
-
-        if (
-          !possibleLight.isLight
-        ) {
-          return;
-        }
-
-        const lightPosition =
-          new Vector3();
-
-        possibleLight.getWorldPosition(
-          lightPosition
-        );
-
-        nearbyLights.push(
-          {
-            name:
-              possibleLight.name ||
-              "(unnamed light)",
-
-            type:
-              possibleLight.type,
-
-            color:
-              possibleLight.color
-                ?.getHexString
-                ? `#${possibleLight.color.getHexString()}`
-                : "(no color)",
-
-            intensity:
-              typeof possibleLight.intensity ===
-              "number"
-                ? Number(
-                    possibleLight.intensity.toFixed(
-                      3
-                    )
-                  )
-                : "(not available)",
-
-            range:
-              typeof possibleLight.distance ===
-              "number"
-                ? Number(
-                    possibleLight.distance.toFixed(
-                      3
-                    )
-                  )
-                : "(not available)",
-
-            distanceFromClick:
-              Number(
-                lightPosition
-                  .distanceTo(
-                    event.point
-                  )
-                  .toFixed(
-                    3
-                  )
-              ),
-
-            worldPosition:
-              `[${lightPosition.x.toFixed(
-                3
-              )}, ${lightPosition.y.toFixed(
-                3
-              )}, ${lightPosition.z.toFixed(
-                3
-              )}]`,
-          }
-        );
+      if (
+        !possibleLight.isLight
+      ) {
+        return;
       }
-    );
+
+      const lightPosition =
+        new Vector3();
+
+      possibleLight.getWorldPosition(
+        lightPosition,
+      );
+
+      nearbyLights.push({
+        name:
+          possibleLight.name ||
+          "(unnamed light)",
+
+        type:
+          possibleLight.type,
+
+        distance:
+          Number(
+            lightPosition
+              .distanceTo(
+                event.point,
+              )
+              .toFixed(3),
+          ),
+
+        position:
+          `[${lightPosition.x.toFixed(
+            3,
+          )}, ${lightPosition.y.toFixed(
+            3,
+          )}, ${lightPosition.z.toFixed(
+            3,
+          )}]`,
+      });
+    });
 
     nearbyLights.sort(
       (
         first,
-        second
+        second,
       ) =>
-        first.distanceFromClick -
-        second.distanceFromClick
-    );
-
-    console.log(
-      "Nearby scene lights, closest first:"
+        first.distance -
+        second.distance,
     );
 
     console.table(
       nearbyLights.slice(
         0,
-        20
-      )
-    );
-
-    const clickedObject =
-      event.object as typeof event.object & {
-        material?:
-          any;
-      };
-
-    const clickedMaterials =
-      Array.isArray(
-        clickedObject.material
-      )
-        ? clickedObject.material
-        : [
-            clickedObject.material,
-          ];
-
-    const materialRows =
-      clickedMaterials
-        .filter(
-          Boolean
-        )
-        .map(
-          (
-            material:
-              any
-          ) => ({
-            name:
-              material.name ||
-              "(unnamed material)",
-
-            type:
-              material.type ||
-              "(unknown type)",
-
-            color:
-              material.color
-                ?.getHexString
-                ? `#${material.color.getHexString()}`
-                : "(no color)",
-
-            emissive:
-              material.emissive
-                ?.getHexString
-                ? `#${material.emissive.getHexString()}`
-                : "(no emissive color)",
-
-            emissiveIntensity:
-              typeof material.emissiveIntensity ===
-              "number"
-                ? Number(
-                    material.emissiveIntensity.toFixed(
-                      3
-                    )
-                  )
-                : "(not available)",
-
-            transparent:
-              Boolean(
-                material.transparent
-              ),
-
-            opacity:
-              typeof material.opacity ===
-              "number"
-                ? Number(
-                    material.opacity.toFixed(
-                      3
-                    )
-                  )
-                : "(not available)",
-          })
-        );
-
-    console.log(
-      "Clicked material:"
-    );
-
-    console.table(
-      materialRows
+        20,
+      ),
     );
 
     console.log(
-      `Copy position: [${clickedPosition[0]}, ${clickedPosition[1]}, ${clickedPosition[2]}]`
+      `Copy position: [${clickedPosition[0]}, ${clickedPosition[1]}, ${clickedPosition[2]}]`,
     );
 
     console.groupEnd();
@@ -498,68 +393,56 @@ export default function AdventureSceneContent({
   const lockCamera =
     useCallback(
       (
-        nextCamera: [
-          number,
-          number,
-          number,
-        ],
+        nextCamera:
+          CameraPosition,
 
-        nextTarget: [
-          number,
-          number,
-          number,
-        ]
+        nextTarget:
+          CameraTarget,
       ) => {
         const controls =
           controlsRef.current;
 
-        if (
-          !controls
-        ) {
+        if (!controls) {
           return;
         }
 
         camera.position.set(
-          ...nextCamera
+          ...nextCamera,
         );
 
         controls.target.set(
-          ...nextTarget
+          ...nextTarget,
         );
 
         controls.update();
       },
-      [
-        camera,
-      ]
+      [camera],
     );
 
   const stopCameraTweens =
-    useCallback(
-      () => {
-        introTimelineRef.current?.kill();
+    useCallback(() => {
+      cameraTimelineRef.current
+        ?.kill();
 
-        introTimelineRef.current =
-          null;
+      cameraTimelineRef.current =
+        null;
 
+      gsap.killTweensOf(
+        camera.position,
+      );
+
+      if (
+        controlsRef.current
+      ) {
         gsap.killTweensOf(
-          camera.position
+          controlsRef.current
+            .target,
         );
 
-        if (
-          controlsRef.current
-        ) {
-          gsap.killTweensOf(
-            controlsRef.current.target
-          );
-
-          controlsRef.current.update();
-        }
-      },
-      [
-        camera,
-      ]
-    );
+        controlsRef.current
+          .update();
+      }
+    }, [camera]);
 
   useEffect(() => {
     const perspectiveCamera =
@@ -570,7 +453,8 @@ export default function AdventureSceneContent({
         ? 43
         : 36;
 
-    perspectiveCamera.updateProjectionMatrix();
+    perspectiveCamera
+      .updateProjectionMatrix();
   }, [
     camera,
     compact,
@@ -579,207 +463,100 @@ export default function AdventureSceneContent({
   const moveCamera =
     useCallback(
       (
-        nextCamera: [
-          number,
-          number,
-          number,
-        ],
+        nextCamera:
+          CameraPosition,
 
-        nextTarget: [
-          number,
-          number,
-          number,
-        ],
+        nextTarget:
+          CameraTarget,
 
-        duration =
-          1.35
+        duration = 1.35,
+
+        afterMove?: () => void,
       ) => {
         const controls =
           controlsRef.current;
 
-        if (
-          !controls
-        ) {
+        if (!controls) {
           return;
         }
 
         stopCameraTweens();
 
-        setMoving(
-          true
-        );
+        setMoving(true);
 
         const timeline =
-          gsap.timeline(
-            {
-              onUpdate:
-                () => {
-                  controls.update();
-                },
+          gsap.timeline({
+            onUpdate: () => {
+              controls.update();
+            },
 
-              onComplete:
-                () => {
-                  lockCamera(
-                    nextCamera,
-                    nextTarget
-                  );
+            onComplete: () => {
+              lockCamera(
+                nextCamera,
+                nextTarget,
+              );
 
-                  introTimelineRef.current =
-                    null;
+              cameraTimelineRef.current =
+                null;
 
-                  setMoving(
-                    false
-                  );
-                },
+              setMoving(false);
 
-              onInterrupt:
-                () => {
-                  introTimelineRef.current =
-                    null;
+              afterMove?.();
+            },
 
-                  setMoving(
-                    false
-                  );
-                },
-            }
-          );
+            onInterrupt: () => {
+              cameraTimelineRef.current =
+                null;
 
-        introTimelineRef.current =
+              setMoving(false);
+            },
+          });
+
+        cameraTimelineRef.current =
           timeline;
 
         timeline.to(
           camera.position,
           {
-            x:
-              nextCamera[
-                0
-              ],
-
-            y:
-              nextCamera[
-                1
-              ],
-
-            z:
-              nextCamera[
-                2
-              ],
+            x: nextCamera[0],
+            y: nextCamera[1],
+            z: nextCamera[2],
 
             duration,
 
             ease:
               "power3.inOut",
           },
-          0
+          0,
         );
 
         timeline.to(
           controls.target,
           {
-            x:
-              nextTarget[
-                0
-              ],
-
-            y:
-              nextTarget[
-                1
-              ],
-
-            z:
-              nextTarget[
-                2
-              ],
+            x: nextTarget[0],
+            y: nextTarget[1],
+            z: nextTarget[2],
 
             duration,
 
             ease:
               "power3.inOut",
           },
-          0
+          0,
         );
       },
       [
         camera,
         lockCamera,
         stopCameraTweens,
-      ]
+      ],
     );
 
-  /*
-    Smoothly restore the exact camera position and target from sceneConfig.
-  */
-  const returnToHome =
-    useCallback(
-      () => {
-        moveCamera(
-          homeCamera,
-          HOME_TARGET,
-          1.15
-        );
-      },
-      [
-        homeCamera,
-        moveCamera,
-      ]
-    );
-
-  /*
-    The X button only closes the selected card. The activeId effect below
-    performs the zoom-out so this also works for any other external close path.
-  */
-  const closeAnnotation =
-    useCallback(
-      () => {
-        if (
-          moving
-        ) {
-          return;
-        }
-
-        onActiveChange(
-          null
-        );
-      },
-      [
-        moving,
-        onActiveChange,
-      ]
-    );
-
-  /*
-    Whenever a section changes from open to closed, return to the original
-    whole-building view instead of leaving OrbitControls at the section target.
-  */
-  useEffect(() => {
-    const previousActiveId =
-      previousActiveIdRef.current;
-
-    previousActiveIdRef.current =
-      activeId;
-
-    const sectionWasClosed =
-      previousActiveId !== null &&
-      activeId === null;
-
-    if (
-      sectionWasClosed
-    ) {
-      returnToHome();
-    }
-  }, [
-    activeId,
-    returnToHome,
-  ]);
-
-  /*
-    One continuous sideways movement for About Me.
-  */
   const moveToAboutDoor =
     useCallback(
       (
         section:
-          PortfolioSection
+          PortfolioSection,
       ) => {
         const finalCamera =
           compact
@@ -789,23 +566,20 @@ export default function AdventureSceneContent({
         moveCamera(
           finalCamera,
           section.focus,
-          1.65
+          1.65,
         );
       },
       [
         compact,
         moveCamera,
-      ]
+      ],
     );
 
-  /*
-    One continuous low storefront movement for Projects.
-  */
   const moveToProjectsStorefront =
     useCallback(
       (
         section:
-          PortfolioSection
+          PortfolioSection,
       ) => {
         const finalCamera =
           compact
@@ -815,23 +589,20 @@ export default function AdventureSceneContent({
         moveCamera(
           finalCamera,
           section.focus,
-          1.55
+          1.55,
         );
       },
       [
         compact,
         moveCamera,
-      ]
+      ],
     );
 
-  /*
-    Direct Credits rooftop movement.
-  */
   const moveToCreditsRooftop =
     useCallback(
       (
         section:
-          PortfolioSection
+          PortfolioSection,
       ) => {
         const finalCamera =
           compact
@@ -841,31 +612,68 @@ export default function AdventureSceneContent({
         moveCamera(
           finalCamera,
           section.focus,
-          1.35
+          1.35,
         );
       },
       [
         compact,
         moveCamera,
-      ]
+      ],
     );
 
   const selectSection =
     useCallback(
       (
         section:
-          PortfolioSection
+          PortfolioSection,
       ) => {
         if (
-          moving
+          moving ||
+          interactionPaused ||
+          focusedSectionId !==
+            null
         ) {
           return;
         }
 
         stopIdleRotation();
 
+        setFocusedSectionId(
+          section.id,
+        );
+
+        /*
+         * Hide connector lines and pause automatic
+         * detection during the close-up camera view.
+         */
+        window.dispatchEvent(
+          new CustomEvent(
+            FOCUS_STATE_EVENT,
+            {
+              detail: {
+                focused: true,
+                returning: false,
+              },
+            },
+          ),
+        );
+
+        /*
+         * Update the external card stack immediately.
+         */
+        window.dispatchEvent(
+          new CustomEvent(
+            MANUAL_HOTSPOT_EVENT,
+            {
+              detail: {
+                id: section.id,
+              },
+            },
+          ),
+        );
+
         onActiveChange(
-          section.id
+          section.id,
         );
 
         if (
@@ -873,7 +681,7 @@ export default function AdventureSceneContent({
           "about"
         ) {
           moveToAboutDoor(
-            section
+            section,
           );
 
           return;
@@ -884,7 +692,7 @@ export default function AdventureSceneContent({
           "projects"
         ) {
           moveToProjectsStorefront(
-            section
+            section,
           );
 
           return;
@@ -895,7 +703,7 @@ export default function AdventureSceneContent({
           "credits"
         ) {
           moveToCreditsRooftop(
-            section
+            section,
           );
 
           return;
@@ -903,79 +711,166 @@ export default function AdventureSceneContent({
 
         moveCamera(
           section.camera,
-          section.focus
+          section.focus,
         );
       },
       [
+        focusedSectionId,
+        interactionPaused,
         moveCamera,
         moveToAboutDoor,
-        moveToProjectsStorefront,
         moveToCreditsRooftop,
+        moveToProjectsStorefront,
         moving,
         onActiveChange,
         stopIdleRotation,
-      ]
+      ],
     );
 
+  const returnToHome =
+    useCallback(() => {
+      if (
+        moving ||
+        focusedSectionId ===
+          null
+      ) {
+        return;
+      }
+
+      stopIdleRotation();
+
+      window.dispatchEvent(
+        new CustomEvent(
+          FOCUS_STATE_EVENT,
+          {
+            detail: {
+              focused: true,
+              returning: true,
+            },
+          },
+        ),
+      );
+
+      moveCamera(
+        homeCamera,
+        HOME_TARGET,
+        1.15,
+        () => {
+          setFocusedSectionId(
+            null,
+          );
+
+          /*
+           * Keep activeId unchanged. Its card remains on
+           * top and the connector returns at Home.
+           */
+          window.dispatchEvent(
+            new CustomEvent(
+              FOCUS_STATE_EVENT,
+              {
+                detail: {
+                  focused: false,
+                  returning: false,
+                },
+              },
+            ),
+          );
+        },
+      );
+    }, [
+      focusedSectionId,
+      homeCamera,
+      moveCamera,
+      moving,
+      stopIdleRotation,
+    ]);
+
   useEffect(() => {
-    const handleSelection =
-      (
-        event:
-          Event
-      ) => {
-        const customEvent =
-          event as CustomEvent<{
-            id?:
-              SectionId;
-          }>;
-
-        const requestedId =
-          customEvent.detail
-            ?.id;
-
-        const section =
-          SECTIONS.find(
-            (
-              item
-            ) =>
-              item.id ===
-              requestedId
-          );
-
-        if (
-          section
-        ) {
-          selectSection(
-            section
-          );
-        }
+    const handleReturnHome =
+      () => {
+        returnToHome();
       };
 
     window.addEventListener(
+      RETURN_HOME_EVENT,
+      handleReturnHome,
+    );
+
+    return () => {
+      window.removeEventListener(
+        RETURN_HOME_EVENT,
+        handleReturnHome,
+      );
+    };
+  }, [returnToHome]);
+
+  /*
+   * Preserve support for external section navigation.
+   */
+  useEffect(() => {
+    const handleSelection = (
+      event: Event,
+    ) => {
+      const customEvent =
+        event as CustomEvent<{
+          id?: SectionId;
+        }>;
+
+      const requestedId =
+        customEvent.detail?.id;
+
+      const section =
+        SECTIONS.find(
+          (item) =>
+            item.id ===
+            requestedId,
+        );
+
+      if (section) {
+        selectSection(
+          section,
+        );
+      }
+    };
+
+    window.addEventListener(
       "adventure:select",
-      handleSelection
+      handleSelection,
     );
 
     return () => {
       window.removeEventListener(
         "adventure:select",
-        handleSelection
+        handleSelection,
       );
     };
-  }, [
-    selectSection,
-  ]);
+  }, [selectSection]);
+
+  useEffect(() => {
+    return () => {
+      if (
+        readyFrameOneRef.current !==
+        null
+      ) {
+        window.cancelAnimationFrame(
+          readyFrameOneRef.current,
+        );
+      }
+
+      if (
+        readyFrameTwoRef.current !==
+        null
+      ) {
+        window.cancelAnimationFrame(
+          readyFrameTwoRef.current,
+        );
+      }
+    };
+  }, []);
 
   /*
-    First-entry intro animation.
-
-    This is one direct movement:
-    - start at the wide view,
-    - immediately zoom into the final bicycle-and-road-sign view,
-    - remain at the final position.
-
-    There is no midpoint, overlap, pause, or automatic zoom-out.
-  */
+   * Opening camera animation.
+   */
   useEffect(() => {
     const handleIntro = () => {
       const controls =
@@ -996,43 +891,61 @@ export default function AdventureSceneContent({
           : INTRO_STREET_CAMERA_DESKTOP;
 
       stopCameraTweens();
+
       setMoving(true);
 
-      /*
-        One stable pivot gives a proper orbit around the building.
-      */
+      setFocusedSectionId(
+        null,
+      );
+
+      setIdleRotationEnabled(
+        false,
+      );
+
+      window.dispatchEvent(
+        new CustomEvent(
+          FOCUS_STATE_EVENT,
+          {
+            detail: {
+              focused: false,
+              returning: false,
+            },
+          },
+        ),
+      );
+
       const orbitTarget =
         new Vector3(
           INTRO_STREET_TARGET[0],
           INTRO_STREET_TARGET[1],
-          INTRO_STREET_TARGET[2]
+          INTRO_STREET_TARGET[2],
         );
 
       const startOffset =
         new Vector3(
           startCamera[0],
           startCamera[1],
-          startCamera[2]
+          startCamera[2],
         ).sub(orbitTarget);
 
       const finalOffset =
         new Vector3(
           finalCamera[0],
           finalCamera[1],
-          finalCamera[2]
+          finalCamera[2],
         ).sub(orbitTarget);
 
       const orbitState = {
         angle:
           Math.atan2(
             startOffset.x,
-            startOffset.z
+            startOffset.z,
           ),
 
         horizontalRadius:
           Math.hypot(
             startOffset.x,
-            startOffset.z
+            startOffset.z,
           ),
 
         height:
@@ -1042,13 +955,9 @@ export default function AdventureSceneContent({
       let finalAngle =
         Math.atan2(
           finalOffset.x,
-          finalOffset.z
+          finalOffset.z,
         );
 
-      /*
-        Force the camera to rotate forward around the building,
-        rather than taking the shorter route backward.
-      */
       while (
         finalAngle <=
         orbitState.angle
@@ -1060,50 +969,45 @@ export default function AdventureSceneContent({
       const finalHorizontalRadius =
         Math.hypot(
           finalOffset.x,
-          finalOffset.z
+          finalOffset.z,
         );
 
-      /*
-        Save approximately 11 degrees for the finishing movement.
-        This gives the animation an extra rotation near the end.
-      */
       const finishingRotation =
-        (Math.PI * 11) / 180;
+        (Math.PI * 11) /
+        180;
 
       const mainRotationEnd =
         finalAngle -
         finishingRotation;
 
-      const applyCameraPosition = () => {
-        camera.position.set(
-          orbitTarget.x +
-            Math.sin(
-              orbitState.angle
-            ) *
-              orbitState.horizontalRadius,
+      const applyCameraPosition =
+        () => {
+          camera.position.set(
+            orbitTarget.x +
+              Math.sin(
+                orbitState.angle,
+              ) *
+                orbitState.horizontalRadius,
 
-          orbitState.height,
+            orbitState.height,
 
-          orbitTarget.z +
-            Math.cos(
-              orbitState.angle
-            ) *
-              orbitState.horizontalRadius
-        );
+            orbitTarget.z +
+              Math.cos(
+                orbitState.angle,
+              ) *
+                orbitState.horizontalRadius,
+          );
 
-        controls.target.copy(
-          orbitTarget
-        );
+          controls.target.copy(
+            orbitTarget,
+          );
 
-        controls.update();
-      };
+          controls.update();
+        };
 
-      /*
-        Begin from the higher, closer camera.
-      */
       lockCamera(
         startCamera,
-        INTRO_STREET_TARGET
+        INTRO_STREET_TARGET,
       );
 
       const timeline =
@@ -1111,44 +1015,34 @@ export default function AdventureSceneContent({
           onComplete: () => {
             lockCamera(
               finalCamera,
-              INTRO_STREET_TARGET
+              INTRO_STREET_TARGET,
             );
 
-            introTimelineRef.current =
+            cameraTimelineRef.current =
               null;
 
             setMoving(false);
 
-            /*
-            * Begin the gentle orbit only when the visitor
-            * has not already interacted with the scene.
-            */
             if (
               !visitorInteractedRef.current
             ) {
               setIdleRotationEnabled(
-                true
+                true,
               );
             }
           },
 
           onInterrupt: () => {
-            introTimelineRef.current =
+            cameraTimelineRef.current =
               null;
 
             setMoving(false);
           },
         });
 
-      introTimelineRef.current =
+      cameraTimelineRef.current =
         timeline;
 
-      /*
-        Main movement:
-        - rotate around the model,
-        - zoom outward,
-        - descend from the higher opening angle.
-      */
       timeline.to(
         orbitState,
         {
@@ -1159,9 +1053,6 @@ export default function AdventureSceneContent({
             finalHorizontalRadius *
             0.98,
 
-          /*
-            Stop slightly above the final camera height.
-          */
           height:
             finalCamera[1] +
             0.65,
@@ -1176,15 +1067,9 @@ export default function AdventureSceneContent({
           onUpdate:
             applyCameraPosition,
         },
-        0
+        0,
       );
 
-      /*
-        Finishing movement:
-        - rotate a little farther,
-        - move slightly downward,
-        - reach the exact final zoom distance.
-      */
       timeline.to(
         orbitState,
         {
@@ -1206,19 +1091,19 @@ export default function AdventureSceneContent({
 
           onUpdate:
             applyCameraPosition,
-        }
+        },
       );
     };
 
     window.addEventListener(
       "adventure:intro",
-      handleIntro
+      handleIntro,
     );
 
     return () => {
       window.removeEventListener(
         "adventure:intro",
-        handleIntro
+        handleIntro,
       );
 
       stopCameraTweens();
@@ -1228,37 +1113,6 @@ export default function AdventureSceneContent({
     compact,
     lockCamera,
     stopCameraTweens,
-  ]);
-
-  useEffect(() => {
-    if (
-      !controlsRef.current ||
-      readyRef.current
-    ) {
-      return;
-    }
-
-    readyRef.current =
-      true;
-
-    lockCamera(
-      homeCamera,
-      HOME_TARGET
-    );
-
-    requestAnimationFrame(
-      () => {
-        requestAnimationFrame(
-          () => {
-            onSceneReady?.();
-          }
-        );
-      }
-    );
-  }, [
-    homeCamera,
-    lockCamera,
-    onSceneReady,
   ]);
 
   return (
@@ -1280,9 +1134,7 @@ export default function AdventureSceneContent({
       />
 
       <ambientLight
-        intensity={
-          0.12
-        }
+        intensity={0.12}
       />
 
       <spotLight
@@ -1291,22 +1143,12 @@ export default function AdventureSceneContent({
           17,
           11,
         ]}
-        angle={
-          0.52
-        }
-        penumbra={
-          0.86
-        }
-        intensity={
-          4.15
-        }
+        angle={0.52}
+        penumbra={0.86}
+        intensity={4.15}
         color="#ffd0b6"
-        distance={
-          48
-        }
-        decay={
-          1.45
-        }
+        distance={48}
+        decay={1.45}
         castShadow
         shadow-mapSize-width={
           1024
@@ -1322,22 +1164,12 @@ export default function AdventureSceneContent({
           14,
           -10,
         ]}
-        angle={
-          0.68
-        }
-        penumbra={
-          0.92
-        }
-        intensity={
-          2.75
-        }
+        angle={0.68}
+        penumbra={0.92}
+        intensity={2.75}
         color="#727cff"
-        distance={
-          52
-        }
-        decay={
-          1.55
-        }
+        distance={52}
+        decay={1.55}
       />
 
       <pointLight
@@ -1346,23 +1178,14 @@ export default function AdventureSceneContent({
           8.2,
           1.7,
         ]}
-        intensity={
-          1.7
-        }
+        intensity={1.7}
         color="#ff7665"
-        distance={
-          20
-        }
-        decay={
-          1.5
-        }
+        distance={20}
+        decay={1.5}
       />
 
       <ConcreteRooftopGround />
 
-      {/*
-        Render the portfolio introduction directly on the rooftop concrete.
-      */}
       <GroundGraffiti />
 
       <ExistingStreetSignOverlay />
@@ -1396,9 +1219,7 @@ export default function AdventureSceneContent({
             position={
               debugClickPoint
             }
-            renderOrder={
-              999
-            }
+            renderOrder={999}
           >
             <sphereGeometry
               args={[
@@ -1410,15 +1231,9 @@ export default function AdventureSceneContent({
 
             <meshBasicMaterial
               color="#00ffff"
-              toneMapped={
-                false
-              }
-              depthTest={
-                false
-              }
-              depthWrite={
-                false
-              }
+              toneMapped={false}
+              depthTest={false}
+              depthWrite={false}
             />
           </mesh>
         )}
@@ -1433,15 +1248,9 @@ export default function AdventureSceneContent({
           12,
           4,
         ]}
-        intensity={
-          5
-        }
-        distance={
-          28
-        }
-        decay={
-          1.6
-        }
+        intensity={5}
+        distance={28}
+        decay={1.6}
         color="#ffc87a"
       />
 
@@ -1451,15 +1260,9 @@ export default function AdventureSceneContent({
           7,
           5,
         ]}
-        intensity={
-          6
-        }
-        distance={
-          24
-        }
-        decay={
-          1.65
-        }
+        intensity={6}
+        distance={24}
+        decay={1.65}
         color="#ffbe72"
       />
 
@@ -1469,15 +1272,9 @@ export default function AdventureSceneContent({
           3.5,
           6,
         ]}
-        intensity={
-          7
-        }
-        distance={
-          22
-        }
-        decay={
-          1.6
-        }
+        intensity={7}
+        distance={22}
+        decay={1.6}
         color="#ffba68"
       />
 
@@ -1487,15 +1284,9 @@ export default function AdventureSceneContent({
           0.8,
           8,
         ]}
-        intensity={
-          7
-        }
-        distance={
-          20
-        }
-        decay={
-          1.55
-        }
+        intensity={7}
+        distance={20}
+        decay={1.55}
         color="#ffb660"
       />
 
@@ -1505,15 +1296,9 @@ export default function AdventureSceneContent({
           0.5,
           3,
         ]}
-        intensity={
-          3.4
-        }
-        distance={
-          13
-        }
-        decay={
-          1.85
-        }
+        intensity={3.4}
+        distance={13}
+        decay={1.85}
         color="#ffc070"
       />
 
@@ -1523,15 +1308,9 @@ export default function AdventureSceneContent({
           2.5,
           1,
         ]}
-        intensity={
-          2.8
-        }
-        distance={
-          12
-        }
-        decay={
-          1.9
-        }
+        intensity={2.8}
+        distance={12}
+        decay={1.9}
         color="#ffbe74"
       />
 
@@ -1541,47 +1320,42 @@ export default function AdventureSceneContent({
           0.1,
           6,
         ]}
-        intensity={
-          4.2
-        }
-        distance={
-          15
-        }
-        decay={
-          1.8
-        }
+        intensity={4.2}
+        distance={15}
+        decay={1.8}
         color="#ffb258"
       />
 
       <BackAlleyPinkGlow />
 
+      {/*
+       * Hotspots remain clickable.
+       *
+       * showCard is false because the external
+       * AutoCardStack owns the visible cards.
+       */}
       {SECTIONS.map(
-        (
-          section
-        ) => (
+        (section) => (
           <NumberHotspot
-            key={
-              section.id
-            }
-            section={
-              section
-            }
+            key={section.id}
+            section={section}
             disabled={
-              moving
+              moving ||
+              interactionPaused ||
+              focusedSectionId !==
+                null
             }
             selected={
               activeId ===
               section.id
             }
-            showCard={
-              !compact
-            }
+            showCard={false}
             onSelect={
               selectSection
             }
-            onClose={
-              closeAnnotation
-            }
+            onClose={() => {
+              // The external stack has no X close action.
+            }}
             onProjectSelect={
               onProjectSelect
             }
@@ -1589,31 +1363,21 @@ export default function AdventureSceneContent({
               onOpenSectionDetail
             }
           />
-        )
+        ),
       )}
 
       <EffectComposer
-        multisampling={
-          0
-        }
+        multisampling={0}
         enableNormalPass
       >
         <SSAO
           blendFunction={
             BlendFunction.MULTIPLY
           }
-          samples={
-            12
-          }
-          rings={
-            4
-          }
-          radius={
-            0.075
-          }
-          intensity={
-            1.2
-          }
+          samples={12}
+          rings={4}
+          radius={0.075}
+          intensity={1.2}
           luminanceInfluence={
             0.52
           }
@@ -1624,9 +1388,7 @@ export default function AdventureSceneContent({
 
         <Bloom
           mipmapBlur
-          intensity={
-            0.5
-          }
+          intensity={0.5}
           luminanceThreshold={
             0.68
           }
@@ -1636,48 +1398,35 @@ export default function AdventureSceneContent({
         />
 
         <Vignette
-          eskil={
-            false
-          }
-          offset={
-            0.18
-          }
-          darkness={
-            0.72
-          }
+          eskil={false}
+          offset={0.18}
+          darkness={0.72}
         />
       </EffectComposer>
 
       <OrbitControls
-        ref={controlsRef}
+        ref={handleControlsReady}
         makeDefault
-
         autoRotate={
           idleRotationEnabled &&
           !moving &&
-          activeId === null
+          focusedSectionId ===
+            null &&
+          !interactionPaused
         }
-
         autoRotateSpeed={1.6}
-
         onStart={
           stopIdleRotation
         }
-
-        /*
-          Lock all manual movement while a section is open or while a camera
-          transition is running. The X button therefore performs only the
-          controlled zoom-out to the original home view.
-        */
         enabled={
           !moving &&
-          activeId === null
+          focusedSectionId ===
+            null &&
+          !interactionPaused
         }
-
         enablePan={false}
         enableRotate
         enableZoom
-
         mouseButtons={{
           LEFT:
             MOUSE.ROTATE,
@@ -1685,13 +1434,9 @@ export default function AdventureSceneContent({
           MIDDLE:
             MOUSE.DOLLY,
 
-          /*
-            Panning is disabled, so right drag does nothing.
-          */
           RIGHT:
             MOUSE.PAN,
         }}
-
         touches={{
           ONE:
             TOUCH.ROTATE,
@@ -1699,44 +1444,38 @@ export default function AdventureSceneContent({
           TWO:
             TOUCH.DOLLY_ROTATE,
         }}
-
         minDistance={
           compact
             ? 8.5
             : 7
         }
-
         maxDistance={
           compact
             ? 48
             : 40
         }
-
         minPolarAngle={
           Math.PI / 7
         }
-
         maxPolarAngle={
           Math.PI / 2.02
         }
-
         zoomSpeed={
           compact
             ? 0.95
             : 0.72
         }
-
         rotateSpeed={
           compact
             ? 0.58
             : 0.72
         }
-
         enableDamping={
           !moving &&
-          activeId === null
+          focusedSectionId ===
+            null &&
+          !interactionPaused
         }
-
         dampingFactor={0.075}
       />
     </>
