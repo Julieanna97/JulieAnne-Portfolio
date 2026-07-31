@@ -164,7 +164,7 @@ export default function Preloader({
           </strong>
 
           <small>
-            Portfolio
+            Cantillep
           </small>
         </span>
       </div>
