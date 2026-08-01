@@ -20,6 +20,7 @@ import type {
 } from "../types";
 
 import {
+  HOME_TARGET,
   INTRO_ZOOM_DURATION,
   SECTIONS,
 } from "../sceneConfig";
@@ -69,9 +70,20 @@ type FocusStateEvent =
     returning?: boolean;
   }>;
 
-type DetectionCandidate = {
+type HotspotMetrics = {
   id: SectionId;
-  score: number;
+
+  sideAngle: number;
+  sideError: number;
+
+  projectedX: number;
+  projectedY: number;
+
+  inFront: boolean;
+  insideDepth: boolean;
+
+  detectable: boolean;
+  connectorVisible: boolean;
 };
 
 const MANUAL_HOTSPOT_EVENT =
@@ -80,6 +92,15 @@ const MANUAL_HOTSPOT_EVENT =
 const FOCUS_STATE_EVENT =
   "adventure:focus-state";
 
+/*
+ * Physical order around the building.
+ *
+ * Left to right:
+ * Projects -> Credits -> About
+ *
+ * Right to left:
+ * About -> Credits -> Projects
+ */
 const HOTSPOT_SEQUENCE:
   SectionId[] = [
     "projects",
@@ -87,47 +108,208 @@ const HOTSPOT_SEQUENCE:
     "about",
   ];
 
-const INITIAL_SECTION_ID:
-  SectionId = "projects";
+/*
+ * A new traversal may begin from either end.
+ *
+ * Credits cannot become the first card.
+ */
+const START_SECTION_IDS:
+  SectionId[] = [
+    "projects",
+    "about",
+  ];
 
+/*
+ * Run detection frequently enough to catch a quick mouse
+ * or touch drag.
+ */
 const DETECTION_SAMPLE_INTERVAL =
-  0.06;
+  0.04;
 
-const DETECTION_SETTLE_TIME =
-  0.1;
+/*
+ * The card appears shortly after the marker becomes
+ * visible on its side.
+ *
+ * Raise this to 0.18 if transitions become too sensitive.
+ */
+const DETECTION_DWELL_TIME =
+  0.12;
 
+/*
+ * Require only a small amount of travel after the previous
+ * card. This works with both idle and manual rotation.
+ */
 const MIN_ROTATION_TRAVEL =
-  0.055;
+  0.008;
 
-const EXPECTED_CENTER_LIMIT =
-  0.48;
+const ROTATION_EPSILON =
+  0.00004;
 
-const CHANGE_ADVANTAGE =
-  0.025;
+/*
+ * A card may activate as soon as the visitor reaches the
+ * visible portion of that building side.
+ *
+ * 0.92 radians is approximately 53 degrees.
+ */
+const DETECTION_SIDE_ANGLE_LIMIT =
+  0.92;
 
-const HORIZONTAL_VISIBLE_LIMIT =
-  1.4;
+/*
+ * The numbered marker may be near the viewport edge when
+ * its building side first becomes visible.
+ */
+const DETECTION_X_LIMIT =
+  1.04;
 
-const CONNECTOR_VISIBLE_LIMIT =
-  1.2;
+/*
+ * Credits is much higher than Projects and About.
+ */
+const DETECTION_Y_LIMIT =
+  1.28;
+
+/*
+ * The dotted connector uses wider limits and no strict
+ * building-side requirement.
+ *
+ * This keeps it updating during manual rotation until the
+ * active marker is actually behind the camera or far
+ * outside the viewport.
+ */
+const CONNECTOR_X_LIMIT =
+  1.65;
+
+const CONNECTOR_Y_LIMIT =
+  1.55;
 
 const RETURN_HOME_SUSPEND_MS =
-  320;
+  260;
+
+/*
+ * A candidate that has just passed the exact camera-side
+ * angle remains valid within this small allowance.
+ */
+const PASSED_SIDE_ALLOWANCE =
+  0.2;
 
 function getWrappedAngleDelta(
-  currentAngle: number,
-  previousAngle: number,
+  firstAngle: number,
+  secondAngle: number,
 ) {
   return Math.atan2(
     Math.sin(
-      currentAngle -
-        previousAngle,
+      firstAngle -
+        secondAngle,
     ),
     Math.cos(
-      currentAngle -
-        previousAngle,
+      firstAngle -
+        secondAngle,
     ),
   );
+}
+
+function getSection(
+  id: SectionId,
+) {
+  return SECTIONS.find(
+    (section) =>
+      section.id === id,
+  );
+}
+
+function getAllowedSectionIds(
+  currentId:
+    | SectionId
+    | null,
+): SectionId[] {
+  if (!currentId) {
+    return [
+      ...START_SECTION_IDS,
+    ];
+  }
+
+  const currentIndex =
+    HOTSPOT_SEQUENCE.indexOf(
+      currentId,
+    );
+
+  if (currentIndex === -1) {
+    return [
+      ...START_SECTION_IDS,
+    ];
+  }
+
+  const allowedIds:
+    SectionId[] = [];
+
+  const previousId =
+    HOTSPOT_SEQUENCE[
+      currentIndex - 1
+    ];
+
+  const nextId =
+    HOTSPOT_SEQUENCE[
+      currentIndex + 1
+    ];
+
+  if (previousId) {
+    allowedIds.push(
+      previousId,
+    );
+  }
+
+  if (nextId) {
+    allowedIds.push(
+      nextId,
+    );
+  }
+
+  return allowedIds;
+}
+
+function getDetectionDirection(
+  currentId:
+    | SectionId
+    | null,
+
+  nextId:
+    SectionId,
+): DetectionDirection {
+  if (!currentId) {
+    return 0;
+  }
+
+  const currentIndex =
+    HOTSPOT_SEQUENCE.indexOf(
+      currentId,
+    );
+
+  const nextIndex =
+    HOTSPOT_SEQUENCE.indexOf(
+      nextId,
+    );
+
+  if (
+    currentIndex === -1 ||
+    nextIndex === -1
+  ) {
+    return 0;
+  }
+
+  if (
+    nextIndex >
+    currentIndex
+  ) {
+    return 1;
+  }
+
+  if (
+    nextIndex <
+    currentIndex
+  ) {
+    return -1;
+  }
+
+  return 0;
 }
 
 export default function AutomaticHotspotController({
@@ -167,27 +349,23 @@ export default function AutomaticHotspotController({
   const candidateStartRef =
     useRef(0);
 
-  const previousForwardAngleRef =
+  const previousCameraAngleRef =
     useRef<number | null>(
       null,
     );
 
-  const forwardRawDirectionRef =
+  /*
+   * Current physical camera rotation direction:
+   *
+   * 1  = increasing camera-side angle
+   * -1 = decreasing camera-side angle
+   */
+  const rotationDirectionRef =
     useRef<DetectionDirection>(
       0,
     );
 
-  const currentRawDirectionRef =
-    useRef<DetectionDirection>(
-      0,
-    );
-
-  const previousRawDirectionRef =
-    useRef<DetectionDirection>(
-      0,
-    );
-
-  const angleTravelRef =
+  const rotationTravelRef =
     useRef(0);
 
   const lastDetectionSampleRef =
@@ -206,17 +384,7 @@ export default function AutomaticHotspotController({
       new Vector3(),
     );
 
-  const activePointRef =
-    useRef(
-      new Vector3(),
-    );
-
   const cameraForwardRef =
-    useRef(
-      new Vector3(),
-    );
-
-  const flatForwardRef =
     useRef(
       new Vector3(),
     );
@@ -259,12 +427,12 @@ export default function AutomaticHotspotController({
           id;
 
         candidateIdRef.current =
-          id;
+          null;
 
         candidateStartRef.current =
           0;
 
-        angleTravelRef.current =
+        rotationTravelRef.current =
           0;
 
         onDetectedHotspot({
@@ -276,8 +444,177 @@ export default function AutomaticHotspotController({
     );
 
   /*
-   * Start automatic detection after the camera intro.
-   * Projects is always the initial card.
+   * Keep the controller synchronized with activeId changes
+   * made by marker clicks or Home-state interactions.
+   */
+  useEffect(() => {
+    if (
+      activeId ===
+      detectedIdRef.current
+    ) {
+      return;
+    }
+
+    detectedIdRef.current =
+      activeId;
+
+    candidateIdRef.current =
+      null;
+
+    candidateStartRef.current =
+      0;
+
+    rotationTravelRef.current =
+      0;
+  }, [activeId]);
+
+  /*
+   * Calculate the screen and building-side position of a
+   * hotspot.
+   *
+   * No raycaster is used, avoiding LineSegments2 errors.
+   */
+  const getHotspotMetrics =
+    useCallback(
+      (
+        id:
+          SectionId,
+
+        cameraSideAngle:
+          number,
+      ): HotspotMetrics => {
+        const section =
+          getSection(id);
+
+        if (!section) {
+          return {
+            id,
+
+            sideAngle: 0,
+            sideError:
+              Math.PI,
+
+            projectedX: 0,
+            projectedY: 0,
+
+            inFront: false,
+            insideDepth: false,
+
+            detectable: false,
+            connectorVisible:
+              false,
+          };
+        }
+
+        worldPointRef.current.set(
+          section.hotspot[0],
+          section.hotspot[1],
+          section.hotspot[2],
+        );
+
+        const sideAngle =
+          Math.atan2(
+            section.hotspot[0] -
+              HOME_TARGET[0],
+
+            section.hotspot[2] -
+              HOME_TARGET[2],
+          );
+
+        const sideError =
+          Math.abs(
+            getWrappedAngleDelta(
+              cameraSideAngle,
+              sideAngle,
+            ),
+          );
+
+        pointDirectionRef.current
+          .subVectors(
+            worldPointRef.current,
+            camera.position,
+          )
+          .normalize();
+
+        const inFront =
+          cameraForwardRef.current.dot(
+            pointDirectionRef.current,
+          ) > 0.002;
+
+        projectedPointRef.current
+          .copy(
+            worldPointRef.current,
+          )
+          .project(
+            camera,
+          );
+
+        const projectedX =
+          projectedPointRef.current.x;
+
+        const projectedY =
+          projectedPointRef.current.y;
+
+        const projectedZ =
+          projectedPointRef.current.z;
+
+        const insideDepth =
+          projectedZ >= -1 &&
+          projectedZ <= 1;
+
+        const insideDetectionScreen =
+          Math.abs(
+            projectedX,
+          ) <=
+            DETECTION_X_LIMIT &&
+          Math.abs(
+            projectedY,
+          ) <=
+            DETECTION_Y_LIMIT;
+
+        const insideDetectionSide =
+          sideError <=
+          DETECTION_SIDE_ANGLE_LIMIT;
+
+        const connectorVisible =
+          inFront &&
+          insideDepth &&
+          Math.abs(
+            projectedX,
+          ) <=
+            CONNECTOR_X_LIMIT &&
+          Math.abs(
+            projectedY,
+          ) <=
+            CONNECTOR_Y_LIMIT;
+
+        return {
+          id,
+
+          sideAngle,
+          sideError,
+
+          projectedX,
+          projectedY,
+
+          inFront,
+          insideDepth,
+
+          detectable:
+            inFront &&
+            insideDepth &&
+            insideDetectionScreen &&
+            insideDetectionSide,
+
+          connectorVisible,
+        };
+      },
+      [camera],
+    );
+
+  /*
+   * Automatic detection starts once the entrance camera
+   * animation has completed.
    */
   useEffect(() => {
     let enableTimer:
@@ -297,19 +634,16 @@ export default function AutomaticHotspotController({
       candidateIdRef.current =
         null;
 
-      previousForwardAngleRef.current =
+      candidateStartRef.current =
+        0;
+
+      previousCameraAngleRef.current =
         null;
 
-      forwardRawDirectionRef.current =
+      rotationDirectionRef.current =
         0;
 
-      currentRawDirectionRef.current =
-        0;
-
-      previousRawDirectionRef.current =
-        0;
-
-      angleTravelRef.current =
+      rotationTravelRef.current =
         0;
 
       hideConnector();
@@ -327,16 +661,11 @@ export default function AutomaticHotspotController({
           () => {
             detectionEnabledRef.current =
               true;
-
-            emitDetectedSection(
-              INITIAL_SECTION_ID,
-              0,
-            );
           },
 
           INTRO_ZOOM_DURATION *
             1000 +
-            260,
+            220,
         );
     };
 
@@ -359,13 +688,11 @@ export default function AutomaticHotspotController({
         );
       }
     };
-  }, [
-    emitDetectedSection,
-    hideConnector,
-  ]);
+  }, [hideConnector]);
 
   /*
-   * Clicking a marker immediately makes its card active.
+   * Clicking a numbered marker immediately activates its
+   * stack card before the close-up camera animation.
    */
   useEffect(() => {
     const handleManualHotspot =
@@ -380,27 +707,30 @@ export default function AutomaticHotspotController({
           return;
         }
 
-        detectedIdRef.current =
-          id;
+        const direction =
+          getDetectionDirection(
+            detectedIdRef.current,
+            id,
+          );
 
-        candidateIdRef.current =
-          id;
-
-        previousForwardAngleRef.current =
+        previousCameraAngleRef.current =
           null;
 
-        currentRawDirectionRef.current =
+        rotationDirectionRef.current =
           0;
 
-        previousRawDirectionRef.current =
+        rotationTravelRef.current =
           0;
 
-        angleTravelRef.current =
+        candidateIdRef.current =
+          null;
+
+        candidateStartRef.current =
           0;
 
         emitDetectedSection(
           id,
-          0,
+          direction,
         );
       };
 
@@ -418,8 +748,8 @@ export default function AutomaticHotspotController({
   }, [emitDetectedSection]);
 
   /*
-   * Disable detection and connector lines during a
-   * clicked hotspot close-up.
+   * Detection and connector rendering pause while the
+   * camera is inside a clicked close-up view.
    */
   useEffect(() => {
     const handleFocusState = (
@@ -440,20 +770,21 @@ export default function AutomaticHotspotController({
       candidateIdRef.current =
         null;
 
-      previousForwardAngleRef.current =
+      candidateStartRef.current =
+        0;
+
+      previousCameraAngleRef.current =
         null;
 
-      currentRawDirectionRef.current =
+      rotationDirectionRef.current =
         0;
 
-      previousRawDirectionRef.current =
-        0;
-
-      angleTravelRef.current =
+      rotationTravelRef.current =
         0;
 
       if (focused) {
         hideConnector();
+
         return;
       }
 
@@ -496,183 +827,129 @@ export default function AutomaticHotspotController({
       return;
     }
 
+    camera.updateMatrixWorld();
+
     camera.getWorldDirection(
       cameraForwardRef.current,
     );
 
-    flatForwardRef.current
-      .copy(
-        cameraForwardRef.current,
-      )
-      .setY(0);
+    /*
+     * This value changes for both idle auto-rotation and
+     * manual OrbitControls rotation.
+     */
+    const cameraSideAngle =
+      Math.atan2(
+        camera.position.x -
+          HOME_TARGET[0],
+
+        camera.position.z -
+          HOME_TARGET[2],
+      );
+
+    const previousCameraAngle =
+      previousCameraAngleRef.current;
 
     if (
-      flatForwardRef.current
-        .lengthSq() >
-      0.000001
+      previousCameraAngle !==
+      null
     ) {
-      flatForwardRef.current
-        .normalize();
-
-      const currentAngle =
-        Math.atan2(
-          flatForwardRef.current.x,
-          flatForwardRef.current.z,
+      const angleDelta =
+        getWrappedAngleDelta(
+          cameraSideAngle,
+          previousCameraAngle,
         );
 
-      const previousAngle =
-        previousForwardAngleRef.current;
-
       if (
-        previousAngle !== null
+        Math.abs(angleDelta) >
+        ROTATION_EPSILON
       ) {
-        const angleDelta =
-          getWrappedAngleDelta(
-            currentAngle,
-            previousAngle,
-          );
+        const nextDirection:
+          DetectionDirection =
+          angleDelta > 0
+            ? 1
+            : -1;
 
+        /*
+         * A genuine direction reversal clears any dwell
+         * that was accumulating for the previous side.
+         */
         if (
-          Math.abs(
-            angleDelta,
-          ) >
-          0.00008
+          rotationDirectionRef.current !==
+            0 &&
+          rotationDirectionRef.current !==
+            nextDirection
         ) {
-          const rawDirection:
-            DetectionDirection =
-            angleDelta > 0
-              ? 1
-              : -1;
+          candidateIdRef.current =
+            null;
 
-          currentRawDirectionRef.current =
-            rawDirection;
+          candidateStartRef.current =
+            0;
 
-          if (
-            forwardRawDirectionRef.current ===
-            0
-          ) {
-            const currentId =
-              detectedIdRef.current;
-
-            const currentIndex =
-              currentId
-                ? HOTSPOT_SEQUENCE.indexOf(
-                    currentId,
-                  )
-                : 0;
-
-            forwardRawDirectionRef.current =
-              currentIndex ===
-              HOTSPOT_SEQUENCE.length -
-                1
-                ? rawDirection ===
-                  1
-                  ? -1
-                  : 1
-                : rawDirection;
-          }
-
-          if (
-            previousRawDirectionRef.current !==
-              0 &&
-            previousRawDirectionRef.current !==
-              rawDirection
-          ) {
-            candidateIdRef.current =
-              null;
-
-            angleTravelRef.current =
-              0;
-          }
-
-          previousRawDirectionRef.current =
-            rawDirection;
-
-          angleTravelRef.current +=
+          rotationTravelRef.current =
+            Math.abs(
+              angleDelta,
+            );
+        } else {
+          rotationTravelRef.current +=
             Math.abs(
               angleDelta,
             );
         }
-      }
 
-      previousForwardAngleRef.current =
-        currentAngle;
+        rotationDirectionRef.current =
+          nextDirection;
+      }
     }
 
+    previousCameraAngleRef.current =
+      cameraSideAngle;
+
+    const allMetrics =
+      HOTSPOT_SEQUENCE.map(
+        (id) =>
+          getHotspotMetrics(
+            id,
+            cameraSideAngle,
+          ),
+      );
+
     /*
-     * Follow the active marker with the dotted connector.
+     * Update the dotted connector every frame.
+     *
+     * This is independent from the stricter automatic card
+     * detection zone, allowing it to remain visible during
+     * manual rotation.
      */
     if (activeId) {
-      const activeSection =
-        SECTIONS.find(
-          (section) =>
-            section.id ===
+      const activeMetrics =
+        allMetrics.find(
+          (metrics) =>
+            metrics.id ===
             activeId,
         );
 
-      if (activeSection) {
-        activePointRef.current.set(
-          activeSection.hotspot[0],
-          activeSection.hotspot[1],
-          activeSection.hotspot[2],
-        );
-
-        pointDirectionRef.current
-          .subVectors(
-            activePointRef.current,
-            camera.position,
-          )
-          .normalize();
-
-        const isInFront =
-          cameraForwardRef.current.dot(
-            pointDirectionRef.current,
-          ) > 0;
-
-        activePointRef.current.project(
-          camera,
-        );
-
-        const visible =
-          isInFront &&
-          activePointRef.current.z >=
-            -1 &&
-          activePointRef.current.z <=
-            1 &&
-          Math.abs(
-            activePointRef.current.x,
-          ) <=
-            CONNECTOR_VISIBLE_LIMIT &&
-          Math.abs(
-            activePointRef.current.y,
-          ) <=
-            CONNECTOR_VISIBLE_LIMIT;
-
+      if (activeMetrics) {
         emitProjection({
           x:
-            (activePointRef.current.x *
+            (activeMetrics.projectedX *
               0.5 +
               0.5) *
             size.width,
 
           y:
-            (-activePointRef.current.y *
+            (-activeMetrics.projectedY *
               0.5 +
               0.5) *
             size.height,
 
-          visible,
+          visible:
+            activeMetrics.connectorVisible,
         });
+      } else {
+        hideConnector();
       }
     } else {
       hideConnector();
-    }
-
-    if (
-      performance.now() <
-      suspendDetectionUntilRef.current
-    ) {
-      return;
     }
 
     const elapsedTime =
@@ -689,172 +966,150 @@ export default function AutomaticHotspotController({
     lastDetectionSampleRef.current =
       elapsedTime;
 
-    const candidateMap =
-      new Map<
-        SectionId,
-        DetectionCandidate
-      >();
-
-    /*
-     * Only horizontal alignment is scored.
-     *
-     * Credits is much higher than the other markers,
-     * so vertical alignment must not reduce its score.
-     */
-    for (
-      const section of SECTIONS
+    if (
+      performance.now() <
+      suspendDetectionUntilRef.current
     ) {
-      worldPointRef.current.set(
-        section.hotspot[0],
-        section.hotspot[1],
-        section.hotspot[2],
-      );
+      candidateIdRef.current =
+        null;
 
-      pointDirectionRef.current
-        .subVectors(
-          worldPointRef.current,
-          camera.position,
-        )
-        .normalize();
+      candidateStartRef.current =
+        0;
 
-      const isInFront =
-        cameraForwardRef.current.dot(
-          pointDirectionRef.current,
-        ) > 0;
-
-      projectedPointRef.current
-        .copy(
-          worldPointRef.current,
-        )
-        .project(camera);
-
-      const visible =
-        isInFront &&
-        projectedPointRef.current.z >=
-          -1 &&
-        projectedPointRef.current.z <=
-          1 &&
-        Math.abs(
-          projectedPointRef.current.x,
-        ) <=
-          HORIZONTAL_VISIBLE_LIMIT;
-
-      if (!visible) {
-        continue;
-      }
-
-      candidateMap.set(
-        section.id,
-        {
-          id: section.id,
-
-          score:
-            Math.abs(
-              projectedPointRef.current.x,
-            ),
-        },
-      );
+      return;
     }
 
     const currentId =
       detectedIdRef.current;
 
-    const rawDirection =
-      currentRawDirectionRef.current;
-
-    const forwardRawDirection =
-      forwardRawDirectionRef.current;
-
     if (
-      !currentId ||
-      rawDirection === 0 ||
-      forwardRawDirection === 0 ||
-      angleTravelRef.current <
+      currentId &&
+      rotationTravelRef.current <
         MIN_ROTATION_TRAVEL
     ) {
+      candidateIdRef.current =
+        null;
+
+      candidateStartRef.current =
+        0;
+
       return;
     }
 
-    const currentIndex =
-      HOTSPOT_SEQUENCE.indexOf(
+    const allowedIds =
+      getAllowedSectionIds(
         currentId,
       );
 
-    if (
-      currentIndex === -1
-    ) {
-      return;
-    }
+    const movementDirection =
+      rotationDirectionRef.current;
 
-    const logicalDirection:
-      DetectionDirection =
-      rawDirection ===
-      forwardRawDirection
-        ? 1
-        : -1;
+    /*
+     * Only adjacent building sides are considered.
+     *
+     * Direction filtering prevents the controller from
+     * immediately selecting the side it just left when
+     * Projects and Credits zones overlap.
+     */
+    const eligibleCandidate =
+      allMetrics
+        .filter(
+          (metrics) => {
+            if (
+              !allowedIds.includes(
+                metrics.id,
+              ) ||
+              !metrics.detectable
+            ) {
+              return false;
+            }
 
-    const expectedIndex =
-      currentIndex +
-      logicalDirection;
+            if (
+              !currentId ||
+              movementDirection === 0
+            ) {
+              return true;
+            }
 
-    if (
-      expectedIndex < 0 ||
-      expectedIndex >=
-        HOTSPOT_SEQUENCE.length
-    ) {
+            const angleToCandidate =
+              getWrappedAngleDelta(
+                metrics.sideAngle,
+                cameraSideAngle,
+              );
+
+            const candidateDirection:
+              DetectionDirection =
+              angleToCandidate > 0
+                ? 1
+                : -1;
+
+            /*
+             * Once the camera has just passed the exact
+             * side angle, keep the candidate eligible for
+             * a small allowance.
+             */
+            return (
+              candidateDirection ===
+                movementDirection ||
+              Math.abs(
+                angleToCandidate,
+              ) <=
+                PASSED_SIDE_ALLOWANCE
+            );
+          },
+        )
+        .sort(
+          (
+            first,
+            second,
+          ) => {
+            /*
+             * Prefer whichever visible adjacent marker is
+             * closest to its building side. Screen position
+             * acts as a secondary tie-breaker.
+             */
+            const firstScore =
+              first.sideError *
+                0.8 +
+              Math.abs(
+                first.projectedX,
+              ) *
+                0.2;
+
+            const secondScore =
+              second.sideError *
+                0.8 +
+              Math.abs(
+                second.projectedX,
+              ) *
+                0.2;
+
+            return (
+              firstScore -
+              secondScore
+            );
+          },
+        )[0];
+
+    if (!eligibleCandidate) {
       candidateIdRef.current =
         null;
 
-      return;
-    }
-
-    const expectedId =
-      HOTSPOT_SEQUENCE[
-        expectedIndex
-      ];
-
-    const expectedCandidate =
-      candidateMap.get(
-        expectedId,
-      );
-
-    if (!expectedCandidate) {
-      candidateIdRef.current =
-        null;
+      candidateStartRef.current =
+        0;
 
       return;
     }
 
-    const currentCandidate =
-      candidateMap.get(
-        currentId,
-      );
-
-    const currentScore =
-      currentCandidate?.score ??
-      Number.POSITIVE_INFINITY;
-
-    const expectedIsReady =
-      expectedCandidate.score <=
-        EXPECTED_CENTER_LIMIT &&
-      (expectedCandidate.score +
-        CHANGE_ADVANTAGE <
-        currentScore ||
-        !currentCandidate);
-
-    if (!expectedIsReady) {
-      candidateIdRef.current =
-        null;
-
-      return;
-    }
+    const candidateId =
+      eligibleCandidate.id;
 
     if (
       candidateIdRef.current !==
-      expectedId
+      candidateId
     ) {
       candidateIdRef.current =
-        expectedId;
+        candidateId;
 
       candidateStartRef.current =
         elapsedTime;
@@ -862,17 +1117,26 @@ export default function AutomaticHotspotController({
       return;
     }
 
-    if (
+    const dwellElapsed =
       elapsedTime -
-        candidateStartRef.current <
-      DETECTION_SETTLE_TIME
+      candidateStartRef.current;
+
+    if (
+      dwellElapsed <
+      DETECTION_DWELL_TIME
     ) {
       return;
     }
 
+    const direction =
+      getDetectionDirection(
+        currentId,
+        candidateId,
+      );
+
     emitDetectedSection(
-      expectedId,
-      logicalDirection,
+      candidateId,
+      direction,
     );
   });
 

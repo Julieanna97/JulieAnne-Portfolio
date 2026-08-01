@@ -59,20 +59,14 @@ type FocusState = {
   returning: boolean;
 };
 
-/*
- * Automatic card order.
- *
- * Rotating forward:
- * Projects -> Credits -> About
- *
- * Rotating backward removes cards in reverse order.
- */
-const HOTSPOT_SEQUENCE:
-  SectionId[] = [
-    "projects",
-    "credits",
-    "about",
-  ];
+const FOCUS_STATE_EVENT =
+  "adventure:focus-state";
+
+const RETURN_HOME_EVENT =
+  "adventure:return-home";
+
+const INTRO_EVENT =
+  "adventure:intro";
 
 export default function HeroScene({
   onSceneReady,
@@ -166,10 +160,38 @@ export default function HeroScene({
   }, []);
 
   /*
-   * Listen for hotspot zoom state.
+   * Reset the automatic card traversal when the opening
+   * camera animation begins.
+   */
+  useEffect(() => {
+    const handleIntro = () => {
+      setActiveId(null);
+      setCardStack([]);
+
+      setFocusState({
+        focused: false,
+        returning: false,
+      });
+    };
+
+    window.addEventListener(
+      INTRO_EVENT,
+      handleIntro,
+    );
+
+    return () => {
+      window.removeEventListener(
+        INTRO_EVENT,
+        handleIntro,
+      );
+    };
+  }, []);
+
+  /*
+   * Listen for clicked-hotspot zoom state.
    *
-   * The Home button appears only while the camera is
-   * focused on a clicked numbered hotspot.
+   * The Home button is visible only while the camera is
+   * inside one of the close-up hotspot views.
    */
   useEffect(() => {
     const handleFocusState = (
@@ -195,53 +217,110 @@ export default function HeroScene({
     };
 
     window.addEventListener(
-      "adventure:focus-state",
+      FOCUS_STATE_EVENT,
       handleFocusState,
     );
 
     return () => {
       window.removeEventListener(
-        "adventure:focus-state",
+        FOCUS_STATE_EVENT,
         handleFocusState,
       );
     };
   }, []);
 
   /*
-   * The card stack is always a prefix of the fixed
-   * Projects -> Credits -> About sequence.
+   * The stack is built from the actual order in which the
+   * building sides are visited.
    *
-   * This naturally adds cards while moving forward and
-   * removes cards while moving backward.
+   * From the Projects side:
+   *
+   * [Projects]
+   * [Projects, Credits]
+   * [Projects, Credits, About]
+   *
+   * From the About side:
+   *
+   * [About]
+   * [About, Credits]
+   * [About, Credits, Projects]
+   *
+   * Returning to an existing card removes everything
+   * above it.
    */
   const handleDetectedHotspot =
     useCallback(
       ({
         id,
       }: DetectedHotspot) => {
-        const sequenceIndex =
-          HOTSPOT_SEQUENCE.indexOf(
-            id,
-          );
-
-        if (
-          sequenceIndex === -1
-        ) {
-          return;
-        }
-
         setActiveId(id);
 
         setCardStack(
-          HOTSPOT_SEQUENCE.slice(
-            0,
-            sequenceIndex + 1,
-          ),
+          (currentStack) => {
+            /*
+             * The first detected side becomes the bottom
+             * card for this traversal.
+             */
+            if (
+              currentStack.length ===
+              0
+            ) {
+              return [id];
+            }
+
+            const currentTop =
+              currentStack[
+                currentStack.length -
+                  1
+              ];
+
+            if (
+              currentTop === id
+            ) {
+              return currentStack;
+            }
+
+            /*
+             * Detecting an ID that is already underneath
+             * the top card means the visitor travelled
+             * backward.
+             */
+            const existingIndex =
+              currentStack.lastIndexOf(
+                id,
+              );
+
+            if (
+              existingIndex !== -1
+            ) {
+              return currentStack.slice(
+                0,
+                existingIndex + 1,
+              );
+            }
+
+            /*
+             * A newly visited adjacent side is placed on
+             * top of the existing stack.
+             */
+            return [
+              ...currentStack,
+              id,
+            ].slice(
+              -SECTIONS.length,
+            );
+          },
         );
       },
       [],
     );
 
+  /*
+   * The controller updates the connector imperatively.
+   *
+   * This avoids a React state update on every Three.js
+   * frame while the camera is rotating.
+   */
   const updateHotspotProjection =
     useCallback(
       (
@@ -330,7 +409,9 @@ export default function HeroScene({
           powerPreference:
             "high-performance",
         }}
-        onCreated={({ gl }) => {
+        onCreated={({
+          gl,
+        }) => {
           gl.outputColorSpace =
             SRGBColorSpace;
 
@@ -347,7 +428,9 @@ export default function HeroScene({
         }}
         style={{
           position: "relative",
+
           zIndex: 2,
+
           touchAction: "none",
         }}
       >
@@ -421,7 +504,7 @@ export default function HeroScene({
           onClick={() => {
             window.dispatchEvent(
               new CustomEvent(
-                "adventure:return-home",
+                RETURN_HOME_EVENT,
               ),
             );
           }}
@@ -486,8 +569,8 @@ export default function HeroScene({
         }
 
         /*
-         * AutoCardStack replaces the old marker-attached
-         * mobile popup and the old bottom navigation.
+         * AutoCardStack replaces the previous mobile
+         * annotation layer and bottom navigation.
          */
         .adventure-mobile-annotation-layer,
         .adventure-bottom-nav {
@@ -558,6 +641,7 @@ export default function HeroScene({
           padding: 0 23px;
 
           color: #170d24;
+
           cursor: pointer;
 
           font-family:
@@ -568,6 +652,7 @@ export default function HeroScene({
           font-size: 12px;
           font-weight: 900;
           letter-spacing: 0.08em;
+
           text-transform: uppercase;
 
           transform:

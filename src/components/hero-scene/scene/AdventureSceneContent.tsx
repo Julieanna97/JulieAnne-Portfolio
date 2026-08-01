@@ -105,17 +105,12 @@ export type AdventureSceneContentProps = {
   onSceneReady?: () => void;
 };
 
-type CameraPosition = [
-  number,
-  number,
-  number,
-];
-
-type CameraTarget = [
-  number,
-  number,
-  number,
-];
+type VectorTuple =
+  readonly [
+    number,
+    number,
+    number,
+  ];
 
 const MANUAL_HOTSPOT_EVENT =
   "adventure:manual-hotspot";
@@ -186,7 +181,7 @@ export default function AdventureSceneContent({
     debugClickPoint,
     setDebugClickPoint,
   ] =
-    useState<CameraPosition | null>(
+    useState<VectorTuple | null>(
       null,
     );
 
@@ -198,9 +193,31 @@ export default function AdventureSceneContent({
       ? HOME_CAMERA_MOBILE
       : HOME_CAMERA_DESKTOP;
 
+  /*
+   * Stop idle rotation when the visitor manually rotates,
+   * zooms, or clicks a numbered hotspot.
+   */
+  const stopIdleRotation =
+    useCallback(() => {
+      visitorInteractedRef.current =
+        true;
+
+      setIdleRotationEnabled(
+        false,
+      );
+    }, []);
+
+  /*
+   * The callback ref runs as soon as OrbitControls really
+   * exists. This prevents the preloader from waiting
+   * forever for a normal effect to notice a changed ref.
+   */
   const handleControlsReady =
     useCallback(
-      (controls: any | null) => {
+      (
+        controls:
+          any | null,
+      ) => {
         controlsRef.current =
           controls;
 
@@ -213,10 +230,6 @@ export default function AdventureSceneContent({
 
         readyRef.current = true;
 
-        /*
-        * Set the initial camera immediately after
-        * OrbitControls has actually mounted.
-        */
         camera.position.set(
           ...homeCamera,
         );
@@ -227,10 +240,6 @@ export default function AdventureSceneContent({
 
         controls.update();
 
-        /*
-        * Allow the completed Three.js frame to render
-        * before displaying Enter.
-        */
         readyFrameOneRef.current =
           window.requestAnimationFrame(
             () => {
@@ -250,15 +259,27 @@ export default function AdventureSceneContent({
       ],
     );
 
-  const stopIdleRotation =
-    useCallback(() => {
-      visitorInteractedRef.current =
-        true;
+  useEffect(() => {
+    return () => {
+      if (
+        readyFrameOneRef.current !==
+        null
+      ) {
+        window.cancelAnimationFrame(
+          readyFrameOneRef.current,
+        );
+      }
 
-      setIdleRotationEnabled(
-        false,
-      );
-    }, []);
+      if (
+        readyFrameTwoRef.current !==
+        null
+      ) {
+        window.cancelAnimationFrame(
+          readyFrameTwoRef.current,
+        );
+      }
+    };
+  }, []);
 
   const handleLightDebugClick = (
     event:
@@ -273,7 +294,7 @@ export default function AdventureSceneContent({
     event.stopPropagation();
 
     const clickedPosition:
-      CameraPosition = [
+      VectorTuple = [
         Number(
           event.point.x.toFixed(
             3,
@@ -297,22 +318,6 @@ export default function AdventureSceneContent({
       clickedPosition,
     );
 
-    console.group(
-      "%cLIGHT POSITION DEBUG",
-      "color: #ff70c8; font-weight: 800;",
-    );
-
-    console.log(
-      "Clicked mesh:",
-      event.object.name ||
-        "(unnamed mesh)",
-    );
-
-    console.log(
-      "World position:",
-      clickedPosition,
-    );
-
     const nearbyLights: Array<{
       name: string;
       type: string;
@@ -320,52 +325,54 @@ export default function AdventureSceneContent({
       position: string;
     }> = [];
 
-    scene.traverse((object) => {
-      const possibleLight =
-        object as typeof object & {
-          isLight?: boolean;
-        };
+    scene.traverse(
+      (object) => {
+        const possibleLight =
+          object as typeof object & {
+            isLight?: boolean;
+          };
 
-      if (
-        !possibleLight.isLight
-      ) {
-        return;
-      }
+        if (
+          !possibleLight.isLight
+        ) {
+          return;
+        }
 
-      const lightPosition =
-        new Vector3();
+        const lightPosition =
+          new Vector3();
 
-      possibleLight.getWorldPosition(
-        lightPosition,
-      );
+        possibleLight.getWorldPosition(
+          lightPosition,
+        );
 
-      nearbyLights.push({
-        name:
-          possibleLight.name ||
-          "(unnamed light)",
+        nearbyLights.push({
+          name:
+            possibleLight.name ||
+            "(unnamed light)",
 
-        type:
-          possibleLight.type,
+          type:
+            possibleLight.type,
 
-        distance:
-          Number(
-            lightPosition
-              .distanceTo(
-                event.point,
-              )
-              .toFixed(3),
-          ),
+          distance:
+            Number(
+              lightPosition
+                .distanceTo(
+                  event.point,
+                )
+                .toFixed(3),
+            ),
 
-        position:
-          `[${lightPosition.x.toFixed(
-            3,
-          )}, ${lightPosition.y.toFixed(
-            3,
-          )}, ${lightPosition.z.toFixed(
-            3,
-          )}]`,
-      });
-    });
+          position:
+            `[${lightPosition.x.toFixed(
+              3,
+            )}, ${lightPosition.y.toFixed(
+              3,
+            )}, ${lightPosition.z.toFixed(
+              3,
+            )}]`,
+        });
+      },
+    );
 
     nearbyLights.sort(
       (
@@ -376,15 +383,20 @@ export default function AdventureSceneContent({
         second.distance,
     );
 
+    console.group(
+      "LIGHT POSITION DEBUG",
+    );
+
+    console.log(
+      "Clicked position:",
+      clickedPosition,
+    );
+
     console.table(
       nearbyLights.slice(
         0,
         20,
       ),
-    );
-
-    console.log(
-      `Copy position: [${clickedPosition[0]}, ${clickedPosition[1]}, ${clickedPosition[2]}]`,
     );
 
     console.groupEnd();
@@ -394,10 +406,10 @@ export default function AdventureSceneContent({
     useCallback(
       (
         nextCamera:
-          CameraPosition,
+          VectorTuple,
 
         nextTarget:
-          CameraTarget,
+          VectorTuple,
       ) => {
         const controls =
           controlsRef.current;
@@ -431,16 +443,15 @@ export default function AdventureSceneContent({
         camera.position,
       );
 
-      if (
-        controlsRef.current
-      ) {
+      const controls =
+        controlsRef.current;
+
+      if (controls) {
         gsap.killTweensOf(
-          controlsRef.current
-            .target,
+          controls.target,
         );
 
-        controlsRef.current
-          .update();
+        controls.update();
       }
     }, [camera]);
 
@@ -464,10 +475,10 @@ export default function AdventureSceneContent({
     useCallback(
       (
         nextCamera:
-          CameraPosition,
+          VectorTuple,
 
         nextTarget:
-          CameraTarget,
+          VectorTuple,
 
         duration = 1.35,
 
@@ -558,13 +569,13 @@ export default function AdventureSceneContent({
         section:
           PortfolioSection,
       ) => {
-        const finalCamera =
+        const nextCamera =
           compact
             ? ABOUT_CAMERA_MOBILE
             : section.camera;
 
         moveCamera(
-          finalCamera,
+          nextCamera,
           section.focus,
           1.65,
         );
@@ -581,13 +592,13 @@ export default function AdventureSceneContent({
         section:
           PortfolioSection,
       ) => {
-        const finalCamera =
+        const nextCamera =
           compact
             ? PROJECTS_CAMERA_MOBILE
             : section.camera;
 
         moveCamera(
-          finalCamera,
+          nextCamera,
           section.focus,
           1.55,
         );
@@ -604,13 +615,13 @@ export default function AdventureSceneContent({
         section:
           PortfolioSection,
       ) => {
-        const finalCamera =
+        const nextCamera =
           compact
             ? CREDITS_CAMERA_MOBILE
             : section.camera;
 
         moveCamera(
-          finalCamera,
+          nextCamera,
           section.focus,
           1.35,
         );
@@ -621,6 +632,15 @@ export default function AdventureSceneContent({
       ],
     );
 
+  /*
+   * Clicking a numbered marker:
+   *
+   * - stops automatic rotation,
+   * - updates the external stack,
+   * - hides the connector,
+   * - zooms to the marker,
+   * - shows the Home button.
+   */
   const selectSection =
     useCallback(
       (
@@ -642,10 +662,6 @@ export default function AdventureSceneContent({
           section.id,
         );
 
-        /*
-         * Hide connector lines and pause automatic
-         * detection during the close-up camera view.
-         */
         window.dispatchEvent(
           new CustomEvent(
             FOCUS_STATE_EVENT,
@@ -658,9 +674,6 @@ export default function AdventureSceneContent({
           ),
         );
 
-        /*
-         * Update the external card stack immediately.
-         */
         window.dispatchEvent(
           new CustomEvent(
             MANUAL_HOTSPOT_EVENT,
@@ -737,8 +750,6 @@ export default function AdventureSceneContent({
         return;
       }
 
-      stopIdleRotation();
-
       window.dispatchEvent(
         new CustomEvent(
           FOCUS_STATE_EVENT,
@@ -761,8 +772,9 @@ export default function AdventureSceneContent({
           );
 
           /*
-           * Keep activeId unchanged. Its card remains on
-           * top and the connector returns at Home.
+           * Keep activeId unchanged. Its card remains
+           * selected and its dotted connector returns
+           * once the Home camera movement is complete.
            */
           window.dispatchEvent(
             new CustomEvent(
@@ -782,7 +794,6 @@ export default function AdventureSceneContent({
       homeCamera,
       moveCamera,
       moving,
-      stopIdleRotation,
     ]);
 
   useEffect(() => {
@@ -805,7 +816,7 @@ export default function AdventureSceneContent({
   }, [returnToHome]);
 
   /*
-   * Preserve support for external section navigation.
+   * Preserve support for any external section controls.
    */
   useEffect(() => {
     const handleSelection = (
@@ -846,28 +857,6 @@ export default function AdventureSceneContent({
     };
   }, [selectSection]);
 
-  useEffect(() => {
-    return () => {
-      if (
-        readyFrameOneRef.current !==
-        null
-      ) {
-        window.cancelAnimationFrame(
-          readyFrameOneRef.current,
-        );
-      }
-
-      if (
-        readyFrameTwoRef.current !==
-        null
-      ) {
-        window.cancelAnimationFrame(
-          readyFrameTwoRef.current,
-        );
-      }
-    };
-  }, []);
-
   /*
    * Opening camera animation.
    */
@@ -891,6 +880,9 @@ export default function AdventureSceneContent({
           : INTRO_STREET_CAMERA_DESKTOP;
 
       stopCameraTweens();
+
+      visitorInteractedRef.current =
+        false;
 
       setMoving(true);
 
@@ -926,14 +918,18 @@ export default function AdventureSceneContent({
           startCamera[0],
           startCamera[1],
           startCamera[2],
-        ).sub(orbitTarget);
+        ).sub(
+          orbitTarget,
+        );
 
       const finalOffset =
         new Vector3(
           finalCamera[0],
           finalCamera[1],
           finalCamera[2],
-        ).sub(orbitTarget);
+        ).sub(
+          orbitTarget,
+        );
 
       const orbitState = {
         angle:
@@ -1329,10 +1325,10 @@ export default function AdventureSceneContent({
       <BackAlleyPinkGlow />
 
       {/*
-       * Hotspots remain clickable.
+       * The markers remain clickable.
        *
-       * showCard is false because the external
-       * AutoCardStack owns the visible cards.
+       * showCard is false because AutoCardStack owns the
+       * visible card interface.
        */}
       {SECTIONS.map(
         (section) => (
@@ -1354,7 +1350,7 @@ export default function AdventureSceneContent({
               selectSection
             }
             onClose={() => {
-              // The external stack has no X close action.
+              // Cards are controlled by camera traversal.
             }}
             onProjectSelect={
               onProjectSelect
@@ -1410,49 +1406,33 @@ export default function AdventureSceneContent({
         autoRotate={
           idleRotationEnabled &&
           !moving &&
-          focusedSectionId ===
-            null &&
+          focusedSectionId === null &&
           !interactionPaused
         }
-        autoRotateSpeed={1.6}
-        onStart={
-          stopIdleRotation
-        }
+        autoRotateSpeed={2.8}
+        onStart={stopIdleRotation}
         enabled={
           !moving &&
-          focusedSectionId ===
-            null &&
+          focusedSectionId === null &&
           !interactionPaused
         }
         enablePan={false}
         enableRotate
         enableZoom
         mouseButtons={{
-          LEFT:
-            MOUSE.ROTATE,
-
-          MIDDLE:
-            MOUSE.DOLLY,
-
-          RIGHT:
-            MOUSE.PAN,
+          LEFT: MOUSE.ROTATE,
+          MIDDLE: MOUSE.DOLLY,
+          RIGHT: MOUSE.PAN,
         }}
         touches={{
-          ONE:
-            TOUCH.ROTATE,
-
-          TWO:
-            TOUCH.DOLLY_ROTATE,
+          ONE: TOUCH.ROTATE,
+          TWO: TOUCH.DOLLY_ROTATE,
         }}
         minDistance={
-          compact
-            ? 8.5
-            : 7
+          compact ? 8.5 : 7
         }
         maxDistance={
-          compact
-            ? 48
-            : 40
+          compact ? 48 : 40
         }
         minPolarAngle={
           Math.PI / 7
@@ -1461,19 +1441,14 @@ export default function AdventureSceneContent({
           Math.PI / 2.02
         }
         zoomSpeed={
-          compact
-            ? 0.95
-            : 0.72
+          compact ? 0.95 : 0.72
         }
         rotateSpeed={
-          compact
-            ? 0.58
-            : 0.72
+          compact ? 0.68 : 0.82
         }
         enableDamping={
           !moving &&
-          focusedSectionId ===
-            null &&
+          focusedSectionId === null &&
           !interactionPaused
         }
         dampingFactor={0.075}
