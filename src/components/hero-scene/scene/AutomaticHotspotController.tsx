@@ -95,10 +95,10 @@ const FOCUS_STATE_EVENT =
 /*
  * Physical order around the building.
  *
- * Left to right:
+ * Forward:
  * Projects -> Credits -> About
  *
- * Right to left:
+ * Reverse:
  * About -> Credits -> Projects
  */
 const HOTSPOT_SEQUENCE:
@@ -109,9 +109,7 @@ const HOTSPOT_SEQUENCE:
   ];
 
 /*
- * A new traversal may begin from either end.
- *
- * Credits cannot become the first card.
+ * A completely new traversal can begin from either end.
  */
 const START_SECTION_IDS:
   SectionId[] = [
@@ -119,25 +117,19 @@ const START_SECTION_IDS:
     "about",
   ];
 
-/*
- * Run detection frequently enough to catch a quick mouse
- * or touch drag.
- */
 const DETECTION_SAMPLE_INTERVAL =
   0.04;
 
 /*
- * The card appears shortly after the marker becomes
- * visible on its side.
- *
- * Raise this to 0.18 if transitions become too sensitive.
+ * Keep the card response quick once a numbered hotspot
+ * becomes visible.
  */
 const DETECTION_DWELL_TIME =
   0.12;
 
 /*
- * Require only a small amount of travel after the previous
- * card. This works with both idle and manual rotation.
+ * Normal card changes require a small amount of camera
+ * rotation.
  */
 const MIN_ROTATION_TRAVEL =
   0.008;
@@ -146,34 +138,23 @@ const ROTATION_EPSILON =
   0.00004;
 
 /*
- * A card may activate as soon as the visitor reaches the
- * visible portion of that building side.
+ * The marker does not need to be exactly centered.
  *
- * 0.92 radians is approximately 53 degrees.
+ * The card becomes eligible as soon as the camera reaches
+ * the visible portion of that building side.
  */
 const DETECTION_SIDE_ANGLE_LIMIT =
   0.92;
 
-/*
- * The numbered marker may be near the viewport edge when
- * its building side first becomes visible.
- */
 const DETECTION_X_LIMIT =
   1.04;
 
-/*
- * Credits is much higher than Projects and About.
- */
 const DETECTION_Y_LIMIT =
   1.28;
 
 /*
- * The dotted connector uses wider limits and no strict
- * building-side requirement.
- *
- * This keeps it updating during manual rotation until the
- * active marker is actually behind the camera or far
- * outside the viewport.
+ * Keep the dotted connector visible during both automatic
+ * and manual rotation.
  */
 const CONNECTOR_X_LIMIT =
   1.65;
@@ -185,11 +166,22 @@ const RETURN_HOME_SUSPEND_MS =
   260;
 
 /*
- * A candidate that has just passed the exact camera-side
- * angle remains valid within this small allowance.
+ * Keep a hotspot eligible briefly after the camera passes
+ * its exact side angle.
  */
 const PASSED_SIDE_ALLOWANCE =
   0.2;
+
+/*
+ * This fixes the reverse-rotation problem.
+ *
+ * When an intermediate card activates late, but the camera
+ * is already clearly closer to another hotspot side, the
+ * controller may immediately continue to that hotspot
+ * without requiring the visitor to rotate away and back.
+ */
+const CATCH_UP_SIDE_ADVANTAGE =
+  0.16;
 
 function getWrappedAngleDelta(
   firstAngle: number,
@@ -216,7 +208,22 @@ function getSection(
   );
 }
 
-function getAllowedSectionIds(
+/*
+ * When no card is active, only an end card may start the
+ * traversal.
+ *
+ * Once a traversal has started, every other section may be
+ * considered. The rotation-direction check later filters
+ * out sections behind the camera movement.
+ *
+ * This lets a quick manual drag go directly:
+ *
+ * About -> Projects
+ *
+ * when the visitor has already passed Credits before its
+ * dwell timer completes.
+ */
+function getCandidateSectionIds(
   currentId:
     | SectionId
     | null,
@@ -227,43 +234,10 @@ function getAllowedSectionIds(
     ];
   }
 
-  const currentIndex =
-    HOTSPOT_SEQUENCE.indexOf(
-      currentId,
-    );
-
-  if (currentIndex === -1) {
-    return [
-      ...START_SECTION_IDS,
-    ];
-  }
-
-  const allowedIds:
-    SectionId[] = [];
-
-  const previousId =
-    HOTSPOT_SEQUENCE[
-      currentIndex - 1
-    ];
-
-  const nextId =
-    HOTSPOT_SEQUENCE[
-      currentIndex + 1
-    ];
-
-  if (previousId) {
-    allowedIds.push(
-      previousId,
-    );
-  }
-
-  if (nextId) {
-    allowedIds.push(
-      nextId,
-    );
-  }
-
-  return allowedIds;
+  return HOTSPOT_SEQUENCE.filter(
+    (id) =>
+      id !== currentId,
+  );
 }
 
 function getDetectionDirection(
@@ -355,7 +329,7 @@ export default function AutomaticHotspotController({
     );
 
   /*
-   * Current physical camera rotation direction:
+   * Physical camera movement direction around the model.
    *
    * 1  = increasing camera-side angle
    * -1 = decreasing camera-side angle
@@ -432,6 +406,12 @@ export default function AutomaticHotspotController({
         candidateStartRef.current =
           0;
 
+        /*
+         * Normal movement starts counting again after a
+         * card change. Catch-up detection can still proceed
+         * when the camera is already clearly closer to the
+         * following hotspot.
+         */
         rotationTravelRef.current =
           0;
 
@@ -444,8 +424,8 @@ export default function AutomaticHotspotController({
     );
 
   /*
-   * Keep the controller synchronized with activeId changes
-   * made by marker clicks or Home-state interactions.
+   * Synchronize marker clicks and external active-state
+   * changes with the automatic controller.
    */
   useEffect(() => {
     if (
@@ -468,20 +448,11 @@ export default function AutomaticHotspotController({
       0;
   }, [activeId]);
 
-  /*
-   * Calculate the screen and building-side position of a
-   * hotspot.
-   *
-   * No raycaster is used, avoiding LineSegments2 errors.
-   */
   const getHotspotMetrics =
     useCallback(
       (
-        id:
-          SectionId,
-
-        cameraSideAngle:
-          number,
+        id: SectionId,
+        cameraSideAngle: number,
       ): HotspotMetrics => {
         const section =
           getSection(id);
@@ -490,17 +461,27 @@ export default function AutomaticHotspotController({
           return {
             id,
 
-            sideAngle: 0,
+            sideAngle:
+              0,
+
             sideError:
               Math.PI,
 
-            projectedX: 0,
-            projectedY: 0,
+            projectedX:
+              0,
 
-            inFront: false,
-            insideDepth: false,
+            projectedY:
+              0,
 
-            detectable: false,
+            inFront:
+              false,
+
+            insideDepth:
+              false,
+
+            detectable:
+              false,
+
             connectorVisible:
               false,
           };
@@ -512,6 +493,10 @@ export default function AutomaticHotspotController({
           section.hotspot[2],
         );
 
+        /*
+         * Calculate the physical building side containing
+         * this numbered hotspot.
+         */
         const sideAngle =
           Math.atan2(
             section.hotspot[0] -
@@ -613,8 +598,8 @@ export default function AutomaticHotspotController({
     );
 
   /*
-   * Automatic detection starts once the entrance camera
-   * animation has completed.
+   * Begin automatic detection after the opening camera
+   * animation.
    */
   useEffect(() => {
     let enableTimer:
@@ -691,8 +676,8 @@ export default function AutomaticHotspotController({
   }, [hideConnector]);
 
   /*
-   * Clicking a numbered marker immediately activates its
-   * stack card before the close-up camera animation.
+   * Clicking a numbered hotspot activates its card
+   * immediately.
    */
   useEffect(() => {
     const handleManualHotspot =
@@ -748,8 +733,7 @@ export default function AutomaticHotspotController({
   }, [emitDetectedSection]);
 
   /*
-   * Detection and connector rendering pause while the
-   * camera is inside a clicked close-up view.
+   * Pause card detection during a clicked close-up.
    */
   useEffect(() => {
     const handleFocusState = (
@@ -834,8 +818,12 @@ export default function AutomaticHotspotController({
     );
 
     /*
-     * This value changes for both idle auto-rotation and
-     * manual OrbitControls rotation.
+     * Camera position around the building.
+     *
+     * This responds to both:
+     *
+     * - OrbitControls automatic rotation
+     * - mouse and touch rotation
      */
     const cameraSideAngle =
       Math.atan2(
@@ -870,8 +858,8 @@ export default function AutomaticHotspotController({
             : -1;
 
         /*
-         * A genuine direction reversal clears any dwell
-         * that was accumulating for the previous side.
+         * Reset a partially completed dwell when the
+         * visitor reverses the camera.
          */
         if (
           rotationDirectionRef.current !==
@@ -915,10 +903,6 @@ export default function AutomaticHotspotController({
 
     /*
      * Update the dotted connector every frame.
-     *
-     * This is independent from the stricter automatic card
-     * detection zone, allowing it to remain visible during
-     * manual rotation.
      */
     if (activeId) {
       const activeMetrics =
@@ -982,41 +966,27 @@ export default function AutomaticHotspotController({
     const currentId =
       detectedIdRef.current;
 
-    if (
-      currentId &&
-      rotationTravelRef.current <
-        MIN_ROTATION_TRAVEL
-    ) {
-      candidateIdRef.current =
-        null;
-
-      candidateStartRef.current =
-        0;
-
-      return;
-    }
-
-    const allowedIds =
-      getAllowedSectionIds(
-        currentId,
-      );
-
     const movementDirection =
       rotationDirectionRef.current;
 
+    const candidateIds =
+      getCandidateSectionIds(
+        currentId,
+      );
+
     /*
-     * Only adjacent building sides are considered.
+     * Consider every hotspot lying ahead in the current
+     * direction.
      *
-     * Direction filtering prevents the controller from
-     * immediately selecting the side it just left when
-     * Projects and Credits zones overlap.
+     * This is the important change from the adjacent-only
+     * version.
      */
-    const eligibleCandidate =
+    const eligibleCandidates =
       allMetrics
         .filter(
           (metrics) => {
             if (
-              !allowedIds.includes(
+              !candidateIds.includes(
                 metrics.id,
               ) ||
               !metrics.detectable
@@ -1026,7 +996,8 @@ export default function AutomaticHotspotController({
 
             if (
               !currentId ||
-              movementDirection === 0
+              movementDirection ===
+                0
             ) {
               return true;
             }
@@ -1039,15 +1010,10 @@ export default function AutomaticHotspotController({
 
             const candidateDirection:
               DetectionDirection =
-              angleToCandidate > 0
+              angleToCandidate >= 0
                 ? 1
                 : -1;
 
-            /*
-             * Once the camera has just passed the exact
-             * side angle, keep the candidate eligible for
-             * a small allowance.
-             */
             return (
               candidateDirection ===
                 movementDirection ||
@@ -1064,34 +1030,82 @@ export default function AutomaticHotspotController({
             second,
           ) => {
             /*
-             * Prefer whichever visible adjacent marker is
-             * closest to its building side. Screen position
-             * acts as a secondary tie-breaker.
+             * Always prefer the hotspot whose physical
+             * building side is closest to the camera.
+             *
+             * This ensures Projects wins over Credits when
+             * the camera has already reached the Projects
+             * side.
              */
             const firstScore =
               first.sideError *
-                0.8 +
+                1.15 +
               Math.abs(
                 first.projectedX,
               ) *
-                0.2;
+                0.15;
 
             const secondScore =
               second.sideError *
-                0.8 +
+                1.15 +
               Math.abs(
                 second.projectedX,
               ) *
-                0.2;
+                0.15;
 
             return (
               firstScore -
               secondScore
             );
           },
-        )[0];
+        );
+
+    const eligibleCandidate =
+      eligibleCandidates[0];
 
     if (!eligibleCandidate) {
+      candidateIdRef.current =
+        null;
+
+      candidateStartRef.current =
+        0;
+
+      return;
+    }
+
+    const currentMetrics =
+      currentId
+        ? allMetrics.find(
+            (metrics) =>
+              metrics.id ===
+              currentId,
+          )
+        : undefined;
+
+    /*
+     * A normal card change needs some rotation after the
+     * previous selection.
+     *
+     * Catch-up mode bypasses that requirement when the
+     * camera is already clearly closer to another hotspot
+     * side. This removes the need to rotate away from
+     * Projects and then back again.
+     */
+    const canCatchUp =
+      Boolean(
+        currentId &&
+        currentMetrics &&
+        eligibleCandidate.sideError +
+          CATCH_UP_SIDE_ADVANTAGE <
+          currentMetrics.sideError,
+      );
+
+    if (
+      currentId &&
+      rotationTravelRef.current <
+        MIN_ROTATION_TRAVEL &&
+      !canCatchUp
+    ) {
       candidateIdRef.current =
         null;
 
@@ -1104,6 +1118,12 @@ export default function AutomaticHotspotController({
     const candidateId =
       eligibleCandidate.id;
 
+    /*
+     * When the strongest visible hotspot changes from
+     * Credits to Projects during a quick drag, restart the
+     * dwell timer for Projects rather than finishing the
+     * outdated Credits candidate.
+     */
     if (
       candidateIdRef.current !==
       candidateId
