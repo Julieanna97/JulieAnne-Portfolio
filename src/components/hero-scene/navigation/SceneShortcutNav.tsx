@@ -48,12 +48,10 @@ export default function SceneShortcutNav({
       initial={{
         opacity: 0,
         y: -18,
-        scale: 0.96,
       }}
       animate={{
         opacity: 1,
         y: 0,
-        scale: 1,
       }}
       transition={{
         duration: 0.48,
@@ -69,7 +67,7 @@ export default function SceneShortcutNav({
       <div className="adventure-shortcut-nav__links">
         {SHORTCUT_ITEMS.map(
           (item) => (
-            <motion.button
+            <button
               key={item.id}
               type="button"
               className="adventure-shortcut-nav__button"
@@ -80,38 +78,11 @@ export default function SceneShortcutNav({
                   item.id,
                 );
               }}
-              whileHover={
-                disabled
-                  ? undefined
-                  : {
-                      y: -2,
-                      scale: 1.035,
-                    }
-              }
-              whileTap={
-                disabled
-                  ? undefined
-                  : {
-                      scale: 0.95,
-                    }
-              }
-              transition={{
-                type: "spring",
-                stiffness: 430,
-                damping: 25,
-              }}
             >
               <span className="adventure-shortcut-nav__label">
                 {item.label}
               </span>
-
-              <span
-                className="adventure-shortcut-nav__heart"
-                aria-hidden="true"
-              >
-                ♥
-              </span>
-            </motion.button>
+            </button>
           ),
         )}
       </div>
@@ -151,7 +122,7 @@ export default function SceneShortcutNav({
               232,
               144,
               255,
-              0.26
+              0.24
             );
 
           border-radius: 999px;
@@ -197,7 +168,8 @@ export default function SceneShortcutNav({
                 0.42
               );
 
-          padding: 7px;
+          padding:
+            0 13px;
 
           color: #fff7fd;
 
@@ -213,42 +185,40 @@ export default function SceneShortcutNav({
 
           align-items: center;
 
-          gap: 3px;
+          gap: 4px;
         }
 
+        /*
+         * Plain navigation-link appearance.
+         *
+         * There is no individual pill, heart, border, or
+         * active-hotspot highlighting.
+         */
         .adventure-shortcut-nav__button {
           position: relative;
 
           display: inline-flex;
 
-          min-height: 42px;
+          min-height: 58px;
 
           align-items: center;
           justify-content: center;
 
-          gap: 7px;
-
-          overflow: hidden;
-
-          border:
-            1px solid
-            transparent;
-
-          border-radius: 999px;
+          border: 0;
+          border-radius: 0;
           outline: none;
 
-          background:
-            transparent;
+          background: transparent;
 
           padding:
-            0 18px;
+            0 17px;
 
           color:
             rgba(
               255,
               247,
               253,
-              0.78
+              0.76
             );
 
           cursor: pointer;
@@ -258,74 +228,6 @@ export default function SceneShortcutNav({
             Arial,
             sans-serif;
 
-          transition:
-            color 180ms ease,
-            border-color 180ms ease,
-            background 180ms ease,
-            box-shadow 180ms ease;
-        }
-
-        /*
-         * The navigation is standalone.
-         *
-         * There is intentionally no active style connected
-         * to hotspot detection or card selection.
-         */
-        .adventure-shortcut-nav__button:hover:not(
-            :disabled
-          ) {
-          border-color:
-            rgba(
-              255,
-              118,
-              194,
-              0.36
-            );
-
-          background:
-            linear-gradient(
-              135deg,
-              rgba(
-                255,
-                85,
-                173,
-                0.19
-              ),
-              rgba(
-                154,
-                92,
-                255,
-                0.17
-              )
-            );
-
-          color: #ffffff;
-
-          box-shadow:
-            0 0 18px
-              rgba(
-                255,
-                75,
-                174,
-                0.18
-              );
-        }
-
-        .adventure-shortcut-nav__button:focus-visible {
-          outline:
-            2px solid
-            #69dfff;
-
-          outline-offset: 3px;
-        }
-
-        .adventure-shortcut-nav__button:disabled {
-          cursor: default;
-
-          opacity: 0.45;
-        }
-
-        .adventure-shortcut-nav__label {
           font-size: 10px;
           font-weight: 850;
           letter-spacing:
@@ -335,44 +237,98 @@ export default function SceneShortcutNav({
             uppercase;
 
           white-space: nowrap;
+
+          transition:
+            color 180ms ease;
         }
 
-        .adventure-shortcut-nav__heart {
-          display: inline-block;
+        /*
+         * Animated underline based on the reference.
+         */
+        .adventure-shortcut-nav__button::after {
+          content: "";
 
-          max-width: 0;
+          position: absolute;
 
-          overflow: hidden;
+          right: 17px;
+          bottom: 0;
+          left: 17px;
 
-          color: #ff82c7;
+          height: 3px;
 
-          font-size: 10px;
+          border-radius:
+            999px 999px 0 0;
+
+          background:
+            linear-gradient(
+              90deg,
+              #b96dff,
+              #ff4fa9
+            );
+
+          box-shadow:
+            0 0 12px
+              rgba(
+                255,
+                79,
+                169,
+                0.48
+              );
 
           opacity: 0;
 
           transform:
-            translateX(-4px)
-            scale(0.5);
+            scaleX(0);
+
+          transform-origin:
+            center;
 
           transition:
-            max-width 180ms ease,
             opacity 180ms ease,
-            transform 180ms ease;
+            transform 220ms
+              cubic-bezier(
+                0.22,
+                1,
+                0.36,
+                1
+              );
         }
 
         .adventure-shortcut-nav__button:hover:not(
             :disabled
-          )
-          .adventure-shortcut-nav__heart,
-        .adventure-shortcut-nav__button:focus-visible
-          .adventure-shortcut-nav__heart {
-          max-width: 16px;
+          ),
+        .adventure-shortcut-nav__button:focus-visible {
+          color: #ff8acb;
+        }
 
+        .adventure-shortcut-nav__button:hover:not(
+            :disabled
+          )::after,
+        .adventure-shortcut-nav__button:focus-visible::after {
           opacity: 1;
 
           transform:
-            translateX(0)
-            scale(1);
+            scaleX(1);
+        }
+
+        .adventure-shortcut-nav__button:focus-visible {
+          outline:
+            2px solid
+            rgba(
+              105,
+              223,
+              255,
+              0.9
+            );
+
+          outline-offset:
+            -5px;
+        }
+
+        .adventure-shortcut-nav__button:disabled {
+          cursor: default;
+
+          opacity: 0.42;
         }
 
         @media (
@@ -393,7 +349,8 @@ export default function SceneShortcutNav({
 
             overflow-x: auto;
 
-            padding: 5px;
+            padding:
+              0 5px;
 
             scrollbar-width:
               none;
@@ -410,16 +367,22 @@ export default function SceneShortcutNav({
           }
 
           .adventure-shortcut-nav__button {
-            min-height: 38px;
+            min-height: 48px;
 
-            flex: 1 1 auto;
+            flex:
+              1 1 0;
 
             padding:
-              0 11px;
+              0 8px;
+
+            font-size: 9px;
           }
 
-          .adventure-shortcut-nav__label {
-            font-size: 9px;
+          .adventure-shortcut-nav__button::after {
+            right: 9px;
+            left: 9px;
+
+            height: 2px;
           }
         }
 
@@ -428,7 +391,7 @@ export default function SceneShortcutNav({
             reduce
         ) {
           .adventure-shortcut-nav__button,
-          .adventure-shortcut-nav__heart {
+          .adventure-shortcut-nav__button::after {
             transition-duration:
               0.01ms !important;
           }

@@ -121,6 +121,21 @@ const FOCUS_STATE_EVENT =
 const RETURN_HOME_EVENT =
   "adventure:return-home";
 
+const SELECT_SECTION_EVENT =
+  "adventure:select";
+
+const INTRO_EVENT =
+  "adventure:intro";
+
+/*
+ * The pointer must move this many pixels before the input
+ * counts as an intentional manual camera interaction.
+ *
+ * A normal click does not stop automatic rotation.
+ */
+const MANUAL_DRAG_THRESHOLD =
+  5;
+
 export default function AdventureSceneContent({
   viewportWidth,
   activeId,
@@ -133,6 +148,7 @@ export default function AdventureSceneContent({
   const {
     camera,
     scene,
+    gl,
   } = useThree();
 
   const controlsRef =
@@ -174,8 +190,52 @@ export default function AdventureSceneContent({
     setIdleRotationEnabled,
   ] = useState(false);
 
+  /*
+   * This remains true while automatic rotation is allowed.
+   *
+   * It becomes false only after the visitor genuinely
+   * drags, rotates, or zooms the canvas.
+   */
+  const automaticRotationWantedRef =
+    useRef(false);
+
   const visitorInteractedRef =
     useRef(false);
+
+  /*
+   * Save the exact camera and OrbitControls target before
+   * entering a numbered-hotspot close-up.
+   *
+   * Home returns to this exact orbit position rather than
+   * resetting to the beginning of the route.
+   */
+  const returnCameraRef =
+    useRef<VectorTuple | null>(
+      null,
+    );
+
+  const returnTargetRef =
+    useRef<VectorTuple | null>(
+      null,
+    );
+
+  /*
+   * Used to distinguish a simple canvas click from an
+   * actual manual drag.
+   */
+  const pointerDownRef =
+    useRef(false);
+
+  const pointerStartRef =
+    useRef({
+      x: 0,
+      y: 0,
+    });
+
+  const activePointerIdRef =
+    useRef<number | null>(
+      null,
+    );
 
   const [
     debugClickPoint,
@@ -194,11 +254,16 @@ export default function AdventureSceneContent({
       : HOME_CAMERA_DESKTOP;
 
   /*
-   * Stop idle rotation when the visitor manually rotates,
-   * zooms, or clicks a numbered hotspot.
+   * Permanently stop idle rotation after a real visitor
+   * camera interaction.
+   *
+   * Numbered-hotspot clicks do not call this function.
    */
   const stopIdleRotation =
     useCallback(() => {
+      automaticRotationWantedRef.current =
+        false;
+
       visitorInteractedRef.current =
         true;
 
@@ -208,9 +273,196 @@ export default function AdventureSceneContent({
     }, []);
 
   /*
-   * The callback ref runs as soon as OrbitControls really
-   * exists. This prevents the preloader from waiting
-   * forever for a normal effect to notice a changed ref.
+   * Stop automatic rotation only when the visitor
+   * genuinely drags, rotates, touches, or wheel-zooms the
+   * Three.js canvas.
+   *
+   * Clicking an HTML hotspot or the Home button does not
+   * trigger this canvas interaction detector.
+   */
+  useEffect(() => {
+    const canvas =
+      gl.domElement;
+
+    const handlePointerDown = (
+      event: PointerEvent,
+    ) => {
+      if (
+        moving ||
+        interactionPaused ||
+        focusedSectionId !==
+          null
+      ) {
+        return;
+      }
+
+      pointerDownRef.current =
+        true;
+
+      activePointerIdRef.current =
+        event.pointerId;
+
+      pointerStartRef.current = {
+        x: event.clientX,
+        y: event.clientY,
+      };
+    };
+
+    const handlePointerMove = (
+      event: PointerEvent,
+    ) => {
+      if (
+        !pointerDownRef.current ||
+        activePointerIdRef.current !==
+          event.pointerId
+      ) {
+        return;
+      }
+
+      const horizontalTravel =
+        event.clientX -
+        pointerStartRef.current.x;
+
+      const verticalTravel =
+        event.clientY -
+        pointerStartRef.current.y;
+
+      const travelDistance =
+        Math.hypot(
+          horizontalTravel,
+          verticalTravel,
+        );
+
+      if (
+        travelDistance <
+        MANUAL_DRAG_THRESHOLD
+      ) {
+        return;
+      }
+
+      /*
+       * Stop once for this gesture. OrbitControls may
+       * continue processing the same pointer movement.
+       */
+      pointerDownRef.current =
+        false;
+
+      activePointerIdRef.current =
+        null;
+
+      stopIdleRotation();
+    };
+
+    const handlePointerEnd = (
+      event: PointerEvent,
+    ) => {
+      if (
+        activePointerIdRef.current !==
+        event.pointerId
+      ) {
+        return;
+      }
+
+      pointerDownRef.current =
+        false;
+
+      activePointerIdRef.current =
+        null;
+    };
+
+    const handleWheel = () => {
+      if (
+        moving ||
+        interactionPaused ||
+        focusedSectionId !==
+          null
+      ) {
+        return;
+      }
+
+      stopIdleRotation();
+    };
+
+    canvas.addEventListener(
+      "pointerdown",
+      handlePointerDown,
+      {
+        passive: true,
+      },
+    );
+
+    window.addEventListener(
+      "pointermove",
+      handlePointerMove,
+      {
+        passive: true,
+      },
+    );
+
+    window.addEventListener(
+      "pointerup",
+      handlePointerEnd,
+      {
+        passive: true,
+      },
+    );
+
+    window.addEventListener(
+      "pointercancel",
+      handlePointerEnd,
+      {
+        passive: true,
+      },
+    );
+
+    canvas.addEventListener(
+      "wheel",
+      handleWheel,
+      {
+        passive: true,
+      },
+    );
+
+    return () => {
+      canvas.removeEventListener(
+        "pointerdown",
+        handlePointerDown,
+      );
+
+      window.removeEventListener(
+        "pointermove",
+        handlePointerMove,
+      );
+
+      window.removeEventListener(
+        "pointerup",
+        handlePointerEnd,
+      );
+
+      window.removeEventListener(
+        "pointercancel",
+        handlePointerEnd,
+      );
+
+      canvas.removeEventListener(
+        "wheel",
+        handleWheel,
+      );
+    };
+  }, [
+    focusedSectionId,
+    gl,
+    interactionPaused,
+    moving,
+    stopIdleRotation,
+  ]);
+
+  /*
+   * The callback ref runs when OrbitControls actually
+   * exists.
+   *
+   * This prevents the preloader from waiting forever for
+   * a regular effect to notice a changed ref.
    */
   const handleControlsReady =
     useCallback(
@@ -228,7 +480,8 @@ export default function AdventureSceneContent({
           return;
         }
 
-        readyRef.current = true;
+        readyRef.current =
+          true;
 
         camera.position.set(
           ...homeCamera,
@@ -633,13 +886,16 @@ export default function AdventureSceneContent({
     );
 
   /*
-   * Clicking a numbered marker:
+   * Click a numbered marker:
    *
-   * - stops automatic rotation,
-   * - updates the external stack,
-   * - hides the connector,
-   * - zooms to the marker,
-   * - shows the Home button.
+   * - remember the current automatic-orbit position,
+   * - keep automatic rotation enabled for later,
+   * - update the external stack,
+   * - hide the connector during the close-up,
+   * - move to the clicked marker,
+   * - show the Home button.
+   *
+   * Clicking a marker does not count as a manual drag.
    */
   const selectSection =
     useCallback(
@@ -656,8 +912,39 @@ export default function AdventureSceneContent({
           return;
         }
 
-        stopIdleRotation();
+        const controls =
+          controlsRef.current;
 
+        /*
+         * Save the exact point reached in the current
+         * orbit. Home returns here so the route continues
+         * instead of restarting.
+         */
+        returnCameraRef.current = [
+          camera.position.x,
+          camera.position.y,
+          camera.position.z,
+        ];
+
+        returnTargetRef.current =
+          controls
+            ? [
+                controls.target.x,
+                controls.target.y,
+                controls.target.z,
+              ]
+            : [
+                HOME_TARGET[0],
+                HOME_TARGET[1],
+                HOME_TARGET[2],
+              ];
+
+        /*
+         * Do not call stopIdleRotation here.
+         *
+         * The focusedSectionId and moving states pause
+         * OrbitControls automatically until Home finishes.
+         */
         setFocusedSectionId(
           section.id,
         );
@@ -728,6 +1015,7 @@ export default function AdventureSceneContent({
         );
       },
       [
+        camera,
         focusedSectionId,
         interactionPaused,
         moveCamera,
@@ -736,10 +1024,17 @@ export default function AdventureSceneContent({
         moveToProjectsStorefront,
         moving,
         onActiveChange,
-        stopIdleRotation,
       ],
     );
 
+  /*
+   * Return from a numbered-hotspot close-up.
+   *
+   * The camera returns to the exact orbit angle saved
+   * before the click. Automatic rotation then resumes from
+   * that point when the visitor has not manually dragged
+   * or zoomed the scene.
+   */
   const returnToHome =
     useCallback(() => {
       if (
@@ -749,6 +1044,14 @@ export default function AdventureSceneContent({
       ) {
         return;
       }
+
+      const returnCamera =
+        returnCameraRef.current ??
+        homeCamera;
+
+      const returnTarget =
+        returnTargetRef.current ??
+        HOME_TARGET;
 
       window.dispatchEvent(
         new CustomEvent(
@@ -763,8 +1066,8 @@ export default function AdventureSceneContent({
       );
 
       moveCamera(
-        homeCamera,
-        HOME_TARGET,
+        returnCamera,
+        returnTarget,
         1.15,
         () => {
           setFocusedSectionId(
@@ -772,10 +1075,20 @@ export default function AdventureSceneContent({
           );
 
           /*
-           * Keep activeId unchanged. Its card remains
-           * selected and its dotted connector returns
-           * once the Home camera movement is complete.
+           * Resume when automatic rotation is still
+           * wanted. A real manual drag or wheel event sets
+           * this ref to false.
            */
+          setIdleRotationEnabled(
+            automaticRotationWantedRef.current,
+          );
+
+          returnCameraRef.current =
+            null;
+
+          returnTargetRef.current =
+            null;
+
           window.dispatchEvent(
             new CustomEvent(
               FOCUS_STATE_EVENT,
@@ -816,7 +1129,7 @@ export default function AdventureSceneContent({
   }, [returnToHome]);
 
   /*
-   * Preserve support for any external section controls.
+   * Preserve support for external section controls.
    */
   useEffect(() => {
     const handleSelection = (
@@ -845,13 +1158,13 @@ export default function AdventureSceneContent({
     };
 
     window.addEventListener(
-      "adventure:select",
+      SELECT_SECTION_EVENT,
       handleSelection,
     );
 
     return () => {
       window.removeEventListener(
-        "adventure:select",
+        SELECT_SECTION_EVENT,
         handleSelection,
       );
     };
@@ -881,8 +1194,26 @@ export default function AdventureSceneContent({
 
       stopCameraTweens();
 
+      /*
+       * A fresh intro enables automatic rotation again.
+       */
       visitorInteractedRef.current =
         false;
+
+      automaticRotationWantedRef.current =
+        true;
+
+      returnCameraRef.current =
+        null;
+
+      returnTargetRef.current =
+        null;
+
+      pointerDownRef.current =
+        false;
+
+      activePointerIdRef.current =
+        null;
 
       setMoving(true);
 
@@ -1019,13 +1350,13 @@ export default function AdventureSceneContent({
 
             setMoving(false);
 
-            if (
-              !visitorInteractedRef.current
-            ) {
-              setIdleRotationEnabled(
-                true,
-              );
-            }
+            /*
+             * Start idle rotation unless a genuine manual
+             * canvas interaction disabled it.
+             */
+            setIdleRotationEnabled(
+              automaticRotationWantedRef.current,
+            );
           },
 
           onInterrupt: () => {
@@ -1092,13 +1423,13 @@ export default function AdventureSceneContent({
     };
 
     window.addEventListener(
-      "adventure:intro",
+      INTRO_EVENT,
       handleIntro,
     );
 
     return () => {
       window.removeEventListener(
-        "adventure:intro",
+        INTRO_EVENT,
         handleIntro,
       );
 
@@ -1325,10 +1656,10 @@ export default function AdventureSceneContent({
       <BackAlleyPinkGlow />
 
       {/*
-       * The markers remain clickable.
+       * Numbered markers remain clickable.
        *
-       * showCard is false because AutoCardStack owns the
-       * visible card interface.
+       * AutoCardStack owns the visible card interface, so
+       * the old marker-attached card remains disabled.
        */}
       {SECTIONS.map(
         (section) => (
@@ -1401,38 +1732,61 @@ export default function AdventureSceneContent({
       </EffectComposer>
 
       <OrbitControls
-        ref={handleControlsReady}
+        ref={
+          handleControlsReady
+        }
         makeDefault
         autoRotate={
           idleRotationEnabled &&
           !moving &&
-          focusedSectionId === null &&
+          focusedSectionId ===
+            null &&
           !interactionPaused
         }
         autoRotateSpeed={2.8}
-        onStart={stopIdleRotation}
+
+        /*
+         * Do not use onStart={stopIdleRotation}.
+         *
+         * OrbitControls may fire onStart for simple
+         * pointer presses. The canvas movement detector
+         * above stops rotation only after a real drag.
+         */
         enabled={
           !moving &&
-          focusedSectionId === null &&
+          focusedSectionId ===
+            null &&
           !interactionPaused
         }
         enablePan={false}
         enableRotate
         enableZoom
         mouseButtons={{
-          LEFT: MOUSE.ROTATE,
-          MIDDLE: MOUSE.DOLLY,
-          RIGHT: MOUSE.PAN,
+          LEFT:
+            MOUSE.ROTATE,
+
+          MIDDLE:
+            MOUSE.DOLLY,
+
+          RIGHT:
+            MOUSE.PAN,
         }}
         touches={{
-          ONE: TOUCH.ROTATE,
-          TWO: TOUCH.DOLLY_ROTATE,
+          ONE:
+            TOUCH.ROTATE,
+
+          TWO:
+            TOUCH.DOLLY_ROTATE,
         }}
         minDistance={
-          compact ? 8.5 : 7
+          compact
+            ? 8.5
+            : 7
         }
         maxDistance={
-          compact ? 48 : 40
+          compact
+            ? 48
+            : 40
         }
         minPolarAngle={
           Math.PI / 7
@@ -1441,14 +1795,19 @@ export default function AdventureSceneContent({
           Math.PI / 2.02
         }
         zoomSpeed={
-          compact ? 0.95 : 0.72
+          compact
+            ? 0.95
+            : 0.72
         }
         rotateSpeed={
-          compact ? 0.68 : 0.82
+          compact
+            ? 0.68
+            : 0.82
         }
         enableDamping={
           !moving &&
-          focusedSectionId === null &&
+          focusedSectionId ===
+            null &&
           !interactionPaused
         }
         dampingFactor={0.075}
