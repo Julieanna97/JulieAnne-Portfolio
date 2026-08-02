@@ -97,7 +97,7 @@ export default function FloatingHeart({
   ],
   scale = 0.72,
   message =
-    "YOU FOUND MY HEART ♥",
+    "THANK YOU FOR VISITING ♥",
 }: FloatingHeartProps) {
   const animatedGroupRef =
     useRef<Group>(null);
