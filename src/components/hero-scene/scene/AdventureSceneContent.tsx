@@ -193,8 +193,11 @@ export default function AdventureSceneContent({
   /*
    * This remains true while automatic rotation is allowed.
    *
-   * It becomes false only after the visitor genuinely
-   * drags, rotates, or zooms the canvas.
+   * It becomes false after the visitor genuinely drags,
+   * rotates, or zooms the scene.
+   *
+   * Clicking Home after a numbered hotspot sets it back
+   * to true.
    */
   const automaticRotationWantedRef =
     useRef(false);
@@ -203,19 +206,14 @@ export default function AdventureSceneContent({
     useRef(false);
 
   /*
-   * Save the exact camera and OrbitControls target before
-   * entering a numbered-hotspot close-up.
+   * Preserve only the horizontal angle around the normal
+   * automatic orbit.
    *
-   * Home returns to this exact orbit position rather than
-   * resetting to the beginning of the route.
+   * We intentionally do not save manual zoom distance,
+   * height, polar angle, or OrbitControls target.
    */
-  const returnCameraRef =
-    useRef<VectorTuple | null>(
-      null,
-    );
-
-  const returnTargetRef =
-    useRef<VectorTuple | null>(
+  const returnOrbitAngleRef =
+    useRef<number | null>(
       null,
     );
 
@@ -254,10 +252,61 @@ export default function AdventureSceneContent({
       : HOME_CAMERA_DESKTOP;
 
   /*
+   * Rebuild a camera position on the normal automatic
+   * route at a given horizontal angle.
+   *
+   * The target, height, and radius match the route reached
+   * at the end of the intro animation.
+   */
+  const getAutoOrbitCameraAtAngle =
+    useCallback(
+      (
+        angle: number,
+      ): VectorTuple => {
+        const baseCamera =
+          compact
+            ? INTRO_STREET_CAMERA_MOBILE
+            : INTRO_STREET_CAMERA_DESKTOP;
+
+        const targetX =
+          INTRO_STREET_TARGET[0];
+
+        const targetZ =
+          INTRO_STREET_TARGET[2];
+
+        const horizontalRadius =
+          Math.hypot(
+            baseCamera[0] -
+              targetX,
+
+            baseCamera[2] -
+              targetZ,
+          );
+
+        return [
+          targetX +
+            Math.sin(
+              angle,
+            ) *
+              horizontalRadius,
+
+          baseCamera[1],
+
+          targetZ +
+            Math.cos(
+              angle,
+            ) *
+              horizontalRadius,
+        ] as const;
+      },
+      [compact],
+    );
+
+  /*
    * Permanently stop idle rotation after a real visitor
    * camera interaction.
    *
-   * Numbered-hotspot clicks do not call this function.
+   * A later hotspot → Home flow starts it again.
    */
   const stopIdleRotation =
     useCallback(() => {
@@ -278,7 +327,7 @@ export default function AdventureSceneContent({
    * Three.js canvas.
    *
    * Clicking an HTML hotspot or the Home button does not
-   * trigger this canvas interaction detector.
+   * trigger this detector.
    */
   useEffect(() => {
     const canvas =
@@ -888,14 +937,10 @@ export default function AdventureSceneContent({
   /*
    * Click a numbered marker:
    *
-   * - remember the current automatic-orbit position,
-   * - keep automatic rotation enabled for later,
-   * - update the external stack,
-   * - hide the connector during the close-up,
-   * - move to the clicked marker,
+   * - preserve the current horizontal side,
+   * - ignore manual height, zoom, and vertical tilt,
+   * - move into the close-up,
    * - show the Home button.
-   *
-   * Clicking a marker does not count as a manual drag.
    */
   const selectSection =
     useCallback(
@@ -912,38 +957,24 @@ export default function AdventureSceneContent({
           return;
         }
 
-        const controls =
-          controlsRef.current;
-
         /*
-         * Save the exact point reached in the current
-         * orbit. Home returns here so the route continues
-         * instead of restarting.
-         */
-        returnCameraRef.current = [
-          camera.position.x,
-          camera.position.y,
-          camera.position.z,
-        ];
-
-        returnTargetRef.current =
-          controls
-            ? [
-                controls.target.x,
-                controls.target.y,
-                controls.target.z,
-              ]
-            : [
-                HOME_TARGET[0],
-                HOME_TARGET[1],
-                HOME_TARGET[2],
-              ];
-
-        /*
-         * Do not call stopIdleRotation here.
+         * Save only the horizontal angle around the target.
          *
-         * The focusedSectionId and moving states pause
-         * OrbitControls automatically until Home finishes.
+         * Home will place the camera back on the normal
+         * automatic orbit at this angle.
+         */
+        returnOrbitAngleRef.current =
+          Math.atan2(
+            camera.position.x -
+              INTRO_STREET_TARGET[0],
+
+            camera.position.z -
+              INTRO_STREET_TARGET[2],
+          );
+
+        /*
+         * Clicking a hotspot does not count as manual
+         * camera interaction.
          */
         setFocusedSectionId(
           section.id,
@@ -1030,10 +1061,8 @@ export default function AdventureSceneContent({
   /*
    * Return from a numbered-hotspot close-up.
    *
-   * The camera returns to the exact orbit angle saved
-   * before the click. Automatic rotation then resumes from
-   * that point when the visitor has not manually dragged
-   * or zoomed the scene.
+   * Restore the standard automatic orbit at the saved
+   * horizontal angle, then restart automatic rotation.
    */
   const returnToHome =
     useCallback(() => {
@@ -1045,13 +1074,35 @@ export default function AdventureSceneContent({
         return;
       }
 
-      const returnCamera =
-        returnCameraRef.current ??
-        homeCamera;
+      const baseCamera =
+        compact
+          ? INTRO_STREET_CAMERA_MOBILE
+          : INTRO_STREET_CAMERA_DESKTOP;
 
-      const returnTarget =
-        returnTargetRef.current ??
-        HOME_TARGET;
+      /*
+       * Use the intro finishing angle as a safe fallback.
+       */
+      const fallbackAngle =
+        Math.atan2(
+          baseCamera[0] -
+            INTRO_STREET_TARGET[0],
+
+          baseCamera[2] -
+            INTRO_STREET_TARGET[2],
+        );
+
+      const returnAngle =
+        returnOrbitAngleRef.current ??
+        fallbackAngle;
+
+      /*
+       * Same horizontal side, but normal route height,
+       * radius, and target.
+       */
+      const returnCamera =
+        getAutoOrbitCameraAtAngle(
+          returnAngle,
+        );
 
       window.dispatchEvent(
         new CustomEvent(
@@ -1067,7 +1118,7 @@ export default function AdventureSceneContent({
 
       moveCamera(
         returnCamera,
-        returnTarget,
+        INTRO_STREET_TARGET,
         1.15,
         () => {
           setFocusedSectionId(
@@ -1075,18 +1126,29 @@ export default function AdventureSceneContent({
           );
 
           /*
-           * Resume when automatic rotation is still
-           * wanted. A real manual drag or wheel event sets
-           * this ref to false.
+           * Home after a numbered hotspot always resumes
+           * automatic rotation.
+           *
+           * Dragging without opening a hotspot still leaves
+           * automatic rotation disabled.
            */
+          automaticRotationWantedRef.current =
+            true;
+
+          visitorInteractedRef.current =
+            false;
+
           setIdleRotationEnabled(
-            automaticRotationWantedRef.current,
+            true,
           );
 
-          returnCameraRef.current =
+          returnOrbitAngleRef.current =
             null;
 
-          returnTargetRef.current =
+          pointerDownRef.current =
+            false;
+
+          activePointerIdRef.current =
             null;
 
           window.dispatchEvent(
@@ -1103,8 +1165,9 @@ export default function AdventureSceneContent({
         },
       );
     }, [
+      compact,
       focusedSectionId,
-      homeCamera,
+      getAutoOrbitCameraAtAngle,
       moveCamera,
       moving,
     ]);
@@ -1203,10 +1266,7 @@ export default function AdventureSceneContent({
       automaticRotationWantedRef.current =
         true;
 
-      returnCameraRef.current =
-        null;
-
-      returnTargetRef.current =
+      returnOrbitAngleRef.current =
         null;
 
       pointerDownRef.current =
@@ -1350,10 +1410,6 @@ export default function AdventureSceneContent({
 
             setMoving(false);
 
-            /*
-             * Start idle rotation unless a genuine manual
-             * canvas interaction disabled it.
-             */
             setIdleRotationEnabled(
               automaticRotationWantedRef.current,
             );
@@ -1655,12 +1711,6 @@ export default function AdventureSceneContent({
 
       <BackAlleyPinkGlow />
 
-      {/*
-       * Numbered markers remain clickable.
-       *
-       * AutoCardStack owns the visible card interface, so
-       * the old marker-attached card remains disabled.
-       */}
       {SECTIONS.map(
         (section) => (
           <NumberHotspot
@@ -1744,14 +1794,6 @@ export default function AdventureSceneContent({
           !interactionPaused
         }
         autoRotateSpeed={2.8}
-
-        /*
-         * Do not use onStart={stopIdleRotation}.
-         *
-         * OrbitControls may fire onStart for simple
-         * pointer presses. The canvas movement detector
-         * above stops rotation only after a real drag.
-         */
         enabled={
           !moving &&
           focusedSectionId ===
