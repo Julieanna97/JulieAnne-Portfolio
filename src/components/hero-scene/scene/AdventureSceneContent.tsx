@@ -958,17 +958,45 @@ export default function AdventureSceneContent({
         }
 
         /*
-         * Save only the horizontal angle around the target.
-         *
-         * Home will place the camera back on the normal
-         * automatic orbit at this angle.
-         */
+        * Resume automatic rotation from the side belonging to
+        * the selected hotspot—not from the visitor's manually
+        * dragged camera angle.
+        *
+        * The close-up camera tells us which side of the building
+        * the selected section belongs to.
+        */
+        let selectedSectionCamera:
+          VectorTuple =
+            section.camera;
+
+        if (compact) {
+          if (
+            section.id ===
+            "about"
+          ) {
+            selectedSectionCamera =
+              ABOUT_CAMERA_MOBILE;
+          } else if (
+            section.id ===
+            "projects"
+          ) {
+            selectedSectionCamera =
+              PROJECTS_CAMERA_MOBILE;
+          } else if (
+            section.id ===
+            "credits"
+          ) {
+            selectedSectionCamera =
+              CREDITS_CAMERA_MOBILE;
+          }
+        }
+
         returnOrbitAngleRef.current =
           Math.atan2(
-            camera.position.x -
+            selectedSectionCamera[0] -
               INTRO_STREET_TARGET[0],
 
-            camera.position.z -
+            selectedSectionCamera[2] -
               INTRO_STREET_TARGET[2],
           );
 
@@ -1046,7 +1074,7 @@ export default function AdventureSceneContent({
         );
       },
       [
-        camera,
+        compact,
         focusedSectionId,
         interactionPaused,
         moveCamera,
