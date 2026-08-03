@@ -53,6 +53,7 @@ export default function SectionDetailModal({
   }, [detailId, onClose]);
 
   const isAbout = detailId === "about";
+
   const titleId = detailId
     ? `section-detail-title-${detailId}`
     : undefined;
@@ -363,9 +364,11 @@ function AboutDetail({
               <li>
                 Frontend, backend, databases, and system development.
               </li>
+
               <li>
                 Projects built with agile methods.
               </li>
+
               <li>
                 E-commerce platforms and fullstack application structure.
               </li>
@@ -390,6 +393,7 @@ function AboutDetail({
                 Embedded programming, hardware communication, and real-time
                 systems.
               </li>
+
               <li>
                 Led a group project that produced an autonomous car.
               </li>
@@ -407,6 +411,7 @@ function AboutDetail({
         <div className="adventure-contact-grid">
           <a href="mailto:kisamae1997@gmail.com">
             <span>Email</span>
+
             <strong>
               kisamae1997@gmail.com
             </strong>
@@ -456,35 +461,69 @@ function CreditsDetail({
         <p className="adventure-section-detail-intro">
           Portfolio concept and implementation by Julie Anne Cantillep. This
           interactive environment combines 3D development, animation,
-          responsive interface work, and small environmental details.
+          responsive interface work, music, and small environmental details.
         </p>
       </header>
 
       <section className="adventure-section-block">
         <div className="adventure-section-heading">
           <p>Attribution</p>
-          <h3>Scene attribution</h3>
+
+          <h3>
+            Scene, model & music credits
+          </h3>
         </div>
 
-        <article className="adventure-detail-card adventure-credit-feature">
-          <p className="adventure-detail-kicker">
-            Original 3D environment
-          </p>
+        <div className="adventure-detail-grid adventure-detail-grid--three">
+          <article className="adventure-detail-card adventure-credit-feature">
+            <p className="adventure-detail-kicker">
+              Original 3D environment
+            </p>
 
-          <h4>
-            A Mysterious Adventure — 3D Editor Challenge
-          </h4>
+            <h4>
+              A Mysterious Adventure — 3D Editor Challenge
+            </h4>
 
-          <p>
-            3D scene by Diosmel, used under the Creative Commons Attribution
-            4.0 license.
-          </p>
-        </article>
+            <p>
+              3D scene by Diosmel, used under the Creative Commons Attribution
+              4.0 license.
+            </p>
+          </article>
+
+          <article className="adventure-detail-card adventure-credit-feature">
+            <p className="adventure-detail-kicker">
+              Background music
+            </p>
+
+            <h4>
+              Japanese Jazz 2
+            </h4>
+
+            <p>
+              Music created by PuyoPuyoMegaFan1234.
+            </p>
+          </article>
+
+          <article className="adventure-detail-card adventure-credit-feature">
+            <p className="adventure-detail-kicker">
+              Additional 3D model
+            </p>
+
+            <h4>
+              Sakura Tree
+            </h4>
+
+            <p>
+              Sakura Tree model created by dimal965 and published on Sketchfab.
+            </p>
+          </article>
+        </div>
       </section>
 
       <section className="adventure-section-block">
         <div className="adventure-section-heading">
           <p>Production</p>
+
           <h3>
             Tools, technology & visual direction
           </h3>
@@ -513,6 +552,7 @@ function CreditsDetail({
       <section className="adventure-section-block">
         <div className="adventure-section-heading">
           <p>Direction</p>
+
           <h3>
             What shaped this portfolio
           </h3>

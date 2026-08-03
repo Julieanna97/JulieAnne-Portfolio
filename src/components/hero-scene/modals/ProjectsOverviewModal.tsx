@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-} from "react";
-
+import { useEffect, useRef } from "react";
 import {
   AnimatePresence,
   motion,
@@ -22,12 +18,8 @@ import {
 
 type ProjectsOverviewModalProps = {
   open: boolean;
-
   onClose: () => void;
-
-  onProjectSelect: (
-    id: ProjectId,
-  ) => void;
+  onProjectSelect: (id: ProjectId) => void;
 };
 
 export default function ProjectsOverviewModal({
@@ -35,18 +27,14 @@ export default function ProjectsOverviewModal({
   onClose,
   onProjectSelect,
 }: ProjectsOverviewModalProps) {
-  const reduceMotion =
-    useReducedMotion();
+  const reduceMotion = useReducedMotion();
 
   const closeButtonRef =
-    useRef<HTMLButtonElement | null>(
-      null,
-    );
+    useRef<HTMLButtonElement | null>(null);
 
-  const projects =
-    Object.values(
-      PROJECT_CASE_STUDIES,
-    ) as ProjectCaseStudy[];
+  const projects = Object.values(
+    PROJECT_CASE_STUDIES,
+  ) as ProjectCaseStudy[];
 
   useEffect(() => {
     if (!open) {
@@ -54,19 +42,14 @@ export default function ProjectsOverviewModal({
     }
 
     const previousOverflow =
-      document.body.style
-        .overflow;
+      document.body.style.overflow;
 
-    document.body.style.overflow =
-      "hidden";
+    document.body.style.overflow = "hidden";
 
     const handleKeyDown = (
       event: KeyboardEvent,
     ) => {
-      if (
-        event.key ===
-        "Escape"
-      ) {
+      if (event.key === "Escape") {
         onClose();
       }
     };
@@ -76,11 +59,9 @@ export default function ProjectsOverviewModal({
       handleKeyDown,
     );
 
-    const focusTimer =
-      window.setTimeout(() => {
-        closeButtonRef.current
-          ?.focus();
-      }, 100);
+    const focusTimer = window.setTimeout(() => {
+      closeButtonRef.current?.focus();
+    }, 100);
 
     return () => {
       document.body.style.overflow =
@@ -91,50 +72,34 @@ export default function ProjectsOverviewModal({
         handleKeyDown,
       );
 
-      window.clearTimeout(
-        focusTimer,
-      );
+      window.clearTimeout(focusTimer);
     };
-  }, [
-    onClose,
-    open,
-  ]);
+  }, [onClose, open]);
 
   return (
-    <AnimatePresence
-      mode="wait"
-    >
+    <AnimatePresence mode="wait">
       {open && (
         <motion.div
           className="adventure-project-index-backdrop"
           role="presentation"
           initial={{
             opacity: 0,
-
-            backdropFilter:
-              "blur(0px)",
+            backdropFilter: "blur(0px)",
           }}
           animate={{
             opacity: 1,
-
-            backdropFilter:
-              "blur(16px)",
+            backdropFilter: "blur(16px)",
           }}
           exit={{
             opacity: 0,
-
-            backdropFilter:
-              "blur(0px)",
+            backdropFilter: "blur(0px)",
           }}
           transition={{
-            duration:
-              reduceMotion
-                ? 0.12
-                : 0.32,
+            duration: reduceMotion
+              ? 0.12
+              : 0.32,
           }}
-          onClick={
-            onClose
-          }
+          onClick={onClose}
         >
           <motion.article
             className="adventure-project-index-modal"
@@ -148,25 +113,18 @@ export default function ProjectsOverviewModal({
                   }
                 : {
                     opacity: 0,
-
                     scale: 0.95,
                     y: 42,
-
-                    borderRadius:
-                      36,
-
+                    borderRadius: 36,
                     clipPath:
                       "inset(6% 6% 6% 6% round 36px)",
                   }
             }
             animate={{
               opacity: 1,
-
               scale: 1,
               y: 0,
-
               borderRadius: 0,
-
               clipPath:
                 "inset(0% 0% 0% 0% round 0px)",
             }}
@@ -177,13 +135,9 @@ export default function ProjectsOverviewModal({
                   }
                 : {
                     opacity: 0,
-
                     scale: 0.95,
                     y: 34,
-
-                    borderRadius:
-                      36,
-
+                    borderRadius: 36,
                     clipPath:
                       "inset(6% 6% 6% 6% round 36px)",
                   }
@@ -197,21 +151,18 @@ export default function ProjectsOverviewModal({
                     opacity: {
                       duration: 0.25,
                     },
-
                     scale: {
                       type: "spring",
                       stiffness: 230,
                       damping: 28,
                       mass: 0.9,
                     },
-
                     y: {
                       type: "spring",
                       stiffness: 230,
                       damping: 28,
                       mass: 0.9,
                     },
-
                     borderRadius: {
                       duration: 0.55,
                       ease: [
@@ -221,7 +172,6 @@ export default function ProjectsOverviewModal({
                         1,
                       ],
                     },
-
                     clipPath: {
                       duration: 0.62,
                       ease: [
@@ -233,28 +183,21 @@ export default function ProjectsOverviewModal({
                     },
                   }
             }
-            onClick={(
-              event,
-            ) => {
+            onClick={(event) => {
               event.stopPropagation();
             }}
           >
             <button
-              ref={
-                closeButtonRef
-              }
+              ref={closeButtonRef}
               type="button"
               className="adventure-project-index-close"
-              onClick={
-                onClose
-              }
+              onClick={onClose}
               aria-label="Close projects"
             >
               <span
+                className="adventure-project-index-close-icon"
                 aria-hidden="true"
-              >
-                ×
-              </span>
+              />
             </button>
 
             <motion.div
@@ -274,16 +217,12 @@ export default function ProjectsOverviewModal({
                 y: 0,
               }}
               transition={{
-                duration:
-                  reduceMotion
-                    ? 0.12
-                    : 0.48,
-
-                delay:
-                  reduceMotion
-                    ? 0
-                    : 0.16,
-
+                duration: reduceMotion
+                  ? 0.12
+                  : 0.48,
+                delay: reduceMotion
+                  ? 0
+                  : 0.16,
                 ease: [
                   0.22,
                   1,
@@ -302,16 +241,14 @@ export default function ProjectsOverviewModal({
                 </h2>
 
                 <strong>
-                  Fullstack · Embedded
-                  · Creative Development
+                  Fullstack · Embedded · Creative
+                  Development
                 </strong>
 
                 <p className="adventure-project-index-intro">
-                  Explore applications,
-                  experiments, embedded
-                  systems, and production
-                  work. Select a project
-                  to open its full case
+                  Explore applications, experiments,
+                  embedded systems, and production work.
+                  Select a project to open its full case
                   study.
                 </p>
               </header>
@@ -321,18 +258,13 @@ export default function ProjectsOverviewModal({
                 aria-label="Project list"
               >
                 {projects.map(
-                  (
-                    project,
-                    index,
-                  ) => {
+                  (project, index) => {
                     const coverImage =
                       project.images[0];
 
                     return (
                       <motion.button
-                        key={
-                          project.id
-                        }
+                        key={project.id}
                         type="button"
                         className="adventure-project-index-card"
                         onClick={() => {
@@ -342,30 +274,21 @@ export default function ProjectsOverviewModal({
                         }}
                         whileHover={{
                           y: -6,
-                          scale:
-                            1.012,
+                          scale: 1.012,
                         }}
                         whileTap={{
-                          scale:
-                            0.985,
+                          scale: 0.985,
                         }}
                         transition={{
-                          type:
-                            "spring",
-
-                          stiffness:
-                            340,
-
-                          damping:
-                            26,
+                          type: "spring",
+                          stiffness: 340,
+                          damping: 26,
                         }}
                       >
                         <div className="adventure-project-index-image-wrap">
                           {coverImage ? (
                             <img
-                              src={
-                                coverImage
-                              }
+                              src={coverImage}
                               alt=""
                               className="adventure-project-index-image"
                             />
@@ -379,8 +302,7 @@ export default function ProjectsOverviewModal({
 
                           <span className="adventure-project-index-number">
                             {String(
-                              index +
-                                1,
+                              index + 1,
                             ).padStart(
                               2,
                               "0",
@@ -390,33 +312,22 @@ export default function ProjectsOverviewModal({
 
                         <div className="adventure-project-index-copy">
                           <p>
-                            {
-                              project.type
-                            }
+                            {project.type}
                           </p>
 
                           <h3>
-                            {
-                              project.title
-                            }
+                            {project.title}
                           </h3>
 
                           <span className="adventure-project-index-summary">
-                            {
-                              project.summary
-                            }
+                            {project.summary}
                           </span>
 
                           <div className="adventure-project-index-tags">
                             {project.technologies
-                              .slice(
-                                0,
-                                4,
-                              )
+                              .slice(0, 4)
                               .map(
-                                (
-                                  technology,
-                                ) => (
+                                (technology) => (
                                   <span
                                     key={
                                       technology
@@ -431,11 +342,9 @@ export default function ProjectsOverviewModal({
                           </div>
 
                           <strong className="adventure-project-index-open">
-                            Open case
-                            study
-                            <span
-                              aria-hidden="true"
-                            >
+                            Open case study
+
+                            <span aria-hidden="true">
                               →
                             </span>
                           </strong>
@@ -451,57 +360,47 @@ export default function ProjectsOverviewModal({
           <style jsx global>{`
             .adventure-project-index-backdrop {
               position: fixed;
-
               inset: 0;
-
               z-index: 220;
 
               display: grid;
 
-              background:
-                rgba(
-                  4,
-                  2,
-                  12,
-                  0.76
-                );
+              background: rgba(
+                4,
+                2,
+                12,
+                0.76
+              );
 
-              place-items:
-                center;
+              place-items: center;
             }
 
             .adventure-project-index-modal {
               position: absolute;
-
               inset: 0;
 
-              overflow:
-                hidden;
+              overflow: hidden;
 
               background:
                 radial-gradient(
-                  circle at 82%
-                    14%,
+                  circle at 82% 14%,
                   rgba(
                     255,
                     75,
                     174,
                     0.16
                   ),
-                  transparent
-                    32%
+                  transparent 32%
                 ),
                 radial-gradient(
-                  circle at 15%
-                    86%,
+                  circle at 15% 86%,
                   rgba(
                     140,
                     91,
                     255,
                     0.14
                   ),
-                  transparent
-                    36%
+                  transparent 36%
                 ),
                 linear-gradient(
                   145deg,
@@ -510,8 +409,7 @@ export default function ProjectsOverviewModal({
                   #11091d
                 );
 
-              color:
-                #fff7fd;
+              color: #fff7fd;
             }
 
             .adventure-project-index-close {
@@ -534,12 +432,12 @@ export default function ProjectsOverviewModal({
               z-index: 4;
 
               display: grid;
-
               width: 48px;
               height: 48px;
 
-              border:
-                1px solid
+              box-sizing: border-box;
+
+              border: 1px solid
                 rgba(
                   255,
                   147,
@@ -547,18 +445,15 @@ export default function ProjectsOverviewModal({
                   0.4
                 );
 
-              border-radius:
-                50%;
-
+              border-radius: 50%;
               outline: none;
 
-              background:
-                rgba(
-                  24,
-                  10,
-                  39,
-                  0.88
-                );
+              background: rgba(
+                24,
+                10,
+                39,
+                0.88
+              );
 
               box-shadow:
                 0 0 26px
@@ -569,43 +464,72 @@ export default function ProjectsOverviewModal({
                   0.2
                 );
 
-              color:
-                #ffe8f7;
+              padding: 0;
 
-              cursor:
-                pointer;
+              color: #ffe8f7;
+              cursor: pointer;
 
-              font-size:
-                27px;
+              line-height: 0;
 
-              line-height:
-                1;
-
-              place-items:
-                center;
+              place-items: center;
 
               backdrop-filter:
                 blur(14px);
 
               transition:
-                color 180ms
-                  ease,
-                border-color
-                  180ms ease,
-                background
-                  180ms ease,
-                transform
-                  180ms ease;
+                color 180ms ease,
+                border-color 180ms ease,
+                background 180ms ease,
+                transform 180ms ease;
+            }
+
+            .adventure-project-index-close-icon {
+              position: relative;
+
+              display: block;
+              width: 18px;
+              height: 18px;
+
+              pointer-events: none;
+            }
+
+            .adventure-project-index-close-icon::before,
+            .adventure-project-index-close-icon::after {
+              content: "";
+
+              position: absolute;
+              top: 50%;
+              left: 50%;
+
+              width: 19px;
+              height: 2px;
+
+              border-radius: 999px;
+
+              background: currentColor;
+
+              transform-origin: center;
+            }
+
+            .adventure-project-index-close-icon::before {
+              transform:
+                translate(-50%, -50%)
+                rotate(45deg);
+            }
+
+            .adventure-project-index-close-icon::after {
+              transform:
+                translate(-50%, -50%)
+                rotate(-45deg);
             }
 
             .adventure-project-index-close:hover {
-              border-color:
-                rgba(
-                  255,
-                  221,
-                  240,
-                  0.9
-                );
+              border-color: rgba(
+                255,
+                221,
+                240,
+                0.9
+              );
 
               background:
                 linear-gradient(
@@ -614,8 +538,7 @@ export default function ProjectsOverviewModal({
                   #ff4fa9
                 );
 
-              color:
-                #ffffff;
+              color: #ffffff;
 
               transform:
                 rotate(7deg)
@@ -623,26 +546,20 @@ export default function ProjectsOverviewModal({
             }
 
             .adventure-project-index-close:focus-visible {
-              outline:
-                3px solid
+              outline: 3px solid
                 #69dfff;
 
-              outline-offset:
-                4px;
+              outline-offset: 4px;
             }
 
             .adventure-project-index-body {
               width: 100%;
               height: 100%;
 
-              box-sizing:
-                border-box;
+              box-sizing: border-box;
 
-              overflow-x:
-                hidden;
-
-              overflow-y:
-                auto;
+              overflow-x: hidden;
+              overflow-y: auto;
 
               padding:
                 clamp(
@@ -663,11 +580,10 @@ export default function ProjectsOverviewModal({
             }
 
             .adventure-project-index-header {
-              width:
-                min(
-                  850px,
-                  100%
-                );
+              width: min(
+                850px,
+                100%
+              );
 
               margin:
                 0 auto
@@ -677,29 +593,20 @@ export default function ProjectsOverviewModal({
                   64px
                 );
 
-              text-align:
-                center;
+              text-align: center;
             }
 
             .adventure-project-index-header
               > p:first-child {
-              margin:
-                0 0 12px;
+              margin: 0 0 12px;
 
-              color:
-                #ff79bf;
+              color: #ff79bf;
 
-              font-size:
-                10px;
+              font-size: 10px;
+              font-weight: 900;
 
-              font-weight:
-                900;
-
-              letter-spacing:
-                0.18em;
-
-              text-transform:
-                uppercase;
+              letter-spacing: 0.18em;
+              text-transform: uppercase;
             }
 
             .adventure-project-index-header
@@ -713,81 +620,64 @@ export default function ProjectsOverviewModal({
                 Arial,
                 sans-serif;
 
-              font-size:
-                clamp(
-                  3rem,
-                  8vw,
-                  7rem
-                );
+              font-size: clamp(
+                3rem,
+                8vw,
+                7rem
+              );
 
-              font-weight:
-                880;
-
-              letter-spacing:
-                -0.065em;
-
-              line-height:
-                0.92;
+              font-weight: 880;
+              letter-spacing: -0.065em;
+              line-height: 0.92;
             }
 
             .adventure-project-index-header
               > strong {
               display: block;
 
-              margin-top:
-                20px;
+              margin-top: 20px;
 
-              color:
-                #e5b5ff;
+              color: #e5b5ff;
 
-              font-size:
-                clamp(
-                  0.72rem,
-                  1.2vw,
-                  0.92rem
-                );
+              font-size: clamp(
+                0.72rem,
+                1.2vw,
+                0.92rem
+              );
 
-              letter-spacing:
-                0.08em;
-
-              text-transform:
-                uppercase;
+              letter-spacing: 0.08em;
+              text-transform: uppercase;
             }
 
             .adventure-project-index-intro {
-              max-width:
-                620px;
+              max-width: 620px;
 
               margin:
                 20px auto 0;
 
-              color:
-                rgba(
-                  244,
-                  238,
-                  255,
-                  0.72
-                );
+              color: rgba(
+                244,
+                238,
+                255,
+                0.72
+              );
 
-              font-size:
-                clamp(
-                  0.92rem,
-                  1.4vw,
-                  1.06rem
-                );
+              font-size: clamp(
+                0.92rem,
+                1.4vw,
+                1.06rem
+              );
 
-              line-height:
-                1.75;
+              line-height: 1.75;
             }
 
             .adventure-project-index-grid {
               display: grid;
 
-              width:
-                min(
-                  1320px,
-                  100%
-                );
+              width: min(
+                1320px,
+                100%
+              );
 
               grid-template-columns:
                 repeat(
@@ -798,30 +688,24 @@ export default function ProjectsOverviewModal({
                   )
                 );
 
-              gap:
-                clamp(
-                  16px,
-                  2.2vw,
-                  30px
-                );
+              gap: clamp(
+                16px,
+                2.2vw,
+                30px
+              );
 
-              margin:
-                0 auto;
+              margin: 0 auto;
             }
 
             .adventure-project-index-card {
               display: flex;
-
               min-width: 0;
 
-              flex-direction:
-                column;
+              flex-direction: column;
 
-              overflow:
-                hidden;
+              overflow: hidden;
 
-              border:
-                1px solid
+              border: 1px solid
                 rgba(
                   232,
                   144,
@@ -829,9 +713,7 @@ export default function ProjectsOverviewModal({
                   0.2
                 );
 
-              border-radius:
-                24px;
-
+              border-radius: 24px;
               outline: none;
 
               background:
@@ -862,14 +744,9 @@ export default function ProjectsOverviewModal({
 
               padding: 0;
 
-              color:
-                #fff7fd;
-
-              cursor:
-                pointer;
-
-              text-align:
-                left;
+              color: #fff7fd;
+              cursor: pointer;
+              text-align: left;
 
               transition:
                 border-color
@@ -879,13 +756,12 @@ export default function ProjectsOverviewModal({
             }
 
             .adventure-project-index-card:hover {
-              border-color:
-                rgba(
-                  255,
-                  112,
-                  194,
-                  0.56
-                );
+              border-color: rgba(
+                255,
+                112,
+                194,
+                0.56
+              );
 
               box-shadow:
                 0 0 30px
@@ -905,54 +781,41 @@ export default function ProjectsOverviewModal({
             }
 
             .adventure-project-index-card:focus-visible {
-              outline:
-                3px solid
+              outline: 3px solid
                 #69dfff;
 
-              outline-offset:
-                4px;
+              outline-offset: 4px;
             }
 
             .adventure-project-index-image-wrap {
-              position:
-                relative;
+              position: relative;
 
-              aspect-ratio:
-                16 / 10;
+              aspect-ratio: 16 / 10;
+              overflow: hidden;
 
-              overflow:
-                hidden;
-
-              background:
-                #100b1e;
+              background: #100b1e;
             }
 
             .adventure-project-index-image {
               width: 100%;
               height: 100%;
 
-              object-fit:
-                cover;
+              object-fit: cover;
 
               transition:
                 transform
-                380ms ease,
+                  380ms ease,
                 filter
-                380ms ease;
+                  380ms ease;
             }
 
             .adventure-project-index-card:hover
               .adventure-project-index-image {
               filter:
-                saturate(
-                  1.12
-                )
-                brightness(
-                  1.05
-                );
+                saturate(1.12)
+                brightness(1.05);
 
-              transform:
-                scale(1.045);
+              transform: scale(1.045);
             }
 
             .adventure-project-index-placeholder {
@@ -970,42 +833,29 @@ export default function ProjectsOverviewModal({
                     188,
                     0.24
                   ),
-                  transparent
-                    65%
+                  transparent 65%
                 );
 
-              color:
-                #ff78c1;
+              color: #ff78c1;
+              font-size: 35px;
 
-              font-size:
-                35px;
-
-              place-items:
-                center;
+              place-items: center;
             }
 
             .adventure-project-index-number {
-              position:
-                absolute;
-
+              position: absolute;
               top: 14px;
               left: 14px;
 
-              display:
-                inline-flex;
+              display: inline-flex;
 
-              min-width:
-                38px;
-              min-height:
-                27px;
+              min-width: 38px;
+              min-height: 27px;
 
-              align-items:
-                center;
-              justify-content:
-                center;
+              align-items: center;
+              justify-content: center;
 
-              border:
-                1px solid
+              border: 1px solid
                 rgba(
                   255,
                   255,
@@ -1013,24 +863,19 @@ export default function ProjectsOverviewModal({
                   0.18
                 );
 
-              border-radius:
-                999px;
+              border-radius: 999px;
 
-              background:
-                rgba(
-                  14,
-                  8,
-                  28,
-                  0.74
-                );
+              background: rgba(
+                14,
+                8,
+                28,
+                0.74
+              );
 
-              color:
-                #ff8acb;
+              color: #ff8acb;
 
-              font-size:
-                9px;
-              font-weight:
-                900;
+              font-size: 9px;
+              font-weight: 900;
 
               backdrop-filter:
                 blur(10px);
@@ -1039,37 +884,25 @@ export default function ProjectsOverviewModal({
             .adventure-project-index-copy {
               display: flex;
 
-              min-height:
-                260px;
-
+              min-height: 260px;
               flex: 1;
 
-              flex-direction:
-                column;
+              flex-direction: column;
 
-              padding:
-                24px;
+              padding: 24px;
             }
 
             .adventure-project-index-copy
               > p {
-              margin:
-                0 0 8px;
+              margin: 0 0 8px;
 
-              color:
-                #ff79bf;
+              color: #ff79bf;
 
-              font-size:
-                8px;
+              font-size: 8px;
+              font-weight: 900;
 
-              font-weight:
-                900;
-
-              letter-spacing:
-                0.11em;
-
-              text-transform:
-                uppercase;
+              letter-spacing: 0.11em;
+              text-transform: uppercase;
             }
 
             .adventure-project-index-copy
@@ -1083,64 +916,48 @@ export default function ProjectsOverviewModal({
                 Arial,
                 sans-serif;
 
-              font-size:
-                clamp(
-                  1.25rem,
-                  2vw,
-                  1.65rem
-                );
+              font-size: clamp(
+                1.25rem,
+                2vw,
+                1.65rem
+              );
 
-              line-height:
-                1.08;
+              line-height: 1.08;
             }
 
             .adventure-project-index-summary {
-              display:
-                -webkit-box;
+              display: -webkit-box;
 
-              margin-top:
-                14px;
+              margin-top: 14px;
+              overflow: hidden;
 
-              overflow:
-                hidden;
+              color: rgba(
+                244,
+                238,
+                255,
+                0.68
+              );
 
-              color:
-                rgba(
-                  244,
-                  238,
-                  255,
-                  0.68
-                );
-
-              font-size:
-                12px;
-
-              line-height:
-                1.65;
+              font-size: 12px;
+              line-height: 1.65;
 
               -webkit-box-orient:
                 vertical;
 
-              -webkit-line-clamp:
-                4;
+              -webkit-line-clamp: 4;
             }
 
             .adventure-project-index-tags {
               display: flex;
-
-              flex-wrap:
-                wrap;
+              flex-wrap: wrap;
 
               gap: 6px;
-
-              margin-top:
-                18px;
+              margin-top: 18px;
             }
 
             .adventure-project-index-tags
               span {
-              border:
-                1px solid
+              border: 1px solid
                 rgba(
                   232,
                   144,
@@ -1148,88 +965,65 @@ export default function ProjectsOverviewModal({
                   0.18
                 );
 
-              border-radius:
-                999px;
+              border-radius: 999px;
 
-              background:
-                rgba(
-                  154,
-                  92,
-                  255,
-                  0.08
-                );
+              background: rgba(
+                154,
+                92,
+                255,
+                0.08
+              );
 
-              padding:
-                5px 8px;
+              padding: 5px 8px;
 
-              color:
-                rgba(
-                  255,
-                  241,
-                  251,
-                  0.72
-                );
+              color: rgba(
+                255,
+                241,
+                251,
+                0.72
+              );
 
-              font-size:
-                8px;
-
-              font-weight:
-                800;
+              font-size: 8px;
+              font-weight: 800;
             }
 
             .adventure-project-index-open {
-              display:
-                inline-flex;
+              display: inline-flex;
 
-              align-items:
-                center;
-
+              align-items: center;
               justify-content:
                 space-between;
 
               gap: 12px;
 
-              margin-top:
-                auto;
+              margin-top: auto;
+              padding-top: 22px;
 
-              padding-top:
-                22px;
+              color: #ff86c8;
 
-              color:
-                #ff86c8;
-
-              font-size:
-                10px;
-
-              letter-spacing:
-                0.08em;
-
-              text-transform:
-                uppercase;
+              font-size: 10px;
+              letter-spacing: 0.08em;
+              text-transform: uppercase;
             }
 
             .adventure-project-index-open
               span {
-              font-size:
-                17px;
+              font-size: 17px;
 
               transition:
                 transform
-                180ms ease;
+                  180ms ease;
             }
 
             .adventure-project-index-card:hover
               .adventure-project-index-open
               span {
               transform:
-                translateX(
-                  4px
-                );
+                translateX(4px);
             }
 
             @media (
-              max-width:
-                980px
+              max-width: 980px
             ) {
               .adventure-project-index-grid {
                 grid-template-columns:
@@ -1244,8 +1038,7 @@ export default function ProjectsOverviewModal({
             }
 
             @media (
-              max-width:
-                620px
+              max-width: 620px
             ) {
               .adventure-project-index-body {
                 padding:
@@ -1260,11 +1053,8 @@ export default function ProjectsOverviewModal({
               }
 
               .adventure-project-index-copy {
-                min-height:
-                  235px;
-
-                padding:
-                  20px;
+                min-height: 235px;
+                padding: 20px;
               }
 
               .adventure-project-index-close {
@@ -1279,6 +1069,16 @@ export default function ProjectsOverviewModal({
 
                 width: 43px;
                 height: 43px;
+              }
+
+              .adventure-project-index-close-icon {
+                width: 17px;
+                height: 17px;
+              }
+
+              .adventure-project-index-close-icon::before,
+              .adventure-project-index-close-icon::after {
+                width: 18px;
               }
             }
           `}</style>
