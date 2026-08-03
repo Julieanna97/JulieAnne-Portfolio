@@ -1,9 +1,9 @@
 import type { PortfolioSection } from "./types";
 
 /*
-  Keep this disabled when you are not positioning lights or meshes.
-  This removes the cyan debugging spheres.
-*/
+ * Keep this disabled when you are not positioning lights
+ * or meshes. This removes the cyan debugging spheres.
+ */
 export const ENABLE_LIGHT_DEBUGGER =
   false;
 
@@ -12,40 +12,41 @@ export const ENABLE_LIGHT_DEBUGGER =
 /* -------------------------------------------------------------------------- */
 
 /*
-  Final desktop position after the intro.
-
-  This is closer to the building than the previous camera position,
-  while still leaving enough room to see the roof and floor text.
-*/
+ * Slightly closer than the previous desktop position.
+ *
+ * The camera height remains 9.6, so the view does not
+ * lift upward.
+ */
 export const HOME_CAMERA_DESKTOP: [
   number,
   number,
   number,
 ] = [
-  20.6,
+  21.4,
   9.6,
-  16.8,
+  17.4,
 ];
 
 /*
-  Mobile needs a little more distance because the viewport is narrower.
-*/
+ * Mobile remains farther away because its viewport is
+ * narrower. Its height is also unchanged.
+ */
 export const HOME_CAMERA_MOBILE: [
   number,
   number,
   number,
 ] = [
-  26.2,
+  27.1,
   12.7,
-  21.4,
+  22.3,
 ];
 
 /*
-  OrbitControls rotates around this position.
-
-  The Y value keeps the pivot near the vertical center of the
-  complete building rather than near the street.
-*/
+ * Keep the original rotation target.
+ *
+ * This prevents the camera from tilting upward and keeps
+ * the automatic route centered on the building.
+ */
 export const HOME_TARGET: [
   number,
   number,
@@ -60,12 +61,6 @@ export const HOME_TARGET: [
 /* Intro camera                                                               */
 /* -------------------------------------------------------------------------- */
 
-/*
-  The intro begins closer, higher, and on the opposite side.
-
-  The custom intro animation should rotate around the building,
-  descend slightly, and zoom outward toward the final home camera.
-*/
 export const INTRO_CAMERA_DESKTOP: [
   number,
   number,
@@ -87,9 +82,8 @@ export const INTRO_CAMERA_MOBILE: [
 ];
 
 /*
-  Kept for compatibility with any remaining code that imports
-  INTRO_TARGET.
-*/
+ * Kept for compatibility with any remaining imports.
+ */
 export const INTRO_TARGET: [
   number,
   number,
@@ -101,8 +95,9 @@ export const INTRO_TARGET: [
 ];
 
 /*
-  The intro and manual OrbitControls use the same centered pivot.
-*/
+ * The intro and automatic OrbitControls route use the
+ * same centered pivot.
+ */
 export const INTRO_STREET_TARGET: [
   number,
   number,
@@ -114,34 +109,31 @@ export const INTRO_STREET_TARGET: [
 ];
 
 /*
-  Final desktop position after the intro rotation.
-*/
+ * The intro ends at the updated fixed desktop view.
+ */
 export const INTRO_STREET_CAMERA_DESKTOP: [
   number,
   number,
   number,
 ] = [
-  20.6,
+  21.4,
   9.6,
-  16.8,
+  17.4,
 ];
 
 /*
-  Final mobile position after the intro rotation.
-*/
+ * The intro ends at the updated fixed mobile view.
+ */
 export const INTRO_STREET_CAMERA_MOBILE: [
   number,
   number,
   number,
 ] = [
-  26.2,
+  27.1,
   12.7,
-  21.4,
+  22.3,
 ];
 
-/*
-  Faster intro movement, close to the speed of the inspiration site.
-*/
 export const INTRO_ZOOM_DURATION =
   1.55;
 
@@ -257,14 +249,21 @@ export const CREDITS_FOCUS: [
   5.1,
 ];
 
+/*
+ * Wider Credits view.
+ *
+ * Pulled farther back and slightly left so the rooftop,
+ * surrounding buildings, and Credits marker remain visible
+ * without the lucky cat filling the right side of the frame.
+ */
 export const CREDITS_CAMERA_DESKTOP: [
   number,
   number,
   number,
 ] = [
-  0.2,
-  13.65,
-  6.95,
+  -0.8,
+  14.6,
+  11.2,
 ];
 
 export const CREDITS_CAMERA_MOBILE: [
@@ -272,91 +271,80 @@ export const CREDITS_CAMERA_MOBILE: [
   number,
   number,
 ] = [
-  1,
-  15.1,
-  8.95,
+  -0.4,
+  16.2,
+  13.8,
 ];
 
 /* -------------------------------------------------------------------------- */
 /* Portfolio sections                                                         */
 /* -------------------------------------------------------------------------- */
 
-export const SECTIONS: PortfolioSection[] = [
-  {
-    id:
-      "about",
+export const SECTIONS:
+  PortfolioSection[] = [
+    {
+      id: "about",
 
-    number:
-      "01",
+      number: "01",
 
-    markerNumber:
-      "1",
+      markerNumber: "1",
 
-    title:
-      "About Me",
+      title: "About Me",
 
-    eyebrow:
-      "Fullstack · Embedded · Software Developer",
+      eyebrow:
+        "Fullstack · Embedded · Software Developer",
 
-    hotspot:
-      ABOUT_HOTSPOT,
+      hotspot:
+        ABOUT_HOTSPOT,
 
-    camera:
-      ABOUT_CAMERA_DESKTOP,
+      camera:
+        ABOUT_CAMERA_DESKTOP,
 
-    focus:
-      ABOUT_FOCUS,
-  },
+      focus:
+        ABOUT_FOCUS,
+    },
 
-  {
-    id:
-      "projects",
+    {
+      id: "projects",
 
-    number:
-      "02",
+      number: "02",
 
-    markerNumber:
-      "2",
+      markerNumber: "2",
 
-    title:
-      "Projects",
+      title: "Projects",
 
-    eyebrow:
-      "Selected development work",
+      eyebrow:
+        "Selected development work",
 
-    hotspot:
-      PROJECTS_HOTSPOT,
+      hotspot:
+        PROJECTS_HOTSPOT,
 
-    camera:
-      PROJECTS_CAMERA_DESKTOP,
+      camera:
+        PROJECTS_CAMERA_DESKTOP,
 
-    focus:
-      PROJECTS_FOCUS,
-  },
+      focus:
+        PROJECTS_FOCUS,
+    },
 
-  {
-    id:
-      "credits",
+    {
+      id: "credits",
 
-    number:
-      "03",
+      number: "03",
 
-    markerNumber:
-      "3",
+      markerNumber: "3",
 
-    title:
-      "Credits",
+      title: "Credits",
 
-    eyebrow:
-      "Attribution and tools",
+      eyebrow:
+        "Attribution and tools",
 
-    hotspot:
-      CREDITS_HOTSPOT,
+      hotspot:
+        CREDITS_HOTSPOT,
 
-    camera:
-      CREDITS_CAMERA_DESKTOP,
+      camera:
+        CREDITS_CAMERA_DESKTOP,
 
-    focus:
-      CREDITS_FOCUS,
-  },
-];
+      focus:
+        CREDITS_FOCUS,
+    },
+  ];

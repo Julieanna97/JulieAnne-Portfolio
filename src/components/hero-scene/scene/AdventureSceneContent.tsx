@@ -128,13 +128,27 @@ const INTRO_EVENT =
   "adventure:intro";
 
 /*
- * The pointer must move this many pixels before the input
- * counts as an intentional manual camera interaction.
- *
- * A normal click does not stop automatic rotation.
+ * A normal click should not stop automatic rotation.
  */
 const MANUAL_DRAG_THRESHOLD =
   5;
+
+/*
+ * Mouse-wheel and trackpad scrolling become horizontal
+ * rotation instead of zoom.
+ */
+const WHEEL_ROTATION_SENSITIVITY =
+  0.00125;
+
+const MAX_WHEEL_ROTATION_STEP =
+  0.18;
+
+const WORLD_UP =
+  new Vector3(
+    0,
+    1,
+    0,
+  );
 
 export default function AdventureSceneContent({
   viewportWidth,
@@ -191,13 +205,9 @@ export default function AdventureSceneContent({
   ] = useState(false);
 
   /*
-   * This remains true while automatic rotation is allowed.
+   * This becomes false after manual rotation.
    *
-   * It becomes false after the visitor genuinely drags,
-   * rotates, or zooms the scene.
-   *
-   * Clicking Home after a numbered hotspot sets it back
-   * to true.
+   * A hotspot → Home interaction sets it back to true.
    */
   const automaticRotationWantedRef =
     useRef(false);
@@ -206,11 +216,10 @@ export default function AdventureSceneContent({
     useRef(false);
 
   /*
-   * Preserve only the horizontal angle around the normal
-   * automatic orbit.
+   * Preserve the side belonging to the selected hotspot.
    *
-   * We intentionally do not save manual zoom distance,
-   * height, polar angle, or OrbitControls target.
+   * Home restores the normal automatic route at this
+   * horizontal angle.
    */
   const returnOrbitAngleRef =
     useRef<number | null>(
@@ -218,8 +227,7 @@ export default function AdventureSceneContent({
     );
 
   /*
-   * Used to distinguish a simple canvas click from an
-   * actual manual drag.
+   * Used to distinguish a click from an actual drag.
    */
   const pointerDownRef =
     useRef(false);
@@ -252,11 +260,8 @@ export default function AdventureSceneContent({
       : HOME_CAMERA_DESKTOP;
 
   /*
-   * Rebuild a camera position on the normal automatic
-   * route at a given horizontal angle.
-   *
-   * The target, height, and radius match the route reached
-   * at the end of the intro animation.
+   * Build a camera position on the normal automatic route
+   * at the requested horizontal angle.
    */
   const getAutoOrbitCameraAtAngle =
     useCallback(
@@ -303,10 +308,7 @@ export default function AdventureSceneContent({
     );
 
   /*
-   * Permanently stop idle rotation after a real visitor
-   * camera interaction.
-   *
-   * A later hotspot → Home flow starts it again.
+   * Manual dragging or scrolling stops automatic rotation.
    */
   const stopIdleRotation =
     useCallback(() => {
@@ -322,12 +324,8 @@ export default function AdventureSceneContent({
     }, []);
 
   /*
-   * Stop automatic rotation only when the visitor
-   * genuinely drags, rotates, touches, or wheel-zooms the
-   * Three.js canvas.
-   *
-   * Clicking an HTML hotspot or the Home button does not
-   * trigger this detector.
+   * Detect real canvas dragging and convert wheel input
+   * into horizontal rotation.
    */
   useEffect(() => {
     const canvas =
@@ -389,10 +387,6 @@ export default function AdventureSceneContent({
         return;
       }
 
-      /*
-       * Stop once for this gesture. OrbitControls may
-       * continue processing the same pointer movement.
-       */
       pointerDownRef.current =
         false;
 
@@ -419,7 +413,9 @@ export default function AdventureSceneContent({
         null;
     };
 
-    const handleWheel = () => {
+    const handleWheel = (
+      event: WheelEvent,
+    ) => {
       if (
         moving ||
         interactionPaused ||
@@ -429,7 +425,86 @@ export default function AdventureSceneContent({
         return;
       }
 
+      const controls =
+        controlsRef.current;
+
+      if (!controls) {
+        return;
+      }
+
+      /*
+       * Prevent page scrolling and OrbitControls zoom.
+       */
+      event.preventDefault();
+
+      /*
+       * Scrolling is manual rotation, so automatic
+       * rotation stops.
+       */
       stopIdleRotation();
+
+      const deltaMultiplier =
+        event.deltaMode === 1
+          ? 16
+          : event.deltaMode === 2
+            ? window.innerHeight
+            : 1;
+
+      /*
+       * Vertical mouse wheels use deltaY. Horizontal
+       * trackpad movement can use deltaX.
+       */
+      const dominantDelta =
+        Math.abs(
+          event.deltaY,
+        ) >=
+        Math.abs(
+          event.deltaX,
+        )
+          ? event.deltaY
+          : event.deltaX;
+
+      const normalizedDelta =
+        dominantDelta *
+        deltaMultiplier;
+
+      const rotationAmount =
+        Math.max(
+          -MAX_WHEEL_ROTATION_STEP,
+
+          Math.min(
+            MAX_WHEEL_ROTATION_STEP,
+
+            normalizedDelta *
+              WHEEL_ROTATION_SENSITIVITY,
+          ),
+        );
+
+      /*
+       * Rotate around the existing target without changing
+       * camera distance, height, or vertical tilt.
+       */
+      const cameraOffset =
+        camera.position
+          .clone()
+          .sub(
+            controls.target,
+          );
+
+      cameraOffset.applyAxisAngle(
+        WORLD_UP,
+        rotationAmount,
+      );
+
+      camera.position
+        .copy(
+          controls.target,
+        )
+        .add(
+          cameraOffset,
+        );
+
+      controls.update();
     };
 
     canvas.addEventListener(
@@ -468,7 +543,7 @@ export default function AdventureSceneContent({
       "wheel",
       handleWheel,
       {
-        passive: true,
+        passive: false,
       },
     );
 
@@ -499,6 +574,7 @@ export default function AdventureSceneContent({
       );
     };
   }, [
+    camera,
     focusedSectionId,
     gl,
     interactionPaused,
@@ -507,11 +583,8 @@ export default function AdventureSceneContent({
   ]);
 
   /*
-   * The callback ref runs when OrbitControls actually
-   * exists.
-   *
-   * This prevents the preloader from waiting forever for
-   * a regular effect to notice a changed ref.
+   * Notify the preloader after OrbitControls exists and
+   * the scene has rendered two animation frames.
    */
   const handleControlsReady =
     useCallback(
@@ -831,9 +904,14 @@ export default function AdventureSceneContent({
         timeline.to(
           camera.position,
           {
-            x: nextCamera[0],
-            y: nextCamera[1],
-            z: nextCamera[2],
+            x:
+              nextCamera[0],
+
+            y:
+              nextCamera[1],
+
+            z:
+              nextCamera[2],
 
             duration,
 
@@ -846,9 +924,14 @@ export default function AdventureSceneContent({
         timeline.to(
           controls.target,
           {
-            x: nextTarget[0],
-            y: nextTarget[1],
-            z: nextTarget[2],
+            x:
+              nextTarget[0],
+
+            y:
+              nextTarget[1],
+
+            z:
+              nextTarget[2],
 
             duration,
 
@@ -935,12 +1018,10 @@ export default function AdventureSceneContent({
     );
 
   /*
-   * Click a numbered marker:
+   * Select a numbered hotspot.
    *
-   * - preserve the current horizontal side,
-   * - ignore manual height, zoom, and vertical tilt,
-   * - move into the close-up,
-   * - show the Home button.
+   * The return angle comes from the selected hotspot,
+   * rather than a randomly dragged camera position.
    */
   const selectSection =
     useCallback(
@@ -957,14 +1038,6 @@ export default function AdventureSceneContent({
           return;
         }
 
-        /*
-        * Resume automatic rotation from the side belonging to
-        * the selected hotspot—not from the visitor's manually
-        * dragged camera angle.
-        *
-        * The close-up camera tells us which side of the building
-        * the selected section belongs to.
-        */
         let selectedSectionCamera:
           VectorTuple =
             section.camera;
@@ -1001,8 +1074,8 @@ export default function AdventureSceneContent({
           );
 
         /*
-         * Clicking a hotspot does not count as manual
-         * camera interaction.
+         * A hotspot click does not count as manual camera
+         * dragging.
          */
         setFocusedSectionId(
           section.id,
@@ -1025,7 +1098,8 @@ export default function AdventureSceneContent({
             MANUAL_HOTSPOT_EVENT,
             {
               detail: {
-                id: section.id,
+                id:
+                  section.id,
               },
             },
           ),
@@ -1087,10 +1161,8 @@ export default function AdventureSceneContent({
     );
 
   /*
-   * Return from a numbered-hotspot close-up.
-   *
-   * Restore the standard automatic orbit at the saved
-   * horizontal angle, then restart automatic rotation.
+   * Return to the normal automatic route on the side of
+   * the selected hotspot.
    */
   const returnToHome =
     useCallback(() => {
@@ -1107,9 +1179,6 @@ export default function AdventureSceneContent({
           ? INTRO_STREET_CAMERA_MOBILE
           : INTRO_STREET_CAMERA_DESKTOP;
 
-      /*
-       * Use the intro finishing angle as a safe fallback.
-       */
       const fallbackAngle =
         Math.atan2(
           baseCamera[0] -
@@ -1123,10 +1192,6 @@ export default function AdventureSceneContent({
         returnOrbitAngleRef.current ??
         fallbackAngle;
 
-      /*
-       * Same horizontal side, but normal route height,
-       * radius, and target.
-       */
       const returnCamera =
         getAutoOrbitCameraAtAngle(
           returnAngle,
@@ -1154,11 +1219,8 @@ export default function AdventureSceneContent({
           );
 
           /*
-           * Home after a numbered hotspot always resumes
+           * Home after a numbered hotspot always restarts
            * automatic rotation.
-           *
-           * Dragging without opening a hotspot still leaves
-           * automatic rotation disabled.
            */
           automaticRotationWantedRef.current =
             true;
@@ -1220,7 +1282,8 @@ export default function AdventureSceneContent({
   }, [returnToHome]);
 
   /*
-   * Preserve support for external section controls.
+   * Preserve support for external section-selection
+   * events.
    */
   useEffect(() => {
     const handleSelection = (
@@ -1285,9 +1348,6 @@ export default function AdventureSceneContent({
 
       stopCameraTweens();
 
-      /*
-       * A fresh intro enables automatic rotation again.
-       */
       visitorInteractedRef.current =
         false;
 
@@ -1438,8 +1498,18 @@ export default function AdventureSceneContent({
 
             setMoving(false);
 
+            /*
+             * Always begin automatic rotation when the
+             * intro finishes.
+             */
+            automaticRotationWantedRef.current =
+              true;
+
+            visitorInteractedRef.current =
+              false;
+
             setIdleRotationEnabled(
-              automaticRotationWantedRef.current,
+              true,
             );
           },
 
@@ -1603,13 +1673,17 @@ export default function AdventureSceneContent({
 
       <SakuraAtmosphere />
 
+      {/*
+       * Lowering the heart places it inside the fixed
+       * camera frame without lifting the camera target.
+       */}
       <FloatingHeart
         position={[
           0,
-          15.2,
+          13.25,
           0,
         ]}
-        scale={0.72}
+        scale={0.68}
       />
 
       <group
@@ -1830,13 +1904,18 @@ export default function AdventureSceneContent({
         }
         enablePan={false}
         enableRotate
-        enableZoom
+
+        /*
+         * Wheel and pinch zoom are disabled. The custom
+         * wheel listener above rotates horizontally.
+         */
+        enableZoom={false}
         mouseButtons={{
           LEFT:
             MOUSE.ROTATE,
 
           MIDDLE:
-            MOUSE.DOLLY,
+            MOUSE.ROTATE,
 
           RIGHT:
             MOUSE.PAN,
@@ -1845,29 +1924,18 @@ export default function AdventureSceneContent({
           ONE:
             TOUCH.ROTATE,
 
+          /*
+           * Zoom remains disabled, but the rotate portion
+           * of the two-finger gesture can still work.
+           */
           TWO:
             TOUCH.DOLLY_ROTATE,
         }}
-        minDistance={
-          compact
-            ? 8.5
-            : 7
-        }
-        maxDistance={
-          compact
-            ? 48
-            : 40
-        }
         minPolarAngle={
           Math.PI / 7
         }
         maxPolarAngle={
           Math.PI / 2.02
-        }
-        zoomSpeed={
-          compact
-            ? 0.95
-            : 0.72
         }
         rotateSpeed={
           compact
