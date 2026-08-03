@@ -1,19 +1,30 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import {
+  useEffect,
+  useRef,
+} from "react";
+
 import {
   AnimatePresence,
   motion,
   useReducedMotion,
 } from "framer-motion";
+
 import {
   ABOUT_EXPERIENCE,
   ABOUT_SKILL_GROUPS,
   CREDIT_GROUPS,
 } from "../portfolioData";
 
+import SceneReturnButton from "./SceneReturnButton";
+
 type SectionDetailModalProps = {
-  detailId: "about" | "credits" | null;
+  detailId:
+    | "about"
+    | "credits"
+    | null;
+
   onClose: () => void;
 };
 
@@ -21,74 +32,105 @@ export default function SectionDetailModal({
   detailId,
   onClose,
 }: SectionDetailModalProps) {
-  const reduceMotion = useReducedMotion();
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const reduceMotion =
+    useReducedMotion();
+
+  const returnButtonRef =
+    useRef<HTMLButtonElement>(
+      null,
+    );
 
   useEffect(() => {
     if (!detailId) {
       return;
     }
 
-    const previousOverflow = document.body.style.overflow;
+    const previousOverflow =
+      document.body.style.overflow;
 
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow =
+      "hidden";
 
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleKeyDown = (
+      event: KeyboardEvent,
+    ) => {
       if (event.key === "Escape") {
         onClose();
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener(
+      "keydown",
+      handleKeyDown,
+    );
 
-    const focusTimer = window.setTimeout(() => {
-      closeButtonRef.current?.focus();
-    }, 100);
+    const focusTimer =
+      window.setTimeout(() => {
+        returnButtonRef.current?.focus();
+      }, 100);
 
     return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", handleKeyDown);
-      window.clearTimeout(focusTimer);
+      document.body.style.overflow =
+        previousOverflow;
+
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown,
+      );
+
+      window.clearTimeout(
+        focusTimer,
+      );
     };
-  }, [detailId, onClose]);
+  }, [
+    detailId,
+    onClose,
+  ]);
 
-  const isAbout = detailId === "about";
+  const isAbout =
+    detailId === "about";
 
-  const titleId = detailId
-    ? `section-detail-title-${detailId}`
-    : undefined;
+  const titleId =
+    detailId
+      ? `section-detail-title-${detailId}`
+      : undefined;
 
-  const panelInitial = reduceMotion
-    ? {
-        opacity: 0,
-      }
-    : {
-        opacity: 0,
-        scale: 0.94,
-        y: 44,
-        borderRadius: 36,
-        clipPath: "inset(7% 7% 7% 7% round 36px)",
-      };
+  const panelInitial =
+    reduceMotion
+      ? {
+          opacity: 0,
+        }
+      : {
+          opacity: 0,
+          scale: 0.94,
+          y: 44,
+          borderRadius: 36,
+          clipPath:
+            "inset(7% 7% 7% 7% round 36px)",
+        };
 
   const panelVisible = {
     opacity: 1,
     scale: 1,
     y: 0,
     borderRadius: 0,
-    clipPath: "inset(0% 0% 0% 0% round 0px)",
+    clipPath:
+      "inset(0% 0% 0% 0% round 0px)",
   };
 
-  const panelExit = reduceMotion
-    ? {
-        opacity: 0,
-      }
-    : {
-        opacity: 0,
-        scale: 0.95,
-        y: 30,
-        borderRadius: 36,
-        clipPath: "inset(6% 6% 6% 6% round 36px)",
-      };
+  const panelExit =
+    reduceMotion
+      ? {
+          opacity: 0,
+        }
+      : {
+          opacity: 0,
+          scale: 0.95,
+          y: 30,
+          borderRadius: 36,
+          clipPath:
+            "inset(6% 6% 6% 6% round 36px)",
+        };
 
   return (
     <AnimatePresence mode="wait">
@@ -99,18 +141,23 @@ export default function SectionDetailModal({
           role="presentation"
           initial={{
             opacity: 0,
-            backdropFilter: "blur(0px)",
+            backdropFilter:
+              "blur(0px)",
           }}
           animate={{
             opacity: 1,
-            backdropFilter: "blur(14px)",
+            backdropFilter:
+              "blur(14px)",
           }}
           exit={{
             opacity: 0,
-            backdropFilter: "blur(0px)",
+            backdropFilter:
+              "blur(0px)",
           }}
           transition={{
-            duration: reduceMotion ? 0.12 : 0.32,
+            duration: reduceMotion
+              ? 0.12
+              : 0.32,
           }}
           onClick={onClose}
         >
@@ -145,11 +192,21 @@ export default function SectionDetailModal({
                     },
                     borderRadius: {
                       duration: 0.55,
-                      ease: [0.22, 1, 0.36, 1],
+                      ease: [
+                        0.22,
+                        1,
+                        0.36,
+                        1,
+                      ],
                     },
                     clipPath: {
                       duration: 0.62,
-                      ease: [0.22, 1, 0.36, 1],
+                      ease: [
+                        0.22,
+                        1,
+                        0.36,
+                        1,
+                      ],
                     },
                   }
             }
@@ -157,19 +214,17 @@ export default function SectionDetailModal({
               event.stopPropagation();
             }}
           >
-            <button
-              ref={closeButtonRef}
-              type="button"
-              className="adventure-case-study-close"
-              onClick={onClose}
-              aria-label={
-                isAbout
-                  ? "Close about profile"
-                  : "Close credits"
+            <SceneReturnButton
+              buttonRef={
+                returnButtonRef
               }
-            >
-              <span aria-hidden="true">×</span>
-            </button>
+              onClick={onClose}
+              ariaLabel={
+                isAbout
+                  ? "Return to the 3D model from About"
+                  : "Return to the 3D model from Credits"
+              }
+            />
 
             <motion.div
               className="adventure-full-view-body"
@@ -192,15 +247,32 @@ export default function SectionDetailModal({
                 y: 12,
               }}
               transition={{
-                duration: reduceMotion ? 0.12 : 0.48,
-                delay: reduceMotion ? 0 : 0.18,
-                ease: [0.22, 1, 0.36, 1],
+                duration: reduceMotion
+                  ? 0.12
+                  : 0.48,
+                delay: reduceMotion
+                  ? 0
+                  : 0.18,
+                ease: [
+                  0.22,
+                  1,
+                  0.36,
+                  1,
+                ],
               }}
             >
               {isAbout ? (
-                <AboutDetail titleId={titleId} />
+                <AboutDetail
+                  titleId={
+                    titleId
+                  }
+                />
               ) : (
-                <CreditsDetail titleId={titleId} />
+                <CreditsDetail
+                  titleId={
+                    titleId
+                  }
+                />
               )}
             </motion.div>
           </motion.article>
@@ -225,15 +297,23 @@ function AboutDetail({
         </h2>
 
         <strong>
-          Software Developer · Fullstack · Embedded · AI
+          Software Developer · Fullstack
+          · Embedded · AI
         </strong>
 
         <p className="adventure-section-detail-intro">
-          I&apos;m a software developer who enjoys building things that are
-          useful, easy to use, and nice to look at. I&apos;ve worked with
-          fullstack applications, embedded systems, and AI-related projects. I
-          enjoy combining clean code with small design details that make an
-          application feel more considered and personal.
+          I&apos;m a software developer
+          who enjoys building things
+          that are useful, easy to use,
+          and nice to look at. I&apos;ve
+          worked with fullstack
+          applications, embedded
+          systems, and AI-related
+          projects. I enjoy combining
+          clean code with small design
+          details that make an
+          application feel more
+          considered and personal.
         </p>
       </header>
 
@@ -246,8 +326,12 @@ function AboutDetail({
           <h3>Frontend</h3>
 
           <p>
-            I build responsive interfaces with React, Next.js, TypeScript, and
-            Tailwind. I care about clear structure, smooth interactions, and
+            I build responsive
+            interfaces with React,
+            Next.js, TypeScript, and
+            Tailwind. I care about
+            clear structure, smooth
+            interactions, and
             accessible experiences.
           </p>
         </article>
@@ -260,8 +344,12 @@ function AboutDetail({
           <h3>Backend</h3>
 
           <p>
-            I work with Node.js, Express, FastAPI, and Flask. I enjoy building
-            APIs, connecting databases, and organizing application logic.
+            I work with Node.js,
+            Express, FastAPI, and
+            Flask. I enjoy building
+            APIs, connecting databases,
+            and organizing application
+            logic.
           </p>
         </article>
 
@@ -270,11 +358,15 @@ function AboutDetail({
             03
           </p>
 
-          <h3>Creative & Embedded</h3>
+          <h3>
+            Creative & Embedded
+          </h3>
 
           <p>
-            I also enjoy 3D web experiences, animation, embedded projects,
-            C/C++, and Python.
+            I also enjoy 3D web
+            experiences, animation,
+            embedded projects, C/C++,
+            and Python.
           </p>
         </article>
       </section>
@@ -286,35 +378,72 @@ function AboutDetail({
         </div>
 
         <div className="adventure-experience-list">
-          {ABOUT_EXPERIENCE.map((experience, index) => (
-            <article
-              key={`${experience.company}-${experience.period}`}
-              className="adventure-experience-card"
-            >
-              <span className="adventure-experience-index">
-                {String(index + 1).padStart(2, "0")}
-              </span>
+          {ABOUT_EXPERIENCE.map(
+            (
+              experience,
+              index,
+            ) => (
+              <article
+                key={`${experience.company}-${experience.period}`}
+                className="adventure-experience-card"
+              >
+                <span className="adventure-experience-index">
+                  {String(
+                    index + 1,
+                  ).padStart(
+                    2,
+                    "0",
+                  )}
+                </span>
 
-              <div className="adventure-experience-heading">
-                <div>
-                  <h4>{experience.role}</h4>
-                  <strong>{experience.company}</strong>
+                <div className="adventure-experience-heading">
+                  <div>
+                    <h4>
+                      {
+                        experience.role
+                      }
+                    </h4>
+
+                    <strong>
+                      {
+                        experience.company
+                      }
+                    </strong>
+                  </div>
+
+                  <time>
+                    {
+                      experience.period
+                    }
+                  </time>
                 </div>
 
-                <time>{experience.period}</time>
-              </div>
+                <p>
+                  {
+                    experience.summary
+                  }
+                </p>
 
-              <p>{experience.summary}</p>
-
-              <ul>
-                {experience.points.map((point) => (
-                  <li key={point}>
-                    {point}
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))}
+                <ul>
+                  {experience.points.map(
+                    (
+                      point,
+                    ) => (
+                      <li
+                        key={
+                          point
+                        }
+                      >
+                        {
+                          point
+                        }
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </article>
+            ),
+          )}
         </div>
       </section>
 
@@ -325,22 +454,42 @@ function AboutDetail({
         </div>
 
         <div className="adventure-skill-grid">
-          {ABOUT_SKILL_GROUPS.map((group) => (
-            <article
-              key={group.title}
-              className="adventure-skill-card"
-            >
-              <h4>{group.title}</h4>
+          {ABOUT_SKILL_GROUPS.map(
+            (
+              group,
+            ) => (
+              <article
+                key={
+                  group.title
+                }
+                className="adventure-skill-card"
+              >
+                <h4>
+                  {
+                    group.title
+                  }
+                </h4>
 
-              <div className="adventure-case-study-tags">
-                {group.items.map((item) => (
-                  <span key={item}>
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </article>
-          ))}
+                <div className="adventure-case-study-tags">
+                  {group.items.map(
+                    (
+                      item,
+                    ) => (
+                      <span
+                        key={
+                          item
+                        }
+                      >
+                        {
+                          item
+                        }
+                      </span>
+                    ),
+                  )}
+                </div>
+              </article>
+            ),
+          )}
         </div>
       </section>
 
@@ -356,21 +505,30 @@ function AboutDetail({
               2026
             </p>
 
-            <h4>Fullstack Developer</h4>
+            <h4>
+              Fullstack Developer
+            </h4>
 
-            <strong>The Media Institute</strong>
+            <strong>
+              The Media Institute
+            </strong>
 
             <ul>
               <li>
-                Frontend, backend, databases, and system development.
+                Frontend, backend,
+                databases, and system
+                development.
               </li>
 
               <li>
-                Projects built with agile methods.
+                Projects built with
+                agile methods.
               </li>
 
               <li>
-                E-commerce platforms and fullstack application structure.
+                E-commerce platforms
+                and fullstack
+                application structure.
               </li>
             </ul>
           </article>
@@ -381,21 +539,26 @@ function AboutDetail({
             </p>
 
             <h4>
-              Embedded Software Development
+              Embedded Software
+              Development
             </h4>
 
             <strong>
-              Movant University of Applied Science
+              Movant University of
+              Applied Science
             </strong>
 
             <ul>
               <li>
-                Embedded programming, hardware communication, and real-time
-                systems.
+                Embedded programming,
+                hardware communication,
+                and real-time systems.
               </li>
 
               <li>
-                Led a group project that produced an autonomous car.
+                Led a group project
+                that produced an
+                autonomous car.
               </li>
             </ul>
           </article>
@@ -405,7 +568,9 @@ function AboutDetail({
       <section className="adventure-section-block adventure-connect-section">
         <div className="adventure-section-heading">
           <p>Contact</p>
-          <h3>Let&apos;s Connect</h3>
+          <h3>
+            Let&apos;s Connect
+          </h3>
         </div>
 
         <div className="adventure-contact-grid">
@@ -422,8 +587,13 @@ function AboutDetail({
             target="_blank"
             rel="noopener noreferrer"
           >
-            <span>Professional profile</span>
-            <strong>LinkedIn ↗</strong>
+            <span>
+              Professional profile
+            </span>
+
+            <strong>
+              LinkedIn ↗
+            </strong>
           </a>
 
           <a
@@ -431,8 +601,13 @@ function AboutDetail({
             target="_blank"
             rel="noopener noreferrer"
           >
-            <span>Development work</span>
-            <strong>GitHub ↗</strong>
+            <span>
+              Development work
+            </span>
+
+            <strong>
+              GitHub ↗
+            </strong>
           </a>
         </div>
 
@@ -459,9 +634,14 @@ function CreditsDetail({
         </h2>
 
         <p className="adventure-section-detail-intro">
-          Portfolio concept and implementation by Julie Anne Cantillep. This
-          interactive environment combines 3D development, animation,
-          responsive interface work, music, and small environmental details.
+          Portfolio concept and
+          implementation by Julie Anne
+          Cantillep. This interactive
+          environment combines 3D
+          development, animation,
+          responsive interface work,
+          music, and small
+          environmental details.
         </p>
       </header>
 
@@ -470,7 +650,8 @@ function CreditsDetail({
           <p>Attribution</p>
 
           <h3>
-            Scene, model & music credits
+            Scene, model & music
+            credits
           </h3>
         </div>
 
@@ -481,12 +662,15 @@ function CreditsDetail({
             </p>
 
             <h4>
-              A Mysterious Adventure — 3D Editor Challenge
+              A Mysterious Adventure —
+              3D Editor Challenge
             </h4>
 
             <p>
-              3D scene by Diosmel, used under the Creative Commons Attribution
-              4.0 license.
+              3D scene by Diosmel, used
+              under the Creative
+              Commons Attribution 4.0
+              license.
             </p>
           </article>
 
@@ -500,7 +684,8 @@ function CreditsDetail({
             </h4>
 
             <p>
-              Music created by PuyoPuyoMegaFan1234.
+              Music created by
+              PuyoPuyoMegaFan1234.
             </p>
           </article>
 
@@ -514,7 +699,9 @@ function CreditsDetail({
             </h4>
 
             <p>
-              Sakura Tree model created by dimal965 and published on Sketchfab.
+              Sakura Tree model
+              created by dimal965 and
+              published on Sketchfab.
             </p>
           </article>
         </div>
@@ -525,27 +712,48 @@ function CreditsDetail({
           <p>Production</p>
 
           <h3>
-            Tools, technology & visual direction
+            Tools, technology & visual
+            direction
           </h3>
         </div>
 
         <div className="adventure-skill-grid">
-          {CREDIT_GROUPS.map((group) => (
-            <article
-              key={group.title}
-              className="adventure-skill-card"
-            >
-              <h4>{group.title}</h4>
+          {CREDIT_GROUPS.map(
+            (
+              group,
+            ) => (
+              <article
+                key={
+                  group.title
+                }
+                className="adventure-skill-card"
+              >
+                <h4>
+                  {
+                    group.title
+                  }
+                </h4>
 
-              <ul>
-                {group.items.map((item) => (
-                  <li key={item}>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))}
+                <ul>
+                  {group.items.map(
+                    (
+                      item,
+                    ) => (
+                      <li
+                        key={
+                          item
+                        }
+                      >
+                        {
+                          item
+                        }
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </article>
+            ),
+          )}
         </div>
       </section>
 
@@ -567,7 +775,9 @@ function CreditsDetail({
             <h4>Cozy spaces</h4>
 
             <p>
-              A small environment that feels lived-in rather than a standard
+              A small environment that
+              feels lived-in rather
+              than a standard
               portfolio landing page.
             </p>
           </article>
@@ -577,11 +787,16 @@ function CreditsDetail({
               02
             </p>
 
-            <h4>Soft color stories</h4>
+            <h4>
+              Soft color stories
+            </h4>
 
             <p>
-              Warm lights, pink reflections, dark city tones, and playful
-              accents throughout the interface.
+              Warm lights, pink
+              reflections, dark city
+              tones, and playful
+              accents throughout the
+              interface.
             </p>
           </article>
 
@@ -590,10 +805,14 @@ function CreditsDetail({
               03
             </p>
 
-            <h4>Playful interactions</h4>
+            <h4>
+              Playful interactions
+            </h4>
 
             <p>
-              Camera movement, scene markers, animation, sound, and responsive
+              Camera movement, scene
+              markers, animation,
+              sound, and responsive
               details.
             </p>
           </article>

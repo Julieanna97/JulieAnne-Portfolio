@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import {
+  useEffect,
+  useRef,
+} from "react";
+
 import {
   AnimatePresence,
   motion,
@@ -16,10 +20,14 @@ import {
   PROJECT_CASE_STUDIES,
 } from "../portfolioData";
 
+import SceneReturnButton from "./SceneReturnButton";
+
 type ProjectsOverviewModalProps = {
   open: boolean;
   onClose: () => void;
-  onProjectSelect: (id: ProjectId) => void;
+  onProjectSelect: (
+    id: ProjectId,
+  ) => void;
 };
 
 export default function ProjectsOverviewModal({
@@ -27,14 +35,18 @@ export default function ProjectsOverviewModal({
   onClose,
   onProjectSelect,
 }: ProjectsOverviewModalProps) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion =
+    useReducedMotion();
 
-  const closeButtonRef =
-    useRef<HTMLButtonElement | null>(null);
+  const returnButtonRef =
+    useRef<HTMLButtonElement | null>(
+      null,
+    );
 
-  const projects = Object.values(
-    PROJECT_CASE_STUDIES,
-  ) as ProjectCaseStudy[];
+  const projects =
+    Object.values(
+      PROJECT_CASE_STUDIES,
+    ) as ProjectCaseStudy[];
 
   useEffect(() => {
     if (!open) {
@@ -44,7 +56,8 @@ export default function ProjectsOverviewModal({
     const previousOverflow =
       document.body.style.overflow;
 
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow =
+      "hidden";
 
     const handleKeyDown = (
       event: KeyboardEvent,
@@ -59,9 +72,10 @@ export default function ProjectsOverviewModal({
       handleKeyDown,
     );
 
-    const focusTimer = window.setTimeout(() => {
-      closeButtonRef.current?.focus();
-    }, 100);
+    const focusTimer =
+      window.setTimeout(() => {
+        returnButtonRef.current?.focus();
+      }, 100);
 
     return () => {
       document.body.style.overflow =
@@ -72,9 +86,14 @@ export default function ProjectsOverviewModal({
         handleKeyDown,
       );
 
-      window.clearTimeout(focusTimer);
+      window.clearTimeout(
+        focusTimer,
+      );
     };
-  }, [onClose, open]);
+  }, [
+    onClose,
+    open,
+  ]);
 
   return (
     <AnimatePresence mode="wait">
@@ -84,15 +103,18 @@ export default function ProjectsOverviewModal({
           role="presentation"
           initial={{
             opacity: 0,
-            backdropFilter: "blur(0px)",
+            backdropFilter:
+              "blur(0px)",
           }}
           animate={{
             opacity: 1,
-            backdropFilter: "blur(16px)",
+            backdropFilter:
+              "blur(16px)",
           }}
           exit={{
             opacity: 0,
-            backdropFilter: "blur(0px)",
+            backdropFilter:
+              "blur(0px)",
           }}
           transition={{
             duration: reduceMotion
@@ -187,18 +209,13 @@ export default function ProjectsOverviewModal({
               event.stopPropagation();
             }}
           >
-            <button
-              ref={closeButtonRef}
-              type="button"
-              className="adventure-project-index-close"
+            <SceneReturnButton
+              buttonRef={
+                returnButtonRef
+              }
               onClick={onClose}
-              aria-label="Close projects"
-            >
-              <span
-                className="adventure-project-index-close-icon"
-                aria-hidden="true"
-              />
-            </button>
+              ariaLabel="Return to the 3D model from Projects"
+            />
 
             <motion.div
               className="adventure-project-index-body"
@@ -215,6 +232,10 @@ export default function ProjectsOverviewModal({
               animate={{
                 opacity: 1,
                 y: 0,
+              }}
+              exit={{
+                opacity: 0,
+                y: 12,
               }}
               transition={{
                 duration: reduceMotion
@@ -241,14 +262,16 @@ export default function ProjectsOverviewModal({
                 </h2>
 
                 <strong>
-                  Fullstack · Embedded · Creative
-                  Development
+                  Fullstack · Embedded
+                  · Creative Development
                 </strong>
 
                 <p className="adventure-project-index-intro">
-                  Explore applications, experiments,
-                  embedded systems, and production work.
-                  Select a project to open its full case
+                  Explore applications,
+                  experiments, embedded
+                  systems, and production
+                  work. Select a project
+                  to open its full case
                   study.
                 </p>
               </header>
@@ -258,7 +281,10 @@ export default function ProjectsOverviewModal({
                 aria-label="Project list"
               >
                 {projects.map(
-                  (project, index) => {
+                  (
+                    project,
+                    index,
+                  ) => {
                     const coverImage =
                       project.images[0];
 
@@ -288,7 +314,9 @@ export default function ProjectsOverviewModal({
                         <div className="adventure-project-index-image-wrap">
                           {coverImage ? (
                             <img
-                              src={coverImage}
+                              src={
+                                coverImage
+                              }
                               alt=""
                               className="adventure-project-index-image"
                             />
@@ -312,22 +340,33 @@ export default function ProjectsOverviewModal({
 
                         <div className="adventure-project-index-copy">
                           <p>
-                            {project.type}
+                            {
+                              project.type
+                            }
                           </p>
 
                           <h3>
-                            {project.title}
+                            {
+                              project.title
+                            }
                           </h3>
 
                           <span className="adventure-project-index-summary">
-                            {project.summary}
+                            {
+                              project.summary
+                            }
                           </span>
 
                           <div className="adventure-project-index-tags">
                             {project.technologies
-                              .slice(0, 4)
+                              .slice(
+                                0,
+                                4,
+                              )
                               .map(
-                                (technology) => (
+                                (
+                                  technology,
+                                ) => (
                                   <span
                                     key={
                                       technology
@@ -344,7 +383,9 @@ export default function ProjectsOverviewModal({
                           <strong className="adventure-project-index-open">
                             Open case study
 
-                            <span aria-hidden="true">
+                            <span
+                              aria-hidden="true"
+                            >
                               →
                             </span>
                           </strong>
@@ -365,12 +406,13 @@ export default function ProjectsOverviewModal({
 
               display: grid;
 
-              background: rgba(
-                4,
-                2,
-                12,
-                0.76
-              );
+              background:
+                rgba(
+                  4,
+                  2,
+                  12,
+                  0.76
+                );
 
               place-items: center;
             }
@@ -412,146 +454,6 @@ export default function ProjectsOverviewModal({
               color: #fff7fd;
             }
 
-            .adventure-project-index-close {
-              position: fixed;
-
-              top: max(
-                20px,
-                env(
-                  safe-area-inset-top
-                )
-              );
-
-              right: max(
-                20px,
-                env(
-                  safe-area-inset-right
-                )
-              );
-
-              z-index: 4;
-
-              display: grid;
-              width: 48px;
-              height: 48px;
-
-              box-sizing: border-box;
-
-              border: 1px solid
-                rgba(
-                  255,
-                  147,
-                  211,
-                  0.4
-                );
-
-              border-radius: 50%;
-              outline: none;
-
-              background: rgba(
-                24,
-                10,
-                39,
-                0.88
-              );
-
-              box-shadow:
-                0 0 26px
-                rgba(
-                  255,
-                  75,
-                  174,
-                  0.2
-                );
-
-              padding: 0;
-
-              color: #ffe8f7;
-              cursor: pointer;
-
-              line-height: 0;
-
-              place-items: center;
-
-              backdrop-filter:
-                blur(14px);
-
-              transition:
-                color 180ms ease,
-                border-color 180ms ease,
-                background 180ms ease,
-                transform 180ms ease;
-            }
-
-            .adventure-project-index-close-icon {
-              position: relative;
-
-              display: block;
-              width: 18px;
-              height: 18px;
-
-              pointer-events: none;
-            }
-
-            .adventure-project-index-close-icon::before,
-            .adventure-project-index-close-icon::after {
-              content: "";
-
-              position: absolute;
-              top: 50%;
-              left: 50%;
-
-              width: 19px;
-              height: 2px;
-
-              border-radius: 999px;
-
-              background: currentColor;
-
-              transform-origin: center;
-            }
-
-            .adventure-project-index-close-icon::before {
-              transform:
-                translate(-50%, -50%)
-                rotate(45deg);
-            }
-
-            .adventure-project-index-close-icon::after {
-              transform:
-                translate(-50%, -50%)
-                rotate(-45deg);
-            }
-
-            .adventure-project-index-close:hover {
-              border-color: rgba(
-                255,
-                221,
-                240,
-                0.9
-              );
-
-              background:
-                linear-gradient(
-                  135deg,
-                  #a968ef,
-                  #ff4fa9
-                );
-
-              color: #ffffff;
-
-              transform:
-                rotate(7deg)
-                scale(1.06);
-            }
-
-            .adventure-project-index-close:focus-visible {
-              outline: 3px solid
-                #69dfff;
-
-              outline-offset: 4px;
-            }
-
             .adventure-project-index-body {
               width: 100%;
               height: 100%;
@@ -563,9 +465,9 @@ export default function ProjectsOverviewModal({
 
               padding:
                 clamp(
-                  76px,
-                  9vh,
-                  116px
+                  92px,
+                  11vh,
+                  132px
                 )
                 clamp(
                   22px,
@@ -652,15 +554,15 @@ export default function ProjectsOverviewModal({
             .adventure-project-index-intro {
               max-width: 620px;
 
-              margin:
-                20px auto 0;
+              margin: 20px auto 0;
 
-              color: rgba(
-                244,
-                238,
-                255,
-                0.72
-              );
+              color:
+                rgba(
+                  244,
+                  238,
+                  255,
+                  0.72
+                );
 
               font-size: clamp(
                 0.92rem,
@@ -700,12 +602,12 @@ export default function ProjectsOverviewModal({
             .adventure-project-index-card {
               display: flex;
               min-width: 0;
-
               flex-direction: column;
 
               overflow: hidden;
 
-              border: 1px solid
+              border:
+                1px solid
                 rgba(
                   232,
                   144,
@@ -756,12 +658,13 @@ export default function ProjectsOverviewModal({
             }
 
             .adventure-project-index-card:hover {
-              border-color: rgba(
-                255,
-                112,
-                194,
-                0.56
-              );
+              border-color:
+                rgba(
+                  255,
+                  112,
+                  194,
+                  0.56
+                );
 
               box-shadow:
                 0 0 30px
@@ -797,16 +700,16 @@ export default function ProjectsOverviewModal({
             }
 
             .adventure-project-index-image {
+              display: block;
+
               width: 100%;
               height: 100%;
 
               object-fit: cover;
 
               transition:
-                transform
-                  380ms ease,
-                filter
-                  380ms ease;
+                filter 380ms ease,
+                transform 380ms ease;
             }
 
             .adventure-project-index-card:hover
@@ -855,7 +758,8 @@ export default function ProjectsOverviewModal({
               align-items: center;
               justify-content: center;
 
-              border: 1px solid
+              border:
+                1px solid
                 rgba(
                   255,
                   255,
@@ -865,20 +769,20 @@ export default function ProjectsOverviewModal({
 
               border-radius: 999px;
 
-              background: rgba(
-                14,
-                8,
-                28,
-                0.74
-              );
+              background:
+                rgba(
+                  14,
+                  8,
+                  28,
+                  0.74
+                );
 
               color: #ff8acb;
 
               font-size: 9px;
               font-weight: 900;
 
-              backdrop-filter:
-                blur(10px);
+              backdrop-filter: blur(10px);
             }
 
             .adventure-project-index-copy {
@@ -886,7 +790,6 @@ export default function ProjectsOverviewModal({
 
               min-height: 260px;
               flex: 1;
-
               flex-direction: column;
 
               padding: 24px;
@@ -931,12 +834,13 @@ export default function ProjectsOverviewModal({
               margin-top: 14px;
               overflow: hidden;
 
-              color: rgba(
-                244,
-                238,
-                255,
-                0.68
-              );
+              color:
+                rgba(
+                  244,
+                  238,
+                  255,
+                  0.68
+                );
 
               font-size: 12px;
               line-height: 1.65;
@@ -957,7 +861,8 @@ export default function ProjectsOverviewModal({
 
             .adventure-project-index-tags
               span {
-              border: 1px solid
+              border:
+                1px solid
                 rgba(
                   232,
                   144,
@@ -967,21 +872,23 @@ export default function ProjectsOverviewModal({
 
               border-radius: 999px;
 
-              background: rgba(
-                154,
-                92,
-                255,
-                0.08
-              );
+              background:
+                rgba(
+                  154,
+                  92,
+                  255,
+                  0.08
+                );
 
               padding: 5px 8px;
 
-              color: rgba(
-                255,
-                241,
-                251,
-                0.72
-              );
+              color:
+                rgba(
+                  255,
+                  241,
+                  251,
+                  0.72
+                );
 
               font-size: 8px;
               font-weight: 800;
@@ -1042,7 +949,7 @@ export default function ProjectsOverviewModal({
             ) {
               .adventure-project-index-body {
                 padding:
-                  76px
+                  92px
                   14px
                   54px;
               }
@@ -1055,30 +962,6 @@ export default function ProjectsOverviewModal({
               .adventure-project-index-copy {
                 min-height: 235px;
                 padding: 20px;
-              }
-
-              .adventure-project-index-close {
-                top: max(
-                  12px,
-                  env(
-                    safe-area-inset-top
-                  )
-                );
-
-                right: 12px;
-
-                width: 43px;
-                height: 43px;
-              }
-
-              .adventure-project-index-close-icon {
-                width: 17px;
-                height: 17px;
-              }
-
-              .adventure-project-index-close-icon::before,
-              .adventure-project-index-close-icon::after {
-                width: 18px;
               }
             }
           `}</style>

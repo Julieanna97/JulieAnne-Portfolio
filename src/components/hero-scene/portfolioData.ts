@@ -969,58 +969,80 @@ export const ABOUT_SKILL_GROUPS = [
 
 export const CREDIT_GROUPS = [
   {
-    title:
-      "Frontend",
+    title: "Frontend",
 
     items: [
       "React",
       "Next.js",
       "TypeScript",
       "Tailwind CSS",
+      "Lucide React",
     ],
   },
   {
-    title:
-      "3D stack",
+    title: "3D & rendering",
 
     items: [
       "Three.js",
       "React Three Fiber",
       "Drei",
-      "GLB models",
+      "GLB / glTF models",
+      "WebGL rendering",
     ],
   },
   {
-    title:
-      "Motion",
+    title: "Motion & interaction",
 
     items: [
+      "Framer Motion",
       "GSAP",
-      "Camera zooms",
-      "Scene transitions",
       "Lottie animation",
+      "Camera animations",
+      "Mouse, touch & wheel controls",
     ],
   },
   {
-    title:
-      "Visual direction",
+    title: "Post-processing",
+
+    items: [
+      "React Three Postprocessing",
+      "Bloom",
+      "SSAO",
+      "Vignette",
+      "ACES filmic tone mapping",
+    ],
+  },
+  {
+    title: "Media & accessibility",
+
+    items: [
+      "Ambient background audio",
+      "Music mute controls",
+      "Keyboard navigation",
+      "Reduced-motion support",
+      "Accessible modal dialogs",
+    ],
+  },
+  {
+    title: "Visual direction",
 
     items: [
       "Cozy Tokyo-night atmosphere",
       "Soft color stories",
       "Playful interactions",
       "Small environmental details",
+      "Responsive interface design",
     ],
   },
   {
-    title:
-      "Behind the scenes",
+    title: "Behind the scenes",
 
     items: [
       "UI iteration",
-      "Accessibility pass",
       "Responsive layouts",
-      "Performance polish",
+      "Performance optimization",
+      "Asset optimization",
+      "Cross-device testing",
     ],
   },
 ];

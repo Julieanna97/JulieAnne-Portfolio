@@ -14,6 +14,8 @@ import {
 
 import Preloader from "@/components/Preloader";
 
+import SceneReturnButton from "@/components/hero-scene/modals/SceneReturnButton";
+
 import {
   getAmbientAudioMuted,
   setAmbientAudioMuted,
@@ -23,12 +25,6 @@ type HeroSceneProps = {
   onSceneReady?: () => void;
 };
 
-/*
- * Declare HeroScene's accepted props explicitly.
- *
- * This prevents TypeScript from treating the dynamically
- * imported component as a component with no props.
- */
 const HeroScene =
   dynamic<HeroSceneProps>(
     () =>
@@ -71,8 +67,8 @@ export default function HomePage() {
   ] = useState(false);
 
   /*
-   * Mount the Three.js scene immediately behind the
-   * loader so it can initialize before Enter is clicked.
+   * Mount the Three.js scene immediately behind the loader
+   * so it can initialize before Enter is clicked.
    */
   useEffect(() => {
     document.documentElement.dataset.theme =
@@ -89,10 +85,9 @@ export default function HomePage() {
   /*
    * Safety fallback.
    *
-   * Normally HeroScene calls onSceneReady as soon as the
-   * controls and scene are mounted. If that callback fails,
-   * allow Enter to appear after 12 seconds instead of
-   * leaving the visitor on an infinite loading screen.
+   * Normally HeroScene calls onSceneReady after the scene
+   * mounts. If that callback fails, display Enter after
+   * twelve seconds.
    */
   useEffect(() => {
     if (
@@ -164,8 +159,7 @@ export default function HomePage() {
   }, []);
 
   /*
-   * Start the camera intro immediately after Enter
-   * is clicked.
+   * Start the camera introduction after Enter is clicked.
    */
   const handleEntered = () => {
     window.dispatchEvent(
@@ -175,24 +169,85 @@ export default function HomePage() {
     );
   };
 
+  /*
+   * The permanent upper-left sticker performs both actions:
+   *
+   * 1. Escape closes Projects, About, Credits, or an open
+   *    project case study through their existing handlers.
+   *
+   * 2. adventure:return-home returns the camera to the main
+   *    3D model view.
+   */
+  const handleReturnToSceneHome =
+    () => {
+      window.dispatchEvent(
+        new KeyboardEvent(
+          "keydown",
+          {
+            key: "Escape",
+            code: "Escape",
+          },
+        ),
+      );
+
+      /*
+       * Wait until React has processed the modal close before
+       * starting the camera return animation.
+       */
+      window.requestAnimationFrame(
+        () => {
+          window.dispatchEvent(
+            new CustomEvent(
+              "adventure:return-home",
+            ),
+          );
+        },
+      );
+    };
+
+  const handleMusicToggle =
+    () => {
+      const nextMuted =
+        !musicMuted;
+
+      setAmbientAudioMuted(
+        nextMuted,
+      );
+
+      setMusicMuted(
+        nextMuted,
+      );
+    };
+
   return (
     <>
+      {/*
+       * This is the only visible sticker instance.
+       *
+       * It mounts once after the preloader and stays mounted
+       * while Projects, About, Credits, and case studies open.
+       */}
+      {bootChecked &&
+        !showPreloader && (
+          <SceneReturnButton
+            persistent
+            onClick={
+              handleReturnToSceneHome
+            }
+            ariaLabel="Return to the main 3D model view"
+            primaryText="Julie Anne"
+            secondaryText="3D Portfolio"
+            tooltip="Return to the 3D home view"
+          />
+        )}
+
       {bootChecked &&
         !showPreloader && (
           <button
             type="button"
-            onClick={() => {
-              const nextMuted =
-                !musicMuted;
-
-              setAmbientAudioMuted(
-                nextMuted,
-              );
-
-              setMusicMuted(
-                nextMuted,
-              );
-            }}
+            onClick={
+              handleMusicToggle
+            }
             className="fixed z-[160] inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-[#0d1020]/70 text-white shadow-lg backdrop-blur-xl transition hover:-translate-y-0.5"
             style={{
               bottom:
@@ -218,7 +273,9 @@ export default function HomePage() {
       {bootChecked &&
         showPreloader && (
           <Preloader
-            sceneReady={sceneReady}
+            sceneReady={
+              sceneReady
+            }
             onEnter={
               handleEntered
             }
