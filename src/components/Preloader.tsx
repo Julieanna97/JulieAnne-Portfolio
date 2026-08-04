@@ -147,27 +147,6 @@ export default function Preloader({
       className="minimal-loader"
       aria-busy={!sceneReady}
     >
-      <div
-        className="minimal-loader__brand"
-        aria-label="Julie Anne Portfolio"
-      >
-        <span
-          className="minimal-loader__brand-icon"
-          aria-hidden="true"
-        >
-          <span>JA</span>
-        </span>
-
-        <span className="minimal-loader__brand-copy">
-          <strong>
-            Julie Anne
-          </strong>
-
-          <small>
-            Cantillep
-          </small>
-        </span>
-      </div>
 
       <main
         className="minimal-loader__center"

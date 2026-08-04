@@ -5,6 +5,8 @@ import type {
   Ref,
 } from "react";
 
+import Image from "next/image";
+
 type SceneReturnButtonProps = {
   onClick: () => void;
   buttonRef?: Ref<HTMLButtonElement>;
@@ -63,7 +65,19 @@ export default function SceneReturnButton({
           className="scene-return-button__icon"
           aria-hidden="true"
         >
-          <span>JA</span>
+          <Image
+            src="/branding/ja-icon.svg"
+            alt=""
+            width={46}
+            height={46}
+            priority
+            style={{
+              display: "block",
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+            }}
+          />
         </span>
 
         <span className="scene-return-button__copy">
@@ -150,110 +164,25 @@ export default function SceneReturnButton({
 
         .scene-return-button__icon {
           position: relative;
+          display: block;
 
-          display: grid;
+          width: 46px;
+          height: 46px;
+          flex: 0 0 46px;
 
-          width: 42px;
-          height: 42px;
+          overflow: visible;
 
-          flex: 0 0 42px;
-
-          overflow: hidden;
-
-          border:
-            2px solid
-            #ff68b7;
-
-          border-radius: 11px;
-
-          background:
-            radial-gradient(
-              circle,
-              rgba(
-                255,
-                188,
-                228,
-                0.8
-              )
-                1.25px,
-              transparent
-                1.6px
-            );
-
-          background-color:
-            rgba(
-              53,
-              20,
-              76,
-              0.94
-            );
-
-          background-size:
-            7px 7px;
-
-          box-shadow:
-            0 0 0 1px
-              rgba(
-                255,
-                255,
-                255,
-                0.05
-              )
-              inset,
-            0 0 18px
-              rgba(
-                255,
-                104,
-                183,
-                0.24
-              ),
-            0 10px 28px
-              rgba(
-                0,
-                0,
-                0,
-                0.26
-              );
-
-          place-items: center;
-
-          transition:
-            border-color 180ms ease,
-            box-shadow 180ms ease,
-            transform 180ms ease;
+          border: 0;
+          border-radius: 0;
+          background: transparent;
+          box-shadow: none;
         }
 
         .scene-return-button:hover
           .scene-return-button__icon {
-          border-color:
-            #69dfff;
-
-          box-shadow:
-            0 0 0 1px
-              rgba(
-                255,
-                255,
-                255,
-                0.08
-              )
-              inset,
-            0 0 24px
-              rgba(
-                255,
-                104,
-                183,
-                0.38
-              ),
-            0 12px 30px
-              rgba(
-                0,
-                0,
-                0,
-                0.32
-              );
-
-          transform:
-            rotate(-3deg);
+          border-color: transparent;
+          box-shadow: none;
+          transform: none;
         }
 
         .scene-return-button__icon
@@ -361,10 +290,9 @@ export default function SceneReturnButton({
           }
 
           .scene-return-button__icon {
-            width: 37px;
-            height: 37px;
-
-            flex-basis: 37px;
+            width: 40px;
+            height: 40px;
+            flex-basis: 40px;
           }
 
           .scene-return-button__icon

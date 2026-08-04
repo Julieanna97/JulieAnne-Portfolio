@@ -21,6 +21,8 @@ import {
   setAmbientAudioMuted,
 } from "@/lib/ambientAudio";
 
+import SiteSticker from "@/components/SiteSticker";
+
 type HeroSceneProps = {
   onSceneReady?: () => void;
 };
@@ -227,19 +229,27 @@ export default function HomePage() {
        * It mounts once after the preloader and stays mounted
        * while Projects, About, Credits, and case studies open.
        */}
-      {bootChecked &&
-        !showPreloader && (
-          <SceneReturnButton
-            persistent
-            onClick={
-              handleReturnToSceneHome
+
+      <SiteSticker />
+
+      {bootChecked && (
+        <SceneReturnButton
+          persistent
+          onClick={() => {
+            if (!showPreloader) {
+              handleReturnToSceneHome();
             }
-            ariaLabel="Return to the main 3D model view"
-            primaryText="Julie Anne"
-            secondaryText="3D Portfolio"
-            tooltip="Return to the 3D home view"
-          />
-        )}
+          }}
+          ariaLabel="Julie Anne's Town"
+          primaryText="Julie Anne's"
+          secondaryText="Town"
+          tooltip={
+            showPreloader
+              ? "Julie Anne's Town"
+              : "Return to Julie Anne's Town"
+          }
+        />
+      )}
 
       {bootChecked &&
         !showPreloader && (

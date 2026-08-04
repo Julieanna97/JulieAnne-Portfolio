@@ -616,3 +616,11 @@ body {
     width: 360px;
   }
 }
+
+.scene-return-button__icon
+  > span
+  img {
+  display: block;
+  object-fit: cover;
+  border-radius: 6px;
+}

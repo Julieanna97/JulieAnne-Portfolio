@@ -1421,6 +1421,958 @@ export default function SakuraThemeStyles() {
       }
 
       /* ================================================================ */
+      /* Haru-ni-inspired About page                                       */
+      /* ================================================================ */
+
+      .adventure-section-detail-modal--about {
+        --about-brown:
+          var(--portfolio-ink);
+
+        --about-brown-soft:
+          var(--portfolio-ink-soft);
+
+        --about-gold:
+          var(--portfolio-orange);
+
+        --about-cream:
+          var(--portfolio-canvas);
+
+        --about-cream-dark:
+          var(--portfolio-paper);
+
+        --about-line:
+          var(--portfolio-line);
+
+        background:
+          radial-gradient(
+            circle at 86% 5%,
+            rgba(154, 92, 255, 0.2),
+            transparent 31%
+          ),
+          radial-gradient(
+            circle at 8% 86%,
+            rgba(255, 63, 159, 0.14),
+            transparent 35%
+          ),
+          radial-gradient(
+            circle at 52% 110%,
+            rgba(105, 223, 255, 0.07),
+            transparent 34%
+          ),
+          linear-gradient(
+            180deg,
+            #0b081a 0%,
+            #070511 53%,
+            #03030a 100%
+          );
+
+        color: var(--portfolio-ink);
+
+        scrollbar-color:
+          var(--portfolio-orange)
+          rgba(255, 255, 255, 0.035);
+      }
+
+      .adventure-section-detail-modal--about::before {
+        height: 8px;
+
+        background:
+          linear-gradient(
+            90deg,
+            var(--portfolio-violet),
+            var(--portfolio-orange-dark),
+            var(--portfolio-orange),
+            var(--portfolio-cyan)
+          );
+
+        box-shadow:
+          0 0 25px
+            rgba(255, 75, 174, 0.34),
+          0 0 50px
+            rgba(154, 92, 255, 0.16);
+      }
+
+      .haruni-about-layout {
+        display: grid;
+        grid-template-columns: 150px minmax(0, 1fr);
+        gap: clamp(38px, 6vw, 100px);
+
+        width: min(100%, 1320px);
+        margin: 0 auto;
+      }
+
+      .haruni-about-content {
+        min-width: 0;
+      }
+
+      /* Left navigation */
+
+      .haruni-about-rail {
+        position: sticky;
+        top: 30px;
+
+        align-self: start;
+
+        display: flex;
+        flex-direction: column;
+        gap: 17px;
+
+        padding-top: 170px;
+      }
+
+      .haruni-about-rail a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        color: var(--about-brown);
+
+        font-size: 11px;
+        font-weight: 700;
+
+        text-decoration: none;
+      }
+
+      .haruni-about-rail a {
+        color:
+          rgba(244, 238, 255, 0.58);
+
+        transition:
+          color 180ms ease,
+          transform 180ms ease;
+      }
+
+      .haruni-about-rail a:hover,
+      .haruni-about-rail a:focus-visible {
+        color: var(--portfolio-ink);
+      }
+
+      .haruni-about-rail a.is-active {
+        color: var(--portfolio-ink);
+      }
+
+      .haruni-about-rail-dot {
+        width: 9px;
+        height: 9px;
+
+        flex: 0 0 9px;
+
+        border:
+          1px solid
+          rgba(232, 144, 255, 0.56);
+
+        border-radius: 50%;
+
+        background: transparent;
+
+        box-shadow: none;
+
+        transition:
+          border-color 180ms ease,
+          background 180ms ease,
+          box-shadow 180ms ease,
+          transform 180ms ease;
+      }
+
+      .haruni-about-rail
+        a:not(.is-active)
+        .haruni-about-rail-dot {
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .haruni-about-rail
+        a:hover
+        .haruni-about-rail-dot,
+      .haruni-about-rail
+        a:focus-visible
+        .haruni-about-rail-dot {
+        border-color:
+          var(--portfolio-orange);
+
+        background: transparent;
+
+        transform: scale(1.12);
+      }
+
+      .haruni-about-rail
+        a.is-active
+        .haruni-about-rail-dot,
+      .haruni-about-rail
+        a.is-active:hover
+        .haruni-about-rail-dot,
+      .haruni-about-rail
+        a.is-active:focus-visible
+        .haruni-about-rail-dot {
+        border-color: transparent;
+
+        background:
+          linear-gradient(
+            135deg,
+            var(--portfolio-violet),
+            var(--portfolio-orange)
+          );
+
+        box-shadow:
+          0 0 0 3px
+            rgba(255, 104, 183, 0.1),
+          0 0 14px
+            rgba(255, 104, 183, 0.72),
+          0 0 24px
+            rgba(154, 92, 255, 0.38);
+
+        transform: scale(1.2);
+      }
+
+      /* Main heading */
+
+      .haruni-about-page-heading {
+        margin-bottom: clamp(72px, 10vw, 140px);
+        text-align: center;
+      }
+
+      .haruni-about-page-heading > p {
+        margin: 0;
+
+        color: var(--about-brown);
+
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .haruni-about-page-heading h2 {
+        margin: 88px 0 0;
+
+        color: var(--about-brown);
+
+        font-family: var(--font-display), Arial, sans-serif;
+        font-size: clamp(3.2rem, 7vw, 6.8rem);
+        font-weight: 800;
+        letter-spacing: -0.055em;
+        line-height: 0.95;
+
+        text-shadow: none;
+      }
+
+      .haruni-about-page-heading > span {
+        display: block;
+
+        margin-top: 20px;
+
+        color: rgba(62, 33, 15, 0.48);
+
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+      }
+
+      /* Portrait introduction */
+
+      .haruni-profile-section {
+        scroll-margin-top: 30px;
+      }
+
+      .haruni-profile-introduction {
+        display: grid;
+        grid-template-columns:
+          minmax(240px, 0.78fr)
+          minmax(0, 1.22fr);
+        gap: clamp(42px, 7vw, 100px);
+        align-items: center;
+
+        margin-bottom: clamp(90px, 11vw, 160px);
+      }
+
+      .haruni-profile-photo-column {
+        position: relative;
+      }
+
+      .haruni-profile-photo {
+        position: relative;
+        overflow: hidden;
+
+        width: min(100%, 410px);
+        aspect-ratio: 4 / 5;
+
+        border-radius: 4px;
+
+        background: #ddd1ae;
+
+        box-shadow:
+          18px 18px 0 rgba(242, 169, 0, 0.22),
+          0 24px 60px rgba(62, 33, 15, 0.13);
+      }
+
+      .haruni-profile-photo img {
+        object-fit: cover;
+        object-position: center 18%;
+      }
+
+      .haruni-profile-photo-label {
+        position: absolute;
+        right: -12px;
+        bottom: -28px;
+
+        min-width: 140px;
+
+        background: var(--about-brown);
+
+        padding: 14px 18px;
+
+        color: var(--about-cream);
+      }
+
+      .haruni-profile-photo-label span,
+      .haruni-profile-photo-label strong {
+        display: block;
+      }
+
+      .haruni-profile-photo-label span {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .haruni-profile-photo-label strong {
+        margin-top: 4px;
+        font-size: 14px;
+      }
+
+      .haruni-section-label {
+        margin: 0;
+
+        color: var(--about-gold);
+
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .haruni-profile-copy h3 {
+        max-width: 700px;
+
+        margin: 18px 0 28px;
+
+        color: var(--about-brown);
+
+        font-family: var(--font-display), Arial, sans-serif;
+        font-size: clamp(2.25rem, 4.5vw, 4.7rem);
+        font-weight: 800;
+        letter-spacing: -0.05em;
+        line-height: 1.02;
+      }
+
+      .haruni-profile-copy > p:not(.haruni-section-label) {
+        max-width: 680px;
+
+        margin: 0 0 17px;
+
+        color: var(--about-brown-soft);
+
+        font-size: 15px;
+        line-height: 1.85;
+      }
+
+      .haruni-profile-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+
+        margin-top: 28px;
+      }
+
+      .haruni-profile-tags span {
+        border: 1px solid rgba(62, 33, 15, 0.2);
+        border-radius: 999px;
+
+        padding: 8px 12px;
+
+        color: var(--about-brown);
+
+        font-size: 10px;
+        font-weight: 800;
+      }
+
+      /* Section headings */
+
+      .haruni-subsection-heading {
+        margin-bottom: clamp(46px, 7vw, 90px);
+      }
+
+      .haruni-subsection-heading h3 {
+        margin: 0;
+
+        color: var(--about-brown);
+
+        font-family: var(--font-display), Arial, sans-serif;
+        font-size: clamp(2.8rem, 5vw, 5rem);
+        font-weight: 800;
+        letter-spacing: -0.045em;
+        line-height: 1;
+      }
+
+      .haruni-subsection-heading > span {
+        display: block;
+
+        margin-top: 17px;
+
+        color: rgba(62, 33, 15, 0.46);
+
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+      }
+
+      /* Profile information table */
+
+      .haruni-profile-overview {
+        width: min(100%, 850px);
+        margin-left: auto;
+      }
+
+      .haruni-profile-table {
+        margin: 0;
+      }
+
+      .haruni-profile-table > div {
+        display: grid;
+        grid-template-columns: 180px minmax(0, 1fr);
+        gap: 30px;
+
+        border-bottom: 1px solid var(--about-line);
+
+        padding: 24px 0;
+      }
+
+      .haruni-profile-table dt {
+        color: var(--about-brown);
+
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .haruni-profile-table dd {
+        margin: 0;
+
+        color: var(--about-brown-soft);
+
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .haruni-profile-table a {
+        color: inherit;
+        text-underline-offset: 4px;
+      }
+
+      /* General sections */
+
+      .haruni-about-section {
+        scroll-margin-top: 30px;
+
+        margin-top: clamp(120px, 15vw, 220px);
+      }
+
+      /* Journey timeline */
+
+      .haruni-journey-layout {
+        display: grid;
+        grid-template-columns: 250px minmax(0, 1fr);
+        gap: clamp(48px, 8vw, 120px);
+      }
+
+      .haruni-journey-aside {
+        position: sticky;
+        top: 50px;
+
+        align-self: start;
+      }
+
+      .haruni-journey-aside p {
+        margin: 0;
+
+        color: rgba(62, 33, 15, 0.43);
+
+        font-size: 38px;
+        font-weight: 800;
+      }
+
+      .haruni-journey-aside strong {
+        display: block;
+
+        color: var(--about-brown);
+
+        font-size: clamp(4.8rem, 9vw, 8rem);
+        letter-spacing: -0.08em;
+        line-height: 0.9;
+      }
+
+      .haruni-journey-aside span {
+        display: block;
+
+        max-width: 210px;
+
+        margin-top: 36px;
+
+        color: var(--about-brown-soft);
+
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .haruni-timeline {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .haruni-timeline-entry {
+        display: grid;
+        grid-template-columns: 92px minmax(0, 1fr);
+        gap: 34px;
+
+        border-bottom: 1px solid var(--about-line);
+
+        padding: 0 0 72px;
+        margin-bottom: 72px;
+      }
+
+      .haruni-timeline-number {
+        color: transparent;
+
+        font-family: var(--font-display), Arial, sans-serif;
+        font-size: 42px;
+        font-weight: 900;
+
+        -webkit-text-stroke:
+          1px rgba(62, 33, 15, 0.4);
+      }
+
+      .haruni-timeline-content time {
+        color: rgba(62, 33, 15, 0.48);
+
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+      }
+
+      .haruni-timeline-content h4 {
+        margin: 15px 0 7px;
+
+        color: var(--about-brown);
+
+        font-family: var(--font-display), Arial, sans-serif;
+        font-size: clamp(1.4rem, 2.7vw, 2.3rem);
+        line-height: 1.15;
+      }
+
+      .haruni-timeline-content strong {
+        color: var(--about-gold);
+        font-size: 13px;
+      }
+
+      .haruni-timeline-content p,
+      .haruni-timeline-content li {
+        color: var(--about-brown-soft);
+        font-size: 14px;
+        line-height: 1.8;
+      }
+
+      .haruni-timeline-content p {
+        margin: 20px 0 0;
+      }
+
+      .haruni-timeline-content ul {
+        margin: 17px 0 0;
+        padding-left: 20px;
+      }
+
+      /* Skills */
+
+      .haruni-skill-list {
+        border-top: 1px solid var(--about-line);
+      }
+
+      .haruni-skill-row {
+        display: grid;
+        grid-template-columns:
+          70px
+          minmax(160px, 0.55fr)
+          minmax(0, 1fr);
+        gap: 30px;
+        align-items: start;
+
+        border-bottom: 1px solid var(--about-line);
+
+        padding: 28px 0;
+      }
+
+      .haruni-skill-index {
+        color: var(--about-gold);
+
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .haruni-skill-row h4 {
+        margin: 0;
+
+        color: var(--about-brown);
+
+        font-family: var(--font-display), Arial, sans-serif;
+        font-size: 21px;
+      }
+
+      .haruni-skill-row > div {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .haruni-skill-row > div span {
+        border: 1px solid rgba(62, 33, 15, 0.17);
+        border-radius: 999px;
+
+        padding: 7px 11px;
+
+        color: var(--about-brown-soft);
+
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      /* Contact */
+
+      .haruni-contact-section {
+        padding-bottom: 80px;
+      }
+
+      .haruni-contact-intro {
+        max-width: 620px;
+
+        color: var(--about-brown-soft);
+
+        font-size: 15px;
+        line-height: 1.8;
+      }
+
+      .haruni-contact-links {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+
+        margin-top: 38px;
+      }
+
+      .haruni-contact-links a {
+        display: flex;
+        min-height: 135px;
+
+        flex-direction: column;
+        justify-content: space-between;
+
+        border: 1px solid var(--about-line);
+
+        background: rgba(255, 255, 255, 0.22);
+
+        padding: 22px;
+
+        color: var(--about-brown);
+        text-decoration: none;
+
+        transition:
+          background 180ms ease,
+          transform 180ms ease;
+      }
+
+      .haruni-contact-links a:hover {
+        background: rgba(242, 169, 0, 0.12);
+        transform: translateY(-3px);
+      }
+
+      .haruni-contact-links span {
+        color: var(--about-brown-soft);
+
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .haruni-contact-links strong {
+        overflow-wrap: anywhere;
+
+        font-size: 14px;
+      }
+
+      /* Tablet */
+
+      @media (max-width: 900px) {
+        .haruni-about-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .haruni-about-rail {
+          position: static;
+
+          flex-direction: row;
+          flex-wrap: wrap;
+
+          padding-top: 0;
+        }
+
+        .haruni-profile-introduction {
+          grid-template-columns: 1fr;
+        }
+
+        .haruni-profile-photo-column {
+          width: min(100%, 410px);
+        }
+
+        .haruni-journey-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .haruni-journey-aside {
+          position: static;
+        }
+
+        .haruni-contact-links {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Mobile */
+
+      @media (max-width: 767px) {
+        .adventure-section-detail-modal--about {
+          padding:
+            76px
+            20px
+            calc(
+              70px +
+                env(safe-area-inset-bottom)
+            );
+        }
+
+        .haruni-about-rail {
+          display: none;
+        }
+
+        .haruni-about-page-heading {
+          margin-bottom: 70px;
+          text-align: left;
+        }
+
+        .haruni-about-page-heading h2 {
+          margin-top: 42px;
+          font-size: clamp(3rem, 16vw, 4.8rem);
+        }
+
+        .haruni-profile-photo {
+          width: calc(100% - 12px);
+        }
+
+        .haruni-profile-photo-label {
+          right: 0;
+        }
+
+        .haruni-profile-copy h3 {
+          font-size: clamp(2.25rem, 11vw, 3.4rem);
+        }
+
+        .haruni-profile-overview {
+          margin-top: 90px;
+        }
+
+        .haruni-profile-table > div {
+          grid-template-columns: 1fr;
+          gap: 8px;
+
+          padding: 20px 0;
+        }
+
+        .haruni-about-section {
+          margin-top: 120px;
+        }
+
+        .haruni-timeline-entry {
+          grid-template-columns: 52px minmax(0, 1fr);
+          gap: 17px;
+
+          padding-bottom: 48px;
+          margin-bottom: 48px;
+        }
+
+        .haruni-timeline-number {
+          font-size: 28px;
+        }
+
+        .haruni-skill-row {
+          grid-template-columns: 42px minmax(0, 1fr);
+          gap: 14px;
+        }
+
+        .haruni-skill-row h4 {
+          font-size: 18px;
+        }
+
+        .haruni-skill-row > div {
+          grid-column: 2;
+        }
+      }
+
+      .adventure-section-detail-modal--about
+      .haruni-about-page-heading
+      > span,
+    .adventure-section-detail-modal--about
+      .haruni-subsection-heading
+      > span,
+    .adventure-section-detail-modal--about
+      .haruni-journey-aside
+      p,
+    .adventure-section-detail-modal--about
+      .haruni-timeline-content
+      time {
+      color:
+        rgba(244, 238, 255, 0.48);
+    }
+
+    .adventure-section-detail-modal--about
+      .haruni-profile-photo {
+      background:
+        var(--portfolio-paper-soft);
+
+      box-shadow:
+        18px
+          18px
+          0
+          rgba(154, 92, 255, 0.18),
+        0
+          24px
+          60px
+          rgba(0, 0, 0, 0.42),
+        0
+          0
+          34px
+          rgba(255, 63, 159, 0.12);
+    }
+
+    .adventure-section-detail-modal--about
+      .haruni-profile-photo-label {
+      border:
+        1px solid
+        rgba(232, 144, 255, 0.24);
+
+      background:
+        rgba(16, 12, 37, 0.94);
+
+      box-shadow:
+        0
+          12px
+          30px
+          rgba(0, 0, 0, 0.38);
+
+      color:
+        var(--portfolio-ink);
+
+      backdrop-filter: blur(14px);
+    }
+
+    .adventure-section-detail-modal--about
+      .haruni-profile-tags
+      span,
+    .adventure-section-detail-modal--about
+      .haruni-skill-row
+      > div
+      span {
+      border-color:
+        rgba(232, 144, 255, 0.2);
+
+      background:
+        linear-gradient(
+          120deg,
+          rgba(154, 92, 255, 0.1),
+          rgba(255, 63, 159, 0.055)
+        );
+
+      color:
+        rgba(244, 238, 255, 0.82);
+    }
+
+    .adventure-section-detail-modal--about
+      .haruni-timeline-number {
+      color: transparent;
+
+      -webkit-text-stroke:
+        1px
+        rgba(232, 144, 255, 0.48);
+    }
+
+    .adventure-section-detail-modal--about
+      .haruni-contact-links
+      a {
+      border-color:
+        rgba(232, 144, 255, 0.18);
+
+      background:
+        radial-gradient(
+          circle at 100% 0,
+          rgba(154, 92, 255, 0.14),
+          transparent 45%
+        ),
+        rgba(23, 16, 49, 0.66);
+
+      color:
+        var(--portfolio-ink);
+
+      box-shadow:
+        0
+          16px
+          36px
+          rgba(0, 0, 0, 0.2);
+    }
+
+    .adventure-section-detail-modal--about
+      .haruni-contact-links
+      a:hover {
+      border-color:
+        rgba(255, 104, 183, 0.48);
+
+      background:
+        radial-gradient(
+          circle at 100% 0,
+          rgba(154, 92, 255, 0.2),
+          transparent 48%
+        ),
+        rgba(255, 63, 159, 0.09);
+
+      box-shadow:
+        0
+          0
+          24px
+          rgba(255, 63, 159, 0.14),
+        0
+          18px
+          38px
+          rgba(0, 0, 0, 0.27);
+    }
+
+    .adventure-section-detail-modal--about
+      .haruni-profile-table
+      > div,
+    .adventure-section-detail-modal--about
+      .haruni-timeline-entry,
+    .adventure-section-detail-modal--about
+      .haruni-skill-list,
+    .adventure-section-detail-modal--about
+      .haruni-skill-row {
+      border-color:
+        rgba(232, 144, 255, 0.16);
+    }
+
+      /* ================================================================ */
       /* Information cards                                                */
       /* ================================================================ */
 
