@@ -492,12 +492,10 @@ export default function ProjectCaseStudyModal({
                   {project.overview && (
                     <div className="adventure-case-study-section">
                       <p className="adventure-detail-kicker">
-                        Project
+                        About
                       </p>
 
-                      <h3>
-                        Overview
-                      </h3>
+                      <h3>How it came together</h3>
 
                       <div className="adventure-case-study-overview">
                         {project.overview.map(
@@ -522,12 +520,10 @@ export default function ProjectCaseStudyModal({
                   {project.highlights && (
                     <div className="adventure-case-study-section">
                       <p className="adventure-detail-kicker">
-                        Details
+                        A closer look
                       </p>
 
-                      <h3>
-                        Highlights
-                      </h3>
+                      <h3>Key parts</h3>
 
                       <div className="adventure-project-highlight-list">
                         {project.highlights.map(
@@ -572,12 +568,10 @@ export default function ProjectCaseStudyModal({
 
                   <div className="adventure-case-study-section">
                     <p className="adventure-detail-kicker">
-                      Contribution
+                      My role
                     </p>
 
-                    <h3>
-                      What I worked on
-                    </h3>
+                    <h3>What I handled</h3>
 
                     <ul>
                       {project.contributions.map(
@@ -600,12 +594,10 @@ export default function ProjectCaseStudyModal({
 
                   <div className="adventure-case-study-section">
                     <p className="adventure-detail-kicker">
-                      Stack
+                      Built with
                     </p>
 
-                    <h3>
-                      Technologies
-                    </h3>
+                    <h3>Tools and technologies</h3>
 
                     <div className="adventure-case-study-tags">
                       {project.technologies.map(

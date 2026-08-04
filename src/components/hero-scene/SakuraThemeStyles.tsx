@@ -1193,7 +1193,7 @@ export default function SakuraThemeStyles() {
         text-align: center;
       }
 
-      .adventure-section-detail-header > p,
+      .adventure-section-detail-header > p:first-child,
       .adventure-case-study-header > p:first-child,
       .adventure-detail-kicker,
       .adventure-section-heading > p {
@@ -1249,20 +1249,45 @@ export default function SakuraThemeStyles() {
 
       .adventure-section-detail-intro,
       .adventure-case-study-summary {
-        max-width: 760px;
+        display: block;
 
-        margin: 25px auto 0;
+        width: min(
+          100%,
+          740px
+        );
 
-        color: var(--portfolio-ink-soft);
+        max-width: 740px;
+
+        margin:
+          24px auto 0;
+
+        padding:
+          0
+          clamp(
+            0px,
+            1vw,
+            12px
+          );
+
+        color:
+          var(
+            --portfolio-ink-soft
+          );
 
         font-size:
           clamp(
             14px,
-            1.35vw,
+            1.15vw,
             17px
           );
 
-        line-height: 1.85;
+        font-weight: 500;
+        letter-spacing: 0;
+        line-height: 1.75;
+
+        text-align: center;
+        text-transform: none;
+        text-wrap: pretty;
       }
 
       .adventure-case-study-meta {

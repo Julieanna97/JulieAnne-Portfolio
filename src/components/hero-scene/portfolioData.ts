@@ -19,11 +19,11 @@ export const PROJECT_CASE_STUDIES: Record<
     period: "September 2023 – October 2023",
 
     summary:
-      "A hands-on autonomous RC-car project where I worked through the full build process — from planning the electrical schematic and assembling the hardware to programming the car, testing its behavior, and refining how it responded to different situations.",
+      "An autonomous RC car I helped take from an electrical schematic to a working prototype. I assembled the hardware, wired the components, programmed the control logic, and tested how the car responded to its surroundings.",
 
     overview: [
-      "I worked on the project from the electrical schematic to the physical assembly, wiring, programming, testing, and debugging.",
-      "The project helped me understand how electrical design, hardware components, sensors, and software logic work together to create an autonomous system.",
+      "This was a hands-on project where the hardware and software had to work closely together. A wiring problem, an unusual sensor reading, or a small change in the code could completely change how the car behaved.",
+      "I was involved throughout the build, from planning and assembly to programming and testing. It gave me a much better understanding of how the different parts of an embedded system affect one another.",
     ],
 
     technologies: [
@@ -38,27 +38,27 @@ export const PROJECT_CASE_STUDIES: Record<
     ],
 
     contributions: [
-      "Planned and followed the electrical schematic needed to connect the car's components correctly.",
-      "Assembled the physical car hardware, including the wiring, sensors, and electronic components.",
-      "Programmed the car's logic so it could respond to its environment and operate autonomously.",
-      "Tested, debugged, and refined the system to improve how the car behaved in different situations.",
+      "Read and followed the electrical schematic for the car's components.",
+      "Assembled the chassis, electronics, wiring, and sensors.",
+      "Programmed the control logic so the car could react to its environment.",
+      "Tested and adjusted both the hardware and code when the car behaved unexpectedly.",
     ],
 
     highlights: [
       {
-        title: "What I worked on",
+        title: "From plan to prototype",
         text:
-          "Electrical schematic planning, physical assembly, wiring, programming, testing, and debugging.",
+          "I followed the project through the full build process instead of working on only one isolated part.",
       },
       {
-        title: "Skills used",
+        title: "Hardware meets software",
         text:
-          "Circuit planning, hardware assembly, embedded programming, sensor integration, debugging, and system testing.",
+          "The car depended on reliable wiring, useful sensor data, and control logic that could respond in real time.",
       },
       {
-        title: "What I learned",
+        title: "Hands-on debugging",
         text:
-          "How electrical design, hardware components, and software logic work together in an autonomous system.",
+          "Testing often meant checking the physical connections and the code together to find the real cause of a problem.",
       },
     ],
 
@@ -86,11 +86,11 @@ export const PROJECT_CASE_STUDIES: Record<
     period: "September 2025 – April 2026",
 
     summary:
-      "I worked as a fullstack intern on PodManager.ai, an AI-powered podcast platform. My work focused on media-editing features, publishing controls, and improving an existing production codebase.",
+      "During my internship at PodManager.ai, I worked on the editing and publishing side of an AI-powered podcast platform. My tasks included waveform and timeline features, audio tools, publishing settings, and improvements to an existing production codebase.",
 
     overview: [
-      "PodManager.ai gave me experience working in a real product environment with an existing codebase, team conventions, code reviews, and production requirements.",
-      "Instead of building isolated demo features, I contributed to parts of the platform used for podcast editing and publishing. This helped me understand how frontend, backend, and product decisions connect in a fullstack application.",
+      "Joining an existing product was different from starting a school project from scratch. I had to understand the team's conventions, work within the current architecture, and make changes that fitted naturally into the platform.",
+      "My work covered both frontend and backend concerns. It helped me understand how editing tools, API behaviour, and product decisions connect in a real fullstack application.",
     ],
 
     technologies: [
@@ -105,24 +105,29 @@ export const PROJECT_CASE_STUDIES: Record<
     ],
 
     contributions: [
-      "Implemented waveform visualization to make podcast audio easier to navigate and edit.",
-      "Worked on the video-track strip to support a clearer visual editing experience.",
-      "Added support for sound effects and music so users could enhance podcast episodes during editing.",
-      "Built publish-page toggles for optional intro, outro, and watermark settings before export.",
-      "Refactored existing components to improve readability, structure, and maintainability.",
-      "Worked inside a real production codebase with team conventions, reviews, and active product requirements.",
+      "Added waveform visualisation to make podcast audio easier to navigate.",
+      "Worked on the video-track strip used in the browser-based editor.",
+      "Added support for music and sound effects during editing.",
+      "Created publishing controls for optional intros, outros, and watermarks.",
+      "Refactored existing components when the surrounding code needed to be clearer or easier to maintain.",
+      "Worked with team conventions, code reviews, and changing product requirements.",
     ],
 
     highlights: [
       {
-        title: "Main focus",
+        title: "Editing tools",
         text:
-          "Podcast editing: audio waveform, video track strip, music, sound effects, and publish controls.",
+          "My main focus was the browser editor, including its waveform, video track, music, and sound-effect features.",
       },
       {
-        title: "Impact",
+        title: "Publishing controls",
         text:
-          "Helped make editing and publishing podcast episodes more flexible and easier to navigate.",
+          "I added settings that let users decide which optional elements should be included before publishing.",
+      },
+      {
+        title: "Production experience",
+        text:
+          "The internship taught me how to contribute carefully to a product that already has users, conventions, and an active development team.",
       },
     ],
 
@@ -153,12 +158,11 @@ export const PROJECT_CASE_STUDIES: Record<
     period: "Degree Project",
 
     summary:
-      "PracticePal is a calm music-practice planning and tracking platform designed to help musicians stay consistent without making the routine feel overwhelming. Users can set weekly targets, plan sessions, log practice quickly, review progress, and keep their goals visible in one place.",
+      "PracticePal is my degree project: a planning and progress app for musicians who want a little more structure without turning practice into another stressful task. It brings weekly goals, quick session logging, streaks, and progress statistics into one calm dashboard.",
 
     overview: [
-      "The idea behind PracticePal was to make practice planning feel calm, clear, and easy to maintain. Instead of cluttering the experience with too many steps, the app keeps the most useful information visible: today's focus, weekly targets, streaks, completed minutes, and the next activity.",
-      "The core flow is simple: set a plan for the week, log each practice session in under a minute, then check the statistics and adjust the routine. This helps musicians build a practice habit they can realistically keep.",
-      "PracticePal was built as my degree project and combines account management, progress tracking, goal planning, statistics, and a Pro subscription flow in one fullstack application.",
+      "I wanted the app to answer a few simple questions: What should I practise today? How much have I done this week? Am I keeping up with the goal I set for myself?",
+      "The main flow stays intentionally simple. A musician creates a weekly plan, logs each session quickly, and checks their progress when they need it. The app also includes account management and a Pro subscription flow.",
     ],
 
     technologies: [
@@ -171,29 +175,29 @@ export const PROJECT_CASE_STUDIES: Record<
     ],
 
     contributions: [
-      "Built a weekly planning flow for setting practice targets, session lengths, and visible goals.",
-      "Created a fast session-logging experience so musicians can record what they worked on without interrupting the practice routine.",
-      "Added streak tracking, weekly progress summaries, and statistics to make progress easier to understand.",
-      "Built authentication with credentials and social-login options.",
-      "Integrated Stripe subscriptions and webhook handling for the Pro plan.",
-      "Used MongoDB for account, practice-session, planning, and subscription data.",
+      "Designed the weekly planning flow for targets, session lengths, and personal goals.",
+      "Created a quick session form that does not interrupt the practice routine.",
+      "Added streaks, weekly summaries, and charts for reviewing progress.",
+      "Implemented credentials and social-login authentication.",
+      "Connected Stripe subscriptions and webhook handling for the Pro plan.",
+      "Structured the MongoDB data for accounts, sessions, plans, and subscriptions.",
     ],
 
     highlights: [
       {
-        title: "Weekly clarity",
+        title: "A clear weekly plan",
         text:
-          "Goals, planned minutes, completed time, streaks, and the next activity stay visible so every session starts with direction.",
+          "The dashboard keeps the current goal, planned minutes, completed time, streak, and next activity easy to find.",
       },
       {
-        title: "Fast logging",
+        title: "Quick session logging",
         text:
-          "Users can record what they practiced in under a minute without slowing down the session itself.",
+          "A musician can record what they practised in less than a minute and get back to playing.",
       },
       {
-        title: "Readable progress",
+        title: "Progress without clutter",
         text:
-          "Charts and summaries show momentum without making the dashboard feel cluttered or overwhelming.",
+          "The charts show useful patterns while keeping the overall experience calm and easy to read.",
       },
     ],
 
@@ -224,22 +228,18 @@ export const PROJECT_CASE_STUDIES: Record<
     type:
       "Individual School Project · Search API & Fullstack E-commerce",
 
-    role:
-      "Fullstack Developer",
+    role: "Fullstack Developer",
 
     period:
       "School Project · Portfolio Upgrade",
 
     summary:
-      "Nailé is a fullstack e-commerce application that began as an individual school assignment focused on Google Custom Search JSON API integration. The search flow used results from a selected external e-commerce website and matched them to products stored in my own shop, allowing visitors to continue to internal product pages. I later expanded the project with Stripe checkout, shipping calculations, worldwide delivery information, order management, and a responsive admin dashboard.",
+      "Nailé started as a school assignment about connecting an e-commerce app to Google Custom Search. I later developed it into a fuller online store with its own catalogue search, Stripe checkout, delivery rules, order views, and a responsive admin dashboard.",
 
     overview: [
-      "This project began as an individual school assignment called Search API. The task was to extend an existing e-commerce application with an integration to Google's Custom Search JSON API.",
-      "Because a newly deployed shop may not immediately be indexed by Google, products and images from an existing e-commerce website could be saved in the shop's own database. A Google Programmable Search Engine was then restricted to that external website so its results matched products available in the shop.",
-      "I worked with logic that connected external Google search results to matching products stored in my own e-commerce database. This meant visitors could open an internal Nailé product page instead of being redirected to the external store.",
-      "The assignment also included migrating the local MySQL database to a cloud service and deploying the React client and Express API as separate applications.",
-      "After the school assignment, I redesigned and expanded the project into a more complete portfolio application with a branded storefront, product catalogue, shopping cart, Stripe checkout, worldwide delivery selection, shipping rules, order confirmation, and a read-only admin dashboard.",
-      "The current live portfolio version uses the application's own product API for catalogue search instead of depending on Google indexing or an external search provider.",
+      "The original assignment used search results from a selected external shop and matched them to products saved in my own database. This let visitors move from a Google result to an internal Nailé product page instead of leaving the application.",
+      "The assignment also involved moving the MySQL database online and deploying the React frontend and Express API as separate services.",
+      "After the course, I continued working on the idea. I redesigned the storefront, replaced the dependency on external search with the shop's own product API, and added checkout, shipping, order management, and admin views.",
     ],
 
     technologies: [
@@ -260,39 +260,33 @@ export const PROJECT_CASE_STUDIES: Record<
     ],
 
     contributions: [
-      "Integrated Google Custom Search JSON API into an existing e-commerce client as part of an individual school assignment.",
-      "Configured a Google Programmable Search Engine to restrict results to a selected external e-commerce website.",
-      "Presented search results with product images, descriptive text, and navigation links.",
-      "Created matching logic that connected external search results to corresponding products stored in the shop's own database.",
-      "Migrated the MySQL database to Aiven so the application could access its data online.",
-      "Deployed the React frontend and Express backend separately on Vercel and configured production environment variables and CORS.",
-      "Connected the React frontend to a TypeScript, Express, and MySQL REST API for products, customers, orders, and order items.",
-      "Later replaced the externally dependent search experience with catalogue search powered by the application's own product API.",
-      "Integrated Stripe-hosted checkout and created an order-confirmation flow.",
-      "Implemented a 49 SEK shipping fee for orders below 499 SEK and free shipping for orders from 499 SEK.",
-      "Added worldwide country selection and customer delivery information to the checkout form.",
-      "Built a responsive read-only admin dashboard for reviewing orders, customers, products, inventory, collections, reviews, and analytics.",
-      "Added order summaries and detailed order views showing the product subtotal, shipping fee, payment status, and final total.",
+      "Connected Google Custom Search to the original e-commerce client.",
+      "Configured a Programmable Search Engine for a selected external shop.",
+      "Matched external results to products stored in the Nailé database.",
+      "Moved the MySQL database to Aiven and connected it to the deployed API.",
+      "Deployed the React frontend and Express backend separately on Vercel.",
+      "Replaced the external search dependency with catalogue search from the application's own API.",
+      "Added Stripe-hosted checkout and an order-confirmation flow.",
+      "Applied a 49 SEK shipping fee below 499 SEK, with free shipping from 499 SEK.",
+      "Added worldwide country selection and customer delivery details.",
+      "Created a responsive read-only dashboard for orders, customers, products, inventory, collections, reviews, and analytics.",
     ],
 
     highlights: [
       {
-        title:
-          "Google Search API integration",
+        title: "Where it started",
         text:
-          "The original school assignment used Google Custom Search results from a selected external shop and matched those results to products in the Nailé database.",
+          "The first version explored how Google search results could be connected to products inside a separate e-commerce database.",
       },
       {
-        title:
-          "Fullstack cloud deployment",
+        title: "A real deployed stack",
         text:
-          "The React client, Express API, and cloud-hosted MySQL database were deployed and configured as separate connected services.",
+          "The frontend, Express API, and cloud-hosted MySQL database run as separate connected services.",
       },
       {
-        title:
-          "Expanded e-commerce experience",
+        title: "Growing beyond the assignment",
         text:
-          "The project was later developed into a complete shopping flow with Stripe checkout, shipping rules, order confirmation, and an administration dashboard.",
+          "I kept developing the store after the course, adding a complete shopping flow and an administration dashboard.",
       },
     ],
 
@@ -327,15 +321,14 @@ export const PROJECT_CASE_STUDIES: Record<
     role:
       "WordPress & PHP Developer",
 
-    period:
-      "Portfolio Project",
+    period: "Portfolio Project",
 
     summary:
-      "WorldBite Market is a custom WordPress and WooCommerce food marketplace built with PHP, MariaDB, phpMyAdmin, and Docker. I created a responsive theme, product catalogue, cart and checkout flow, and custom recipe collections.",
+      "WorldBite Market is a WordPress and WooCommerce food shop inspired by ingredients and recipes from different cuisines. I made the theme, configured the shopping flow, and added custom recipe collections with PHP.",
 
     overview: [
-      "I built WorldBite Market as a WordPress-based marketplace for food products and recipe collections from different cuisines.",
-      "The project helped me practice WordPress theme development, WooCommerce customization, PHP logic, database management with phpMyAdmin, and Docker-based local development.",
+      "I used this project to get more comfortable working inside WordPress rather than treating it as a ready-made page builder.",
+      "The local setup runs through Docker with WordPress, MariaDB, and phpMyAdmin. That gave me room to work on the theme, WooCommerce pages, PHP logic, and database content in one environment.",
     ],
 
     technologies: [
@@ -351,31 +344,28 @@ export const PROJECT_CASE_STUDIES: Record<
     ],
 
     contributions: [
-      "Built a custom responsive WordPress theme for the marketplace layout.",
-      "Set up WooCommerce product browsing, cart, checkout, and account pages.",
-      "Used MariaDB and phpMyAdmin to manage the WordPress database.",
-      "Connected WordPress, MariaDB, and phpMyAdmin through Docker for local development.",
-      "Created custom recipe collection features using PHP.",
+      "Created a responsive WordPress theme for the marketplace.",
+      "Configured the WooCommerce catalogue, cart, checkout, and account pages.",
+      "Managed the WordPress data with MariaDB and phpMyAdmin.",
+      "Set up the local WordPress environment with Docker.",
+      "Added custom recipe collection features with PHP.",
     ],
 
     highlights: [
       {
-        title:
-          "Custom WordPress theme",
+        title: "Custom theme",
         text:
-          "Designed and built a responsive theme for a global food marketplace.",
+          "The visual design and responsive layouts were created specifically for the marketplace.",
       },
       {
-        title:
-          "WooCommerce flow",
+        title: "WooCommerce shopping flow",
         text:
-          "Added product browsing, cart, checkout, and marketplace-style shop pages.",
+          "Visitors can browse products, manage a cart, and continue through the standard checkout experience.",
       },
       {
-        title:
-          "Docker setup",
+        title: "Docker-based setup",
         text:
-          "Ran WordPress, MariaDB, and phpMyAdmin together in a local Docker environment.",
+          "WordPress, MariaDB, and phpMyAdmin run together in a repeatable local development environment.",
       },
     ],
 
@@ -409,15 +399,14 @@ export const PROJECT_CASE_STUDIES: Record<
     role:
       "Frontend Developer & API Integration",
 
-    period:
-      "Portfolio Project",
+    period: "Portfolio Project",
 
     summary:
-      "AsteroidWatch is a polished NASA Near Earth Object dashboard built with HTML, CSS, and vanilla JavaScript. It lets users explore asteroid close approaches by date range or asteroid ID, then compare size, velocity, miss distance, and hazard status in a mission-log style interface.",
+      "AsteroidWatch is a space-themed dashboard for exploring NASA Near Earth Object data. Visitors can search by date range or asteroid ID and compare details such as size, speed, miss distance, and hazard status.",
 
     overview: [
-      "I redesigned this from a basic NASA API school project into a stronger portfolio piece with a darker space-themed visual direction, clearer dashboard sections, reusable JavaScript functions, and a more presentable user flow.",
-      "The app connects to NASA NeoWs data through an API route, supports date-range searching and asteroid ID lookup, shows dashboard metrics, renders detailed asteroid profile information, and stores the latest search in localStorage so results can persist between visits.",
+      "This began as a smaller school API exercise. I revisited it later and gave it a clearer dashboard structure, reusable JavaScript functions, and a visual style inspired by mission-control interfaces.",
+      "The latest search is saved locally, so visitors can return without immediately losing their results. Individual asteroid views also show orbital details and close-approach history.",
     ],
 
     technologies: [
@@ -431,32 +420,29 @@ export const PROJECT_CASE_STUDIES: Record<
     ],
 
     contributions: [
-      "Built a responsive dashboard interface for querying NASA Near Earth Object data.",
-      "Added date-range search and single asteroid lookup flows using JavaScript form handling.",
-      "Rendered asteroid cards with estimated diameter, close approach date, miss distance, velocity, and hazard status.",
-      "Created a detail view for individual asteroids with orbital data and close approach history.",
-      "Added localStorage support so the latest mission log can be restored on revisit.",
-      "Improved the visual design into a polished space-themed mission log suitable for a portfolio case study.",
+      "Created the responsive dashboard and search interface.",
+      "Added date-range searches and individual asteroid lookup.",
+      "Displayed size, velocity, miss distance, approach date, and hazard information.",
+      "Created detailed asteroid pages with orbital and approach data.",
+      "Saved the latest search with localStorage.",
+      "Redesigned the original school project with a focused space-themed interface.",
     ],
 
     highlights: [
       {
-        title:
-          "NASA data search",
+        title: "Two ways to explore",
         text:
-          "Users can scan a date range or look up a specific asteroid ID through the NASA NeoWs API.",
+          "Visitors can scan a range of dates or look up a specific asteroid when they already know its ID.",
       },
       {
-        title:
-          "Dashboard metrics",
+        title: "Useful comparisons",
         text:
-          "The UI summarizes total objects, hazardous objects, closest miss distance, and fastest velocity.",
+          "The dashboard brings the fastest, closest, and potentially hazardous objects into a readable summary.",
       },
       {
-        title:
-          "Mission-log UI",
+        title: "Mission-log style",
         text:
-          "The results are presented in a focused, space-themed interface with clear status labels and detail views.",
+          "The visual direction makes the scientific data feel approachable without hiding the important details.",
       },
     ],
 
@@ -487,19 +473,16 @@ export const PROJECT_CASE_STUDIES: Record<
     type:
       "Backend API · TypeScript / MySQL Project",
 
-    role:
-      "Backend Developer",
+    role: "Backend Developer",
 
-    period:
-      "Portfolio Project",
+    period: "Portfolio Project",
 
     summary:
-      "A backend API for an e-commerce system built with TypeScript, Node.js, Express, and MySQL. The API handles products, customers, orders, order items, authentication, and Stripe checkout session routes.",
+      "A TypeScript and Express API for the backend of an e-commerce application. It handles products, customers, orders, authentication, and Stripe checkout sessions, with its data stored in MySQL.",
 
     overview: [
-      "I revisited this school backend project and turned it into a more portfolio-ready API by cleaning up the project setup, connecting it to an online MySQL database, and deploying it as a live backend service.",
-      "The project focuses on REST API structure, database-backed routes, environment variables, authentication flow, and payment-session handling through Stripe routes.",
-      "For deployment, I moved the database from local XAMPP/phpMyAdmin to Aiven MySQL and hosted the Express API on Vercel so the project can be viewed online without needing my local machine running.",
+      "I returned to this school backend project and cleaned it up so it could run as a proper online service instead of only on my local machine.",
+      "The database was moved from local XAMPP and phpMyAdmin to Aiven MySQL, while the Express API was prepared for Vercel. The result is a live API that can be opened and tested directly.",
     ],
 
     technologies: [
@@ -514,32 +497,29 @@ export const PROJECT_CASE_STUDIES: Record<
     ],
 
     contributions: [
-      "Built REST API routes for products, customers, orders, and order items.",
-      "Connected the API to a MySQL database using environment variables for safer configuration.",
-      "Added user authentication routes for register, login, refresh token, and clearing tokens.",
-      "Included Stripe checkout session routes for hosted and embedded payment flows.",
-      "Migrated the local database from XAMPP/phpMyAdmin to Aiven MySQL so the API can work online.",
-      "Prepared the backend for Vercel deployment and cleaned TypeScript build issues for a smoother production deploy.",
+      "Created REST routes for products, customers, orders, and order items.",
+      "Connected the API to MySQL through environment-based configuration.",
+      "Added register, login, refresh-token, and token-clearing routes.",
+      "Added Stripe checkout-session routes for hosted and embedded payment flows.",
+      "Moved the database from a local setup to Aiven MySQL.",
+      "Resolved TypeScript and deployment issues before hosting the API on Vercel.",
     ],
 
     highlights: [
       {
-        title:
-          "Live backend API",
+        title: "A live API",
         text:
-          "The API can be tested online through routes such as /products, /customers, and /orders.",
+          "Routes such as /products, /customers, and /orders can be tested without running the project locally.",
       },
       {
-        title:
-          "Database-backed routes",
+        title: "MySQL-backed data",
         text:
-          "Product, customer, order, and order item data are stored and retrieved from MySQL.",
+          "Products, customers, orders, and order items are stored and retrieved through the database.",
       },
       {
-        title:
-          "Deployment upgrade",
+        title: "From local to online",
         text:
-          "The project was moved from local-only XAMPP testing to an online setup with Aiven MySQL and Vercel.",
+          "Moving the project to Aiven and Vercel turned a local school exercise into a shareable backend project.",
       },
     ],
 
@@ -565,8 +545,7 @@ export const PROJECT_CASE_STUDIES: Record<
   bookshop: {
     id: "bookshop",
 
-    title:
-      "Boklusen Bookshop",
+    title: "Boklusen Bookshop",
 
     type:
       "Group Project · Frontend/API Integration",
@@ -574,16 +553,14 @@ export const PROJECT_CASE_STUDIES: Record<
     role:
       "Frontend & API Integration Developer",
 
-    period:
-      "School Group Project",
+    period: "School Group Project",
 
     summary:
-      "A group project for an online bookshop built with HTML, CSS, JavaScript, Node.js, Express, and MongoDB. My main contribution was connecting the frontend to the backend API, fetching book data, and displaying the books dynamically on the site.",
+      "Boklusen is a group-built online bookshop. My main responsibility was connecting the frontend to the products API and making sure the book catalogue loaded and displayed correctly.",
 
     overview: [
-      "Boklusen is a fictional online bookshop where users can browse books, view product details, add books to the cart, and continue to a demo checkout flow.",
-      "This was a school group project with three group members. My main focus was making sure the frontend could fetch book data from the API and display the books correctly on the page.",
-      "I later updated the project for my portfolio by deploying the backend to Vercel, connecting it to MongoDB Atlas, adding more book data, translating the site to English, and adding a demo checkout flow.",
+      "The shop lets visitors browse books, open product details, add titles to a cart, and continue through a demo checkout.",
+      "For the portfolio version, I connected the project to a deployed backend and MongoDB Atlas, added more book data, translated the interface into English, and finished the demo shopping flow.",
     ],
 
     technologies: [
@@ -598,32 +575,29 @@ export const PROJECT_CASE_STUDIES: Record<
     ],
 
     contributions: [
-      "Worked mainly on displaying the books dynamically on the frontend using data from the backend API.",
-      "Connected the frontend to the products API and made sure book data loaded correctly.",
-      "Helped render book cards with information such as title, author, category, price, and cover image.",
-      "Worked on the user flow from browsing books to viewing product details and adding books to the cart.",
-      "Updated the project for portfolio use by connecting it to a deployed backend and adding a demo checkout flow.",
-      "Translated the site text to English to make it more accessible for portfolio visitors.",
+      "Connected the book catalogue to the backend products API.",
+      "Rendered book information such as title, author, category, price, and cover image.",
+      "Worked on the flow between browsing, product details, and the cart.",
+      "Connected the portfolio version to a deployed Express and MongoDB backend.",
+      "Added a demo checkout flow.",
+      "Translated the visible interface text into English.",
     ],
 
     highlights: [
       {
-        title:
-          "API-connected book display",
+        title: "API-powered catalogue",
         text:
-          "The book list is loaded dynamically from the backend API instead of being hardcoded in the frontend.",
+          "The frontend loads the available books from the backend instead of relying on hardcoded product cards.",
       },
       {
-        title:
-          "Cart and demo checkout",
+        title: "Shopping flow",
         text:
-          "Users can add books to the cart, review their order, and complete a demo checkout flow.",
+          "Visitors can move from the catalogue to a book page, add items to the cart, and try the demo checkout.",
       },
       {
-        title:
-          "Group project role",
+        title: "My role in the group",
         text:
-          "My main contribution was frontend/API integration and making sure the book data displayed correctly.",
+          "I focused mainly on the connection between the frontend and the API, including how the book data appeared on the page.",
       },
     ],
 
@@ -658,21 +632,15 @@ export const PROJECT_CASE_STUDIES: Record<
     role:
       "Frontend, Contact Page & Booking API Logic",
 
-    period:
-      "School Group Project",
+    period: "School Group Project",
 
     summary:
-      "A group restaurant booking project built with React, TypeScript, and Vite. My main contributions were creating the contact page and working on the booking system logic, including checking existing bookings from the API, showing the correct remaining availability for each selected date and time, and sending confirmed bookings back to the API so the booking data could update.",
+      "Seoulful Flavor is a group-built Korean BBQ website with an online reservation flow. I created the contact page and focused on the booking logic that checks existing reservations, calculates the remaining availability, and saves new bookings through the API.",
 
     overview: [
-      "Seoulful Flavor is a fictional Korean BBQ restaurant website with a table booking system.",
-      "This was a school group project built together with two other group members.",
-      "My main contributions were building the contact page and working on the booking system logic behind the reservation flow.",
-      "The booking system connects to a restaurant API to check existing bookings for a selected date and time.",
-      "Based on the API data, the app calculates how many seats or tables are still available instead of showing a static or guessed result.",
-      "For example, if a selected date and time has 14 spots left, the app should show that real remaining availability based on the current booking data.",
-      "When a user confirms a reservation, the booking request is sent back to the API so the reservation is stored and future availability checks can reflect the updated amount.",
-      "I also prepared the project for my portfolio by fixing TypeScript build errors, updating the admin demo login, changing the site title and favicon, fixing Vercel routing, and deploying it to Vercel.",
+      "The availability shown to a visitor is based on the bookings already stored for the selected date and time. It is calculated from the API data rather than shown as a fixed number.",
+      "When someone confirms a reservation, the new booking is sent back to the API. Future visitors then see availability based on the updated booking data.",
+      "I also prepared the project for my portfolio by resolving TypeScript and Vercel issues, updating its branding, and making the demo admin area easier to test.",
     ],
 
     technologies: [
@@ -686,49 +654,36 @@ export const PROJECT_CASE_STUDIES: Record<
     ],
 
     contributions: [
-      "Created the contact page for the restaurant website.",
-      "Worked on the booking system logic and API integration.",
-      "Connected the booking flow to the restaurant API.",
-      "Fetched existing bookings for a selected date and time.",
-      "Worked on calculating and showing the correct remaining availability based on current booking data.",
-      "Handled the logic for showing real availability, such as displaying 14 spots left when that was the actual amount available.",
-      "Sent confirmed booking requests back to the API so reservations could be stored.",
-      "Helped make sure newly created bookings affected future availability checks, so the system could deduct the booked amount correctly.",
-      "Handled parts of the reservation flow, including date selection, guest count, time slot selection, and customer details.",
-      "Helped make the project ready for deployment by fixing TypeScript build errors and Vercel routing issues.",
-      "Updated the admin demo login so hiring managers can test the admin booking view more easily.",
+      "Created the restaurant's contact page.",
+      "Connected the reservation flow to the restaurant API.",
+      "Fetched existing bookings for the selected date and time.",
+      "Calculated the remaining availability from the current booking data.",
+      "Sent confirmed reservations back to the API.",
+      "Worked on the date, guest-count, time-slot, and customer-detail steps.",
+      "Resolved TypeScript build and Vercel routing issues.",
+      "Updated the demo admin login for portfolio visitors.",
     ],
 
     highlights: [
       {
-        title:
-          "Booking availability logic",
+        title: "Live availability",
         text:
-          "The booking system checks existing reservations from the API and shows the real remaining availability for each selected date and time.",
+          "The remaining spots come from the current reservation data instead of a hardcoded number.",
       },
       {
-        title:
-          "Create booking request",
+        title: "Complete reservation flow",
         text:
-          "When a reservation is confirmed, the app sends the booking request back to the API so the booking is stored and future availability checks reflect the updated data.",
+          "Visitors can choose a date, guest count, and time before entering their details and confirming the booking.",
       },
       {
-        title:
-          "Real remaining seats",
+        title: "Contact and admin views",
         text:
-          "The app calculates availability from existing booking data, so users see the actual remaining amount instead of a static number.",
+          "I created the contact page and helped prepare the booking-management view for the portfolio demo.",
       },
       {
-        title:
-          "Contact page",
+        title: "Admin demo",
         text:
-          "I created the contact page as part of the restaurant website experience.",
-      },
-      {
-        title:
-          "Admin demo",
-        text:
-          "The project includes a demo admin view where bookings can be reviewed. Demo password: demo-admin.",
+          "Bookings can be reviewed in the demo admin area. Demo password: demo-admin.",
       },
     ],
 
@@ -754,94 +709,80 @@ export const PROJECT_CASE_STUDIES: Record<
 
 export const ABOUT_EXPERIENCE = [
   {
-    role:
-      "Fullstack Developer",
+    role: "Fullstack Developer",
 
-    company:
-      "PodManager.ai",
+    company: "PodManager.ai",
 
-    period:
-      "Sep 2025 — Apr 2026",
+    period: "Sep 2025 — Apr 2026",
 
     summary:
-      "Worked on an AI-powered platform for podcast and audio editing.",
+      "Joined the product team as a fullstack intern, mainly working on browser-based podcast editing and publishing tools.",
 
     points: [
-      "Built audio and video editing features in the browser using React and TypeScript.",
-      "Worked on waveform and video-timeline UI so editing felt smoother.",
-      "Helped with APIs for projects, clips, and editing effects.",
+      "Added waveform and video-timeline features with React and TypeScript.",
+      "Worked across the editor interface and its supporting APIs.",
+      "Improved existing components while following the team's review process.",
     ],
   },
   {
-    role:
-      "Quality Assurance Analyst",
+    role: "Quality Assurance Analyst",
 
-    company:
-      "OneForma.com",
+    company: "OneForma.com",
 
-    period:
-      "May 2026 — Ongoing",
+    period: "May 2026 — Ongoing",
 
     summary:
-      "Freelance QA work for AI and data-related projects.",
+      "Freelance quality-assurance work on multilingual AI and data projects.",
 
     points: [
-      "Reviewed multilingual data and checked that it followed project guidelines.",
-      "Focused on making the final results accurate, clear, and natural.",
+      "Review data against detailed project guidelines.",
+      "Check that the final content is accurate, clear, and natural.",
     ],
   },
   {
-    role:
-      "AI Data Specialist",
+    role: "AI Data Specialist",
 
-    company:
-      "Appen.com",
+    company: "Appen.com",
 
-    period:
-      "Jan 2026 — Ongoing",
+    period: "Jan 2026 — Ongoing",
 
     summary:
-      "Worked on AI training and evaluation tasks.",
+      "AI data work involving text, audio, transcription, and multilingual content.",
 
     points: [
-      "Worked with text, audio, and multilingual data.",
-      "Reviewed transcriptions, labels, and content quality for AI projects.",
+      "Review labels, transcriptions, and other training data.",
+      "Check content quality and consistency before submission.",
     ],
   },
   {
-    role:
-      "AI Trainer (Coder)",
+    role: "AI Trainer (Coder)",
 
-    company:
-      "Outlier",
+    company: "Outlier",
 
-    period:
-      "Sep 2024 — Jun 2025",
+    period: "Sep 2024 — Jun 2025",
 
     summary:
-      "Worked on coding-related AI training tasks.",
+      "Reviewed coding tasks used to train and evaluate AI models.",
 
     points: [
-      "Reviewed and improved coding responses for AI models.",
-      "Checked code quality, explanations, and problem-solving steps.",
+      "Checked code for correctness, clarity, and maintainability.",
+      "Improved technical explanations and problem-solving steps.",
     ],
   },
   {
     role:
       "Embedded Software Developer Intern",
 
-    company:
-      "Nodehill AB",
+    company: "Nodehill AB",
 
-    period:
-      "Jan 2024 — Apr 2024",
+    period: "Jan 2024 — Apr 2024",
 
     summary:
-      "Worked with embedded systems and wireless communication.",
+      "An embedded internship focused on long-range wireless communication.",
 
     points: [
-      "Built LoRa communication between two ESP32 microcontrollers.",
-      "Worked on a long-range wireless-communication setup.",
+      "Set up LoRa communication between two ESP32 microcontrollers.",
+      "Tested communication behaviour across a long-range wireless setup.",
     ],
   },
   {
@@ -851,23 +792,21 @@ export const ABOUT_EXPERIENCE = [
     company:
       "Sigma Industry Evolution",
 
-    period:
-      "Sep 2023 — Oct 2023",
+    period: "Sep 2023 — Oct 2023",
 
     summary:
-      "Worked on an embedded project in an engineering environment.",
+      "A hands-on embedded internship centred on an autonomous RC car.",
 
     points: [
-      "Built a self-driving RC car using Arduino and sensors.",
-      "Worked with C/C++ and Python for the car's control logic.",
+      "Assembled and programmed a self-driving car using Arduino and sensors.",
+      "Used C/C++ and Python for its control and testing logic.",
     ],
   },
 ];
 
 export const ABOUT_SKILL_GROUPS = [
   {
-    title:
-      "Languages",
+    title: "Languages",
 
     items: [
       "JavaScript",
@@ -880,8 +819,7 @@ export const ABOUT_SKILL_GROUPS = [
     ],
   },
   {
-    title:
-      "Frontend",
+    title: "Frontend",
 
     items: [
       "React",
@@ -891,8 +829,7 @@ export const ABOUT_SKILL_GROUPS = [
     ],
   },
   {
-    title:
-      "Backend",
+    title: "Backend",
 
     items: [
       "Node.js",
@@ -906,8 +843,7 @@ export const ABOUT_SKILL_GROUPS = [
     ],
   },
   {
-    title:
-      "Databases",
+    title: "Databases",
 
     items: [
       "SQL",
@@ -920,8 +856,7 @@ export const ABOUT_SKILL_GROUPS = [
     ],
   },
   {
-    title:
-      "Tools & Platforms",
+    title: "Tools & Platforms",
 
     items: [
       "Git",
@@ -935,8 +870,7 @@ export const ABOUT_SKILL_GROUPS = [
     ],
   },
   {
-    title:
-      "Design",
+    title: "Design",
 
     items: [
       "Figma",
@@ -945,8 +879,7 @@ export const ABOUT_SKILL_GROUPS = [
     ],
   },
   {
-    title:
-      "Embedded & Other",
+    title: "Embedded & Other",
 
     items: [
       "RTOS / Zephyr",
@@ -957,8 +890,7 @@ export const ABOUT_SKILL_GROUPS = [
     ],
   },
   {
-    title:
-      "Soft Skills",
+    title: "Soft Skills",
 
     items: [
       "Problem Solving",
@@ -1028,7 +960,7 @@ export const CREDIT_GROUPS = [
 
     items: [
       "Cozy Tokyo-night atmosphere",
-      "Soft color stories",
+      "Moody color palette",
       "Playful interactions",
       "Small environmental details",
       "Responsive interface design",
@@ -1040,8 +972,8 @@ export const CREDIT_GROUPS = [
     items: [
       "UI iteration",
       "Responsive layouts",
-      "Performance optimization",
-      "Asset optimization",
+      "Performance optimisation",
+      "Asset optimisation",
       "Cross-device testing",
     ],
   },

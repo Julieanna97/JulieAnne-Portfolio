@@ -198,20 +198,7 @@ export default function Preloader({
             onClick={handleEnter}
             disabled={entered}
           >
-            <span>
-              {entered
-                ? "Entering"
-                : "Enter"}
-            </span>
-
-            {!entered && (
-              <span
-                className="minimal-loader__arrow"
-                aria-hidden="true"
-              >
-                →
-              </span>
-            )}
+          <span>Enter</span>
           </button>
         )}
       </main>
@@ -445,21 +432,12 @@ export default function Preloader({
           align-items: center;
           justify-content: center;
 
-          gap: 13px;
-
           border: 0;
-          border-bottom: 1px solid
-            rgba(
-              255,
-              104,
-              183,
-              0.55
-            );
-
           outline: none;
+
           background: transparent;
 
-          padding: 0 7px;
+          padding: 0 12px;
 
           color: #fff7fd;
           cursor: pointer;
@@ -467,51 +445,58 @@ export default function Preloader({
           font: inherit;
           font-size: 13px;
           font-weight: 800;
+
           letter-spacing: 0.18em;
           text-transform: uppercase;
 
           transition:
             color 160ms ease,
-            border-color 160ms ease,
+            text-shadow 160ms ease,
             transform 160ms ease;
         }
 
         .minimal-loader__enter:hover:not(
             :disabled
           ) {
-          border-color: #69dfff;
           color: #ff9dce;
+
+          text-shadow:
+            0 0 14px
+            rgba(
+              255,
+              104,
+              183,
+              0.34
+            );
 
           transform:
             translateY(-2px);
         }
 
         .minimal-loader__enter:focus-visible {
-          outline: none;
+          outline:
+            2px solid
+            #69dfff;
+
+          outline-offset: 6px;
+
+          border-radius: 6px;
+
           color: #ff9dce;
-          border-bottom-color: #69dfff;
 
           text-shadow:
-            0 0 12px rgba(105, 223, 255, 0.28);
+            0 0 12px
+            rgba(
+              105,
+              223,
+              255,
+              0.28
+            );
         }
 
         .minimal-loader__enter:disabled {
           cursor: default;
           opacity: 0.6;
-        }
-
-        .minimal-loader__arrow {
-          color: #ff68b7;
-          font-size: 16px;
-
-          transition:
-            transform 160ms ease;
-        }
-
-        .minimal-loader__enter:hover
-          .minimal-loader__arrow {
-          transform:
-            translateX(3px);
         }
 
         .minimal-loader__footer {
@@ -598,8 +583,7 @@ export default function Preloader({
             opacity: 0.72;
           }
 
-          .minimal-loader__enter,
-          .minimal-loader__arrow {
+          .minimal-loader__enter {
             transition: none;
           }
         }

@@ -15,9 +15,26 @@ import {
   ABOUT_EXPERIENCE,
   ABOUT_SKILL_GROUPS,
   CREDIT_GROUPS,
-} from "../portfolioData";
+} from "@/components/hero-scene/portfolioData";
 
-import SceneReturnButton from "./SceneReturnButton";
+/*
+ * These checks prevent the modal from crashing if Next.js
+ * temporarily receives an outdated module during hot reload.
+ */
+const aboutExperienceItems =
+  Array.isArray(ABOUT_EXPERIENCE)
+    ? ABOUT_EXPERIENCE
+    : [];
+
+const aboutSkillGroups =
+  Array.isArray(ABOUT_SKILL_GROUPS)
+    ? ABOUT_SKILL_GROUPS
+    : [];
+
+const creditGroups =
+  Array.isArray(CREDIT_GROUPS)
+    ? CREDIT_GROUPS
+    : [];
 
 type SectionDetailModalProps = {
   detailId:
@@ -35,8 +52,8 @@ export default function SectionDetailModal({
   const reduceMotion =
     useReducedMotion();
 
-  const returnButtonRef =
-    useRef<HTMLButtonElement>(
+  const modalRef =
+    useRef<HTMLElement | null>(
       null,
     );
 
@@ -66,7 +83,7 @@ export default function SectionDetailModal({
 
     const focusTimer =
       window.setTimeout(() => {
-        returnButtonRef.current?.focus();
+        modalRef.current?.focus();
       }, 100);
 
     return () => {
@@ -162,6 +179,8 @@ export default function SectionDetailModal({
           onClick={onClose}
         >
           <motion.article
+            ref={modalRef}
+            tabIndex={-1}
             className="adventure-section-detail-modal"
             role="dialog"
             aria-modal="true"
@@ -178,18 +197,21 @@ export default function SectionDetailModal({
                     opacity: {
                       duration: 0.25,
                     },
+
                     scale: {
                       type: "spring",
                       stiffness: 230,
                       damping: 28,
                       mass: 0.9,
                     },
+
                     y: {
                       type: "spring",
                       stiffness: 230,
                       damping: 28,
                       mass: 0.9,
                     },
+
                     borderRadius: {
                       duration: 0.55,
                       ease: [
@@ -199,6 +221,7 @@ export default function SectionDetailModal({
                         1,
                       ],
                     },
+
                     clipPath: {
                       duration: 0.62,
                       ease: [
@@ -214,18 +237,6 @@ export default function SectionDetailModal({
               event.stopPropagation();
             }}
           >
-            <SceneReturnButton
-              buttonRef={
-                returnButtonRef
-              }
-              onClick={onClose}
-              ariaLabel={
-                isAbout
-                  ? "Return to the 3D model from About"
-                  : "Return to the 3D model from Credits"
-              }
-            />
-
             <motion.div
               className="adventure-full-view-body"
               initial={
@@ -250,9 +261,11 @@ export default function SectionDetailModal({
                 duration: reduceMotion
                   ? 0.12
                   : 0.48,
+
                 delay: reduceMotion
                   ? 0
                   : 0.18,
+
                 ease: [
                   0.22,
                   1,
@@ -263,15 +276,11 @@ export default function SectionDetailModal({
             >
               {isAbout ? (
                 <AboutDetail
-                  titleId={
-                    titleId
-                  }
+                  titleId={titleId}
                 />
               ) : (
                 <CreditsDetail
-                  titleId={
-                    titleId
-                  }
+                  titleId={titleId}
                 />
               )}
             </motion.div>
@@ -297,23 +306,21 @@ function AboutDetail({
         </h2>
 
         <strong>
-          Software Developer · Fullstack
-          · Embedded · AI
+          Software Developer ·
+          Fullstack · Embedded · AI
         </strong>
 
         <p className="adventure-section-detail-intro">
           I&apos;m a software developer
-          who enjoys building things
-          that are useful, easy to use,
-          and nice to look at. I&apos;ve
-          worked with fullstack
-          applications, embedded
-          systems, and AI-related
-          projects. I enjoy combining
-          clean code with small design
-          details that make an
-          application feel more
-          considered and personal.
+          who likes making useful
+          products feel clear and
+          enjoyable to use. My
+          background covers fullstack
+          web development, embedded
+          systems, and AI-related work.
+          I&apos;m happiest when I can
+          combine solid technical work
+          with thoughtful design.
         </p>
       </header>
 
@@ -326,13 +333,14 @@ function AboutDetail({
           <h3>Frontend</h3>
 
           <p>
-            I build responsive
+            I create responsive
             interfaces with React,
-            Next.js, TypeScript, and
-            Tailwind. I care about
-            clear structure, smooth
-            interactions, and
-            accessible experiences.
+            Next.js, and TypeScript. I
+            pay attention to structure,
+            accessibility, and the small
+            interactions that make a
+            page feel comfortable to
+            use.
           </p>
         </article>
 
@@ -344,12 +352,12 @@ function AboutDetail({
           <h3>Backend</h3>
 
           <p>
-            I work with Node.js,
-            Express, FastAPI, and
-            Flask. I enjoy building
-            APIs, connecting databases,
-            and organizing application
-            logic.
+            On the backend, I work with
+            APIs, databases,
+            authentication, and
+            application logic using
+            tools such as Node.js,
+            Express, FastAPI, and Flask.
           </p>
         </article>
 
@@ -363,10 +371,13 @@ function AboutDetail({
           </h3>
 
           <p>
-            I also enjoy 3D web
-            experiences, animation,
-            embedded projects, C/C++,
-            and Python.
+            I also enjoy projects that
+            move beyond a standard
+            website, including 3D
+            scenes, animation,
+            electronics, embedded
+            programming, C/C++, and
+            Python.
           </p>
         </article>
       </section>
@@ -374,75 +385,98 @@ function AboutDetail({
       <section className="adventure-section-block">
         <div className="adventure-section-heading">
           <p>Experience</p>
-          <h3>Work Experience</h3>
+
+          <h3>
+            Work Experience
+          </h3>
         </div>
 
         <div className="adventure-experience-list">
-          {ABOUT_EXPERIENCE.map(
-            (
-              experience,
-              index,
-            ) => (
-              <article
-                key={`${experience.company}-${experience.period}`}
-                className="adventure-experience-card"
-              >
-                <span className="adventure-experience-index">
-                  {String(
-                    index + 1,
-                  ).padStart(
-                    2,
-                    "0",
-                  )}
-                </span>
+          {aboutExperienceItems.length >
+          0 ? (
+            aboutExperienceItems.map(
+              (
+                experience,
+                index,
+              ) => {
+                const experiencePoints =
+                  Array.isArray(
+                    experience.points,
+                  )
+                    ? experience.points
+                    : [];
 
-                <div className="adventure-experience-heading">
-                  <div>
-                    <h4>
-                      {
-                        experience.role
-                      }
-                    </h4>
+                return (
+                  <article
+                    key={`${experience.company}-${experience.period}`}
+                    className="adventure-experience-card"
+                  >
+                    <span className="adventure-experience-index">
+                      {String(
+                        index + 1,
+                      ).padStart(
+                        2,
+                        "0",
+                      )}
+                    </span>
 
-                    <strong>
-                      {
-                        experience.company
-                      }
-                    </strong>
-                  </div>
+                    <div className="adventure-experience-heading">
+                      <div>
+                        <h4>
+                          {
+                            experience.role
+                          }
+                        </h4>
 
-                  <time>
-                    {
-                      experience.period
-                    }
-                  </time>
-                </div>
+                        <strong>
+                          {
+                            experience.company
+                          }
+                        </strong>
+                      </div>
 
-                <p>
-                  {
-                    experience.summary
-                  }
-                </p>
-
-                <ul>
-                  {experience.points.map(
-                    (
-                      point,
-                    ) => (
-                      <li
-                        key={
-                          point
-                        }
-                      >
+                      <time>
                         {
-                          point
+                          experience.period
                         }
-                      </li>
-                    ),
-                  )}
-                </ul>
-              </article>
-            ),
+                      </time>
+                    </div>
+
+                    <p>
+                      {
+                        experience.summary
+                      }
+                    </p>
+
+                    {experiencePoints.length >
+                      0 && (
+                      <ul>
+                        {experiencePoints.map(
+                          (
+                            point,
+                          ) => (
+                            <li
+                              key={
+                                point
+                              }
+                            >
+                              {
+                                point
+                              }
+                            </li>
+                          ),
+                        )}
+                      </ul>
+                    )}
+                  </article>
+                );
+              },
+            )
+          ) : (
+            <p className="adventure-section-empty-state">
+              Experience details are
+              currently being updated.
+            </p>
           )}
         </div>
       </section>
@@ -450,45 +484,51 @@ function AboutDetail({
       <section className="adventure-section-block">
         <div className="adventure-section-heading">
           <p>Capabilities</p>
+
           <h3>Skills</h3>
         </div>
 
         <div className="adventure-skill-grid">
-          {ABOUT_SKILL_GROUPS.map(
-            (
-              group,
-            ) => (
-              <article
-                key={
-                  group.title
-                }
-                className="adventure-skill-card"
-              >
-                <h4>
-                  {
-                    group.title
-                  }
-                </h4>
+          {aboutSkillGroups.length >
+          0 ? (
+            aboutSkillGroups.map(
+              (group) => {
+                const groupItems =
+                  Array.isArray(
+                    group.items,
+                  )
+                    ? group.items
+                    : [];
 
-                <div className="adventure-case-study-tags">
-                  {group.items.map(
-                    (
-                      item,
-                    ) => (
-                      <span
-                        key={
-                          item
-                        }
-                      >
-                        {
-                          item
-                        }
-                      </span>
-                    ),
-                  )}
-                </div>
-              </article>
-            ),
+                return (
+                  <article
+                    key={group.title}
+                    className="adventure-skill-card"
+                  >
+                    <h4>
+                      {group.title}
+                    </h4>
+
+                    <div className="adventure-case-study-tags">
+                      {groupItems.map(
+                        (item) => (
+                          <span
+                            key={item}
+                          >
+                            {item}
+                          </span>
+                        ),
+                      )}
+                    </div>
+                  </article>
+                );
+              },
+            )
+          ) : (
+            <p className="adventure-section-empty-state">
+              Skill details are
+              currently being updated.
+            </p>
           )}
         </div>
       </section>
@@ -496,6 +536,7 @@ function AboutDetail({
       <section className="adventure-section-block">
         <div className="adventure-section-heading">
           <p>Learning</p>
+
           <h3>Education</h3>
         </div>
 
@@ -568,6 +609,7 @@ function AboutDetail({
       <section className="adventure-section-block adventure-connect-section">
         <div className="adventure-section-heading">
           <p>Contact</p>
+
           <h3>
             Let&apos;s Connect
           </h3>
@@ -634,14 +676,13 @@ function CreditsDetail({
         </h2>
 
         <p className="adventure-section-detail-intro">
-          Portfolio concept and
-          implementation by Julie Anne
-          Cantillep. This interactive
-          environment combines 3D
-          development, animation,
-          responsive interface work,
-          music, and small
-          environmental details.
+          I designed and built this
+          portfolio as a small
+          interactive world rather than
+          a standard page. It brings
+          together 3D, animation, sound,
+          and the web tools I enjoy
+          working with.
         </p>
       </header>
 
@@ -650,8 +691,7 @@ function CreditsDetail({
           <p>Attribution</p>
 
           <h3>
-            Scene, model & music
-            credits
+            Scene, model & music credits
           </h3>
         </div>
 
@@ -668,9 +708,8 @@ function CreditsDetail({
 
             <p>
               3D scene by Diosmel, used
-              under the Creative
-              Commons Attribution 4.0
-              license.
+              under the Creative Commons
+              Attribution 4.0 license.
             </p>
           </article>
 
@@ -699,9 +738,9 @@ function CreditsDetail({
             </h4>
 
             <p>
-              Sakura Tree model
-              created by dimal965 and
-              published on Sketchfab.
+              Sakura Tree model created
+              by dimal965 and published
+              on Sketchfab.
             </p>
           </article>
         </div>
@@ -718,41 +757,45 @@ function CreditsDetail({
         </div>
 
         <div className="adventure-skill-grid">
-          {CREDIT_GROUPS.map(
-            (
-              group,
-            ) => (
-              <article
-                key={
-                  group.title
-                }
-                className="adventure-skill-card"
-              >
-                <h4>
-                  {
-                    group.title
-                  }
-                </h4>
+          {creditGroups.length > 0 ? (
+            creditGroups.map(
+              (group) => {
+                const groupItems =
+                  Array.isArray(
+                    group.items,
+                  )
+                    ? group.items
+                    : [];
 
-                <ul>
-                  {group.items.map(
-                    (
-                      item,
-                    ) => (
-                      <li
-                        key={
-                          item
-                        }
-                      >
-                        {
-                          item
-                        }
-                      </li>
-                    ),
-                  )}
-                </ul>
-              </article>
-            ),
+                return (
+                  <article
+                    key={group.title}
+                    className="adventure-skill-card"
+                  >
+                    <h4>
+                      {group.title}
+                    </h4>
+
+                    <ul>
+                      {groupItems.map(
+                        (item) => (
+                          <li
+                            key={item}
+                          >
+                            {item}
+                          </li>
+                        ),
+                      )}
+                    </ul>
+                  </article>
+                );
+              },
+            )
+          ) : (
+            <p className="adventure-section-empty-state">
+              Credit details are
+              currently being updated.
+            </p>
           )}
         </div>
       </section>
@@ -772,13 +815,16 @@ function CreditsDetail({
               01
             </p>
 
-            <h4>Cozy spaces</h4>
+            <h4>
+              Cozy spaces
+            </h4>
 
             <p>
-              A small environment that
-              feels lived-in rather
-              than a standard
-              portfolio landing page.
+              I wanted the portfolio to
+              feel like a place you can
+              look around, not just
+              another page to scroll
+              through.
             </p>
           </article>
 
@@ -788,15 +834,16 @@ function CreditsDetail({
             </p>
 
             <h4>
-              Soft color stories
+              Moody color palette
             </h4>
 
             <p>
-              Warm lights, pink
-              reflections, dark city
-              tones, and playful
-              accents throughout the
-              interface.
+              The dark city tones, warm
+              lights, and pink
+              reflections help the 3D
+              scene and interface feel
+              like they belong to the
+              same world.
             </p>
           </article>
 
@@ -811,9 +858,11 @@ function CreditsDetail({
 
             <p>
               Camera movement, scene
-              markers, animation,
-              sound, and responsive
-              details.
+              markers, sound, and small
+              animations give visitors
+              something to discover
+              without getting in the
+              way.
             </p>
           </article>
         </div>
