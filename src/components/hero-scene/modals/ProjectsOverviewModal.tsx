@@ -2,7 +2,9 @@
 
 import {
   useEffect,
+  useMemo,
   useRef,
+  useState,
 } from "react";
 
 import {
@@ -30,6 +32,156 @@ type ProjectsOverviewModalProps = {
   ) => void;
 };
 
+const PROJECT_FILTERS = [
+  {
+    id: "all",
+    label: "All",
+  },
+  {
+    id: "fullstack",
+    label: "Fullstack",
+  },
+  {
+    id: "embedded",
+    label: "Embedded",
+  },
+  {
+    id: "ecommerce",
+    label: "E-commerce",
+  },
+  {
+    id: "wordpress",
+    label: "WordPress",
+  },
+  {
+    id: "backend",
+    label: "Backend / API",
+  },
+] as const;
+
+type ProjectFilterId =
+  (typeof PROJECT_FILTERS)[number]["id"];
+
+function getProjectFilterIds(
+  project: ProjectCaseStudy,
+): ProjectFilterId[] {
+  const searchableText = [
+    project.title,
+    project.type,
+    project.role,
+    project.summary,
+    ...(Array.isArray(
+      project.technologies,
+    )
+      ? project.technologies
+      : []),
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  const filters =
+    new Set<ProjectFilterId>(["all"]);
+
+  if (
+    searchableText.includes(
+      "embedded",
+    ) ||
+    searchableText.includes(
+      "robotics",
+    ) ||
+    searchableText.includes(
+      "arduino",
+    ) ||
+    searchableText.includes(
+      "autonomous",
+    )
+  ) {
+    filters.add("embedded");
+  }
+
+  if (
+    searchableText.includes(
+      "e-commerce",
+    ) ||
+    searchableText.includes(
+      "ecommerce",
+    ) ||
+    searchableText.includes(
+      "woocommerce",
+    ) ||
+    searchableText.includes(
+      "store",
+    ) ||
+    searchableText.includes(
+      "shopping",
+    ) ||
+    searchableText.includes(
+      "stripe",
+    )
+  ) {
+    filters.add("ecommerce");
+  }
+
+  if (
+    searchableText.includes(
+      "wordpress",
+    ) ||
+    searchableText.includes(
+      "woocommerce",
+    ) ||
+    searchableText.includes(
+      "php",
+    )
+  ) {
+    filters.add("wordpress");
+  }
+
+  if (
+    searchableText.includes(
+      "backend",
+    ) ||
+    searchableText.includes(
+      "rest api",
+    ) ||
+    searchableText.includes(
+      "api",
+    ) ||
+    searchableText.includes(
+      "fastapi",
+    ) ||
+    searchableText.includes(
+      "express",
+    )
+  ) {
+    filters.add("backend");
+  }
+
+  if (
+    searchableText.includes(
+      "fullstack",
+    ) ||
+    searchableText.includes(
+      "next.js",
+    ) ||
+    searchableText.includes(
+      "react",
+    ) ||
+    searchableText.includes(
+      "mongodb",
+    ) ||
+    searchableText.includes(
+      "mysql",
+    ) ||
+    searchableText.includes(
+      "node.js",
+    )
+  ) {
+    filters.add("fullstack");
+  }
+
+  return Array.from(filters);
+}
+
 export default function ProjectsOverviewModal({
   open,
   onClose,
@@ -43,10 +195,37 @@ export default function ProjectsOverviewModal({
       null,
     );
 
+  const [
+    activeFilter,
+    setActiveFilter,
+  ] = useState<ProjectFilterId>(
+    "all",
+  );
+
   const projects =
-    Object.values(
-      PROJECT_CASE_STUDIES,
-    ) as ProjectCaseStudy[];
+    useMemo(
+      () =>
+        Object.values(
+          PROJECT_CASE_STUDIES,
+        ) as ProjectCaseStudy[],
+      [],
+    );
+
+  const filteredProjects =
+    useMemo(() => {
+      if (activeFilter === "all") {
+        return projects;
+      }
+
+      return projects.filter((project) =>
+        getProjectFilterIds(
+          project,
+        ).includes(activeFilter),
+      );
+    }, [
+      activeFilter,
+      projects,
+    ]);
 
   useEffect(() => {
     if (!open) {
@@ -90,10 +269,13 @@ export default function ProjectsOverviewModal({
         focusTimer,
       );
     };
-  }, [
-    onClose,
-    open,
-  ]);
+  }, [onClose, open]);
+
+  useEffect(() => {
+    if (!open) {
+      setActiveFilter("all");
+    }
+  }, [open]);
 
   return (
     <AnimatePresence mode="wait">
@@ -124,7 +306,7 @@ export default function ProjectsOverviewModal({
           onClick={onClose}
         >
           <motion.article
-            className="adventure-project-index-modal"
+            className="adventure-project-index-modal adventure-project-index-modal--archive"
             role="dialog"
             aria-modal="true"
             aria-labelledby="adventure-project-index-title"
@@ -252,149 +434,297 @@ export default function ProjectsOverviewModal({
                 ],
               }}
             >
-              <header className="adventure-project-index-header">
-                <p>
-                  Selected work
-                </p>
+              <div className="adventure-project-archive-shell">
+                <header className="adventure-project-index-header adventure-project-index-header--archive">
+                  <p>
+                    Selected work
+                  </p>
 
-                <h2 id="adventure-project-index-title">
-                  Projects
-                </h2>
+                  <h2 id="adventure-project-index-title">
+                    Projects
+                  </h2>
 
-                <strong>
-                  Fullstack · Embedded
-                  · Creative Development
-                </strong>
+                  <span className="adventure-project-index-subtitle">
+                    Archive
+                  </span>
 
-                <p className="adventure-project-index-intro">
-                  Explore applications,
-                  experiments, embedded
-                  systems, and production
-                  work. Select a project
-                  to open its full case
-                  study.
-                </p>
-              </header>
+                  <p className="adventure-project-index-intro">
+                    A collection of
+                    fullstack apps,
+                    embedded systems,
+                    e-commerce builds,
+                    and creative
+                    development work.
+                    Choose a project to
+                    open its full case
+                    study.
+                  </p>
+                </header>
 
-              <section
-                className="adventure-project-index-grid"
-                aria-label="Project list"
-              >
-                {projects.map(
-                  (
-                    project,
-                    index,
-                  ) => {
-                    const coverImage =
-                      project.images[0];
+                <section className="adventure-project-filter-bar">
+                  <div
+                    className="adventure-project-filter-row"
+                    aria-label="Project filters"
+                    role="tablist"
+                  >
+                    {PROJECT_FILTERS.map(
+                      (
+                        filter,
+                      ) => {
+                        const isActive =
+                          activeFilter ===
+                          filter.id;
 
-                    return (
-                      <motion.button
-                        key={project.id}
-                        type="button"
-                        className="adventure-project-index-card"
-                        onClick={() => {
-                          onProjectSelect(
-                            project.id,
+                        return (
+                          <button
+                            key={filter.id}
+                            type="button"
+                            role="tab"
+                            aria-selected={
+                              isActive
+                            }
+                            className={[
+                              "adventure-project-filter-tab",
+                              isActive
+                                ? "is-active"
+                                : "",
+                            ]
+                              .filter(
+                                Boolean,
+                              )
+                              .join(" ")}
+                            onClick={() => {
+                              setActiveFilter(
+                                filter.id,
+                              );
+                            }}
+                          >
+                            {
+                              filter.label
+                            }
+                          </button>
+                        );
+                      },
+                    )}
+                  </div>
+
+                  <p className="adventure-project-filter-status">
+                    Showing{" "}
+                    <strong>
+                      {
+                        filteredProjects.length
+                      }
+                    </strong>{" "}
+                    of{" "}
+                    <strong>
+                      {projects.length}
+                    </strong>{" "}
+                    projects
+                  </p>
+                </section>
+
+                <section
+                  className="adventure-project-archive-grid"
+                  aria-label="Project list"
+                >
+                  {filteredProjects.length >
+                  0 ? (
+                    filteredProjects.map(
+                      (
+                        project,
+                        index,
+                      ) => {
+                        const coverImage =
+                          project
+                            .images?.[0];
+
+                        const projectFilters =
+                          getProjectFilterIds(
+                            project,
+                          ).filter(
+                            (
+                              id,
+                            ) =>
+                              id !==
+                              "all",
                           );
-                        }}
-                        whileHover={{
-                          y: -6,
-                          scale: 1.012,
-                        }}
-                        whileTap={{
-                          scale: 0.985,
-                        }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 340,
-                          damping: 26,
-                        }}
-                      >
-                        <div className="adventure-project-index-image-wrap">
-                          {coverImage ? (
-                            <img
-                              src={
-                                coverImage
-                              }
-                              alt=""
-                              className="adventure-project-index-image"
-                            />
-                          ) : (
-                            <div className="adventure-project-index-placeholder">
-                              <span>
-                                ♥
+
+                        return (
+                          <motion.button
+                            key={
+                              project.id
+                            }
+                            type="button"
+                            className="adventure-project-archive-card"
+                            onClick={() => {
+                              onProjectSelect(
+                                project.id,
+                              );
+                            }}
+                            whileHover={
+                              reduceMotion
+                                ? undefined
+                                : {
+                                    y: -6,
+                                    scale:
+                                      1.01,
+                                  }
+                            }
+                            whileTap={
+                              reduceMotion
+                                ? undefined
+                                : {
+                                    scale:
+                                      0.99,
+                                  }
+                            }
+                            transition={{
+                              type: "spring",
+                              stiffness: 340,
+                              damping: 28,
+                            }}
+                            aria-label={`Open case study for ${project.title}`}
+                          >
+                            <div className="adventure-project-archive-image-wrap">
+                              {coverImage ? (
+                                <img
+                                  src={
+                                    coverImage
+                                  }
+                                  alt={`${project.title} preview`}
+                                  className="adventure-project-archive-image"
+                                />
+                              ) : (
+                                <div className="adventure-project-archive-placeholder">
+                                  <span>
+                                    JA
+                                  </span>
+                                </div>
+                              )}
+
+                              <span className="adventure-project-archive-number">
+                                {String(
+                                  index +
+                                    1,
+                                ).padStart(
+                                  2,
+                                  "0",
+                                )}
                               </span>
                             </div>
-                          )}
 
-                          <span className="adventure-project-index-number">
-                            {String(
-                              index + 1,
-                            ).padStart(
-                              2,
-                              "0",
-                            )}
-                          </span>
-                        </div>
+                            <div className="adventure-project-archive-copy">
+                              <div className="adventure-project-archive-meta">
+                                <span>
+                                  {
+                                    project.period
+                                  }
+                                </span>
 
-                        <div className="adventure-project-index-copy">
-                          <p>
-                            {
-                              project.type
-                            }
-                          </p>
+                                <strong>
+                                  {
+                                    project.role
+                                  }
+                                </strong>
+                              </div>
 
-                          <h3>
-                            {
-                              project.title
-                            }
-                          </h3>
+                              <p className="adventure-project-archive-type">
+                                {
+                                  project.type
+                                }
+                              </p>
 
-                          <span className="adventure-project-index-summary">
-                            {
-                              project.summary
-                            }
-                          </span>
+                              <h3>
+                                {
+                                  project.title
+                                }
+                              </h3>
 
-                          <div className="adventure-project-index-tags">
-                            {project.technologies
-                              .slice(
-                                0,
-                                4,
-                              )
-                              .map(
-                                (
-                                  technology,
-                                ) => (
-                                  <span
-                                    key={
-                                      technology
-                                    }
-                                  >
-                                    {
-                                      technology
-                                    }
-                                  </span>
-                                ),
-                              )}
-                          </div>
+                              <p className="adventure-project-archive-summary">
+                                {
+                                  project.summary
+                                }
+                              </p>
 
-                          <strong className="adventure-project-index-open">
-                            Open case study
+                              <div className="adventure-project-archive-tags">
+                                {projectFilters
+                                  .slice(
+                                    0,
+                                    2,
+                                  )
+                                  .map(
+                                    (
+                                      filterId,
+                                    ) => {
+                                      const filterLabel =
+                                        PROJECT_FILTERS.find(
+                                          (
+                                            item,
+                                          ) =>
+                                            item.id ===
+                                            filterId,
+                                        )
+                                          ?.label ??
+                                        filterId;
 
-                            <span
-                              aria-hidden="true"
-                            >
-                              →
-                            </span>
-                          </strong>
-                        </div>
-                      </motion.button>
-                    );
-                  },
-                )}
-              </section>
+                                      return (
+                                        <span
+                                          key={
+                                            filterId
+                                          }
+                                        >
+                                          {
+                                            filterLabel
+                                          }
+                                        </span>
+                                      );
+                                    },
+                                  )}
+
+                                {project.technologies
+                                  .slice(
+                                    0,
+                                    3,
+                                  )
+                                  .map(
+                                    (
+                                      tech,
+                                    ) => (
+                                      <span
+                                        key={
+                                          tech
+                                        }
+                                      >
+                                        {
+                                          tech
+                                        }
+                                      </span>
+                                    ),
+                                  )}
+                              </div>
+
+                              <strong className="adventure-project-archive-open">
+                                Open case study
+                                <span aria-hidden="true">
+                                  →
+                                </span>
+                              </strong>
+                            </div>
+                          </motion.button>
+                        );
+                      },
+                    )
+                  ) : (
+                    <div className="adventure-project-empty-state">
+                      <p>
+                        No projects are
+                        currently shown
+                        for this filter.
+                      </p>
+                    </div>
+                  )}
+                </section>
+              </div>
             </motion.div>
           </motion.article>
 
@@ -406,13 +736,12 @@ export default function ProjectsOverviewModal({
 
               display: grid;
 
-              background:
-                rgba(
-                  4,
-                  2,
-                  12,
-                  0.76
-                );
+              background: rgba(
+                4,
+                2,
+                12,
+                0.76
+              );
 
               place-items: center;
             }
@@ -420,41 +749,93 @@ export default function ProjectsOverviewModal({
             .adventure-project-index-modal {
               position: absolute;
               inset: 0;
-
               overflow: hidden;
+            }
+
+            .adventure-project-index-modal--archive {
+              color: #f4eeff;
 
               background:
                 radial-gradient(
-                  circle at 82% 14%,
+                  circle at 88% 10%,
                   rgba(
                     255,
-                    75,
-                    174,
-                    0.16
-                  ),
-                  transparent 32%
-                ),
-                radial-gradient(
-                  circle at 15% 86%,
-                  rgba(
-                    140,
-                    91,
-                    255,
+                    63,
+                    159,
                     0.14
                   ),
-                  transparent 36%
+                  transparent 24%
+                ),
+                radial-gradient(
+                  circle at 8% 90%,
+                  rgba(
+                    154,
+                    92,
+                    255,
+                    0.18
+                  ),
+                  transparent 30%
+                ),
+                radial-gradient(
+                  circle at 52% 110%,
+                  rgba(
+                    105,
+                    223,
+                    255,
+                    0.07
+                  ),
+                  transparent 28%
                 ),
                 linear-gradient(
-                  145deg,
-                  #160b24,
-                  #080713 58%,
-                  #11091d
+                  180deg,
+                  #0b081a 0%,
+                  #080612 48%,
+                  #03030a 100%
                 );
+            }
 
-              color: #fff7fd;
+            .adventure-project-index-modal--archive::before {
+              content: "";
+
+              position: absolute;
+              inset:
+                0
+                0
+                auto
+                0;
+              z-index: 0;
+
+              height: 8px;
+
+              background: linear-gradient(
+                90deg,
+                #9a5cff,
+                #ff4fb1,
+                #ff8ec9,
+                #69dfff
+              );
+
+              box-shadow:
+                0 0 24px
+                  rgba(
+                    255,
+                    79,
+                    177,
+                    0.34
+                  ),
+                0 0 46px
+                  rgba(
+                    154,
+                    92,
+                    255,
+                    0.14
+                  );
             }
 
             .adventure-project-index-body {
+              position: relative;
+              z-index: 1;
+
               width: 100%;
               height: 100%;
 
@@ -471,49 +852,58 @@ export default function ProjectsOverviewModal({
                 )
                 clamp(
                   22px,
-                  6vw,
-                  96px
+                  5vw,
+                  78px
                 )
-                80px;
+                92px;
 
               scrollbar-color:
                 #ff68b7
                 transparent;
             }
 
-            .adventure-project-index-header {
+            .adventure-project-archive-shell {
               width: min(
-                850px,
+                100%,
+                1320px
+              );
+              margin: 0 auto;
+            }
+
+            .adventure-project-index-header--archive {
+              width: min(
+                840px,
                 100%
               );
-
               margin:
                 0 auto
                 clamp(
-                  34px,
+                  40px,
                   6vh,
-                  64px
+                  72px
                 );
 
               text-align: center;
             }
 
-            .adventure-project-index-header
+            .adventure-project-index-header--archive
               > p:first-child {
-              margin: 0 0 12px;
+              margin: 0;
 
-              color: #ff79bf;
+              color: #ff91c7;
 
-              font-size: 10px;
+              font-size: 12px;
               font-weight: 900;
-
               letter-spacing: 0.18em;
               text-transform: uppercase;
             }
 
-            .adventure-project-index-header
+            .adventure-project-index-header--archive
               h2 {
-              margin: 0;
+              margin:
+                76px 0 0;
+
+              color: #f4eeff;
 
               font-family:
                 var(
@@ -521,91 +911,488 @@ export default function ProjectsOverviewModal({
                 ),
                 Arial,
                 sans-serif;
-
               font-size: clamp(
-                3rem,
+                3.3rem,
                 8vw,
-                7rem
+                7.2rem
               );
-
               font-weight: 880;
-              letter-spacing: -0.065em;
+              letter-spacing: -0.07em;
               line-height: 0.92;
+
+              text-shadow:
+                0 0 28px
+                  rgba(
+                    255,
+                    63,
+                    159,
+                    0.12
+                  ),
+                0 0 46px
+                  rgba(
+                    154,
+                    92,
+                    255,
+                    0.08
+                  );
             }
 
-            .adventure-project-index-header
-              > strong {
+            .adventure-project-index-subtitle {
               display: block;
 
-              margin-top: 20px;
+              margin-top: 18px;
 
-              color: #e5b5ff;
-
-              font-size: clamp(
-                0.72rem,
-                1.2vw,
-                0.92rem
+              color: rgba(
+                244,
+                238,
+                255,
+                0.48
               );
 
+              font-size: 12px;
+              font-weight: 800;
               letter-spacing: 0.08em;
               text-transform: uppercase;
             }
 
             .adventure-project-index-intro {
-              max-width: 620px;
+              max-width: 760px;
 
-              margin: 20px auto 0;
+              margin:
+                28px auto 0;
 
-              color:
-                rgba(
-                  244,
-                  238,
-                  255,
-                  0.72
-                );
-
-              font-size: clamp(
-                0.92rem,
-                1.4vw,
-                1.06rem
+              color: rgba(
+                244,
+                238,
+                255,
+                0.74
               );
 
-              line-height: 1.75;
+              font-size: 15px;
+              line-height: 1.85;
             }
 
-            .adventure-project-index-grid {
-              display: grid;
+            .adventure-project-filter-bar {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 16px;
 
-              width: min(
-                1320px,
-                100%
+              margin-bottom: 52px;
+            }
+
+            .adventure-project-filter-row {
+              display: flex;
+              flex-wrap: wrap;
+              justify-content: center;
+              gap: 12px 14px;
+            }
+
+            .adventure-project-filter-tab {
+              border: none;
+              border-bottom: 2px solid
+                transparent;
+
+              background: transparent;
+              padding:
+                6px
+                4px
+                10px;
+
+              color: rgba(
+                202,
+                168,
+                255,
+                0.72
               );
 
+              font-family: inherit;
+              font-size: clamp(
+                0.95rem,
+                1.5vw,
+                1.18rem
+              );
+              font-weight: 800;
+              letter-spacing: 0.01em;
+
+              cursor: pointer;
+              transition:
+                color 180ms ease,
+                border-color
+                  180ms ease,
+                text-shadow
+                  180ms ease;
+            }
+
+            .adventure-project-filter-tab:hover,
+            .adventure-project-filter-tab:focus-visible {
+              color: #f4eeff;
+            }
+
+            .adventure-project-filter-tab.is-active {
+              border-bottom-color:
+                #ff68b7;
+
+              color: #ff9ed0;
+
+              text-shadow:
+                0 0 16px
+                  rgba(
+                    255,
+                    99,
+                    180,
+                    0.28
+                  );
+            }
+
+            .adventure-project-filter-status {
+              margin: 0;
+
+              color: rgba(
+                244,
+                238,
+                255,
+                0.62
+              );
+
+              font-size: 12px;
+              font-weight: 700;
+              letter-spacing: 0.06em;
+              text-transform: uppercase;
+            }
+
+            .adventure-project-filter-status
+              strong {
+              color: #f4eeff;
+            }
+
+            .adventure-project-archive-grid {
+              display: grid;
               grid-template-columns:
                 repeat(
-                  3,
-                  minmax(
-                    0,
-                    1fr
+                  2,
+                  minmax(0, 1fr)
+                );
+              gap:
+                32px
+                36px;
+            }
+
+            .adventure-project-archive-card {
+              display: flex;
+              flex-direction: column;
+
+              border:
+                1px solid
+                rgba(
+                  232,
+                  144,
+                  255,
+                  0.16
+                );
+              border-radius: 28px;
+
+              background:
+                radial-gradient(
+                  circle at 100% 0,
+                  rgba(
+                    154,
+                    92,
+                    255,
+                    0.18
+                  ),
+                  transparent 42%
+                ),
+                linear-gradient(
+                  145deg,
+                  rgba(
+                    31,
+                    21,
+                    61,
+                    0.9
+                  ),
+                  rgba(
+                    11,
+                    8,
+                    28,
+                    0.94
                   )
                 );
 
-              gap: clamp(
-                16px,
-                2.2vw,
-                30px
-              );
+              padding: 0;
 
-              margin: 0 auto;
-            }
+              color: inherit;
+              text-align: left;
 
-            .adventure-project-index-card {
-              display: flex;
-              min-width: 0;
-              flex-direction: column;
+              box-shadow:
+                0 16px 42px
+                  rgba(
+                    0,
+                    0,
+                    0,
+                    0.26
+                  );
 
+              cursor: pointer;
               overflow: hidden;
 
+              transition:
+                border-color
+                  180ms ease,
+                box-shadow
+                  180ms ease,
+                transform 180ms ease;
+            }
+
+            .adventure-project-archive-card:hover,
+            .adventure-project-archive-card:focus-visible {
+              border-color: rgba(
+                255,
+                104,
+                183,
+                0.46
+              );
+
+              box-shadow:
+                0 0 28px
+                  rgba(
+                    255,
+                    63,
+                    159,
+                    0.14
+                  ),
+                0 20px 46px
+                  rgba(
+                    0,
+                    0,
+                    0,
+                    0.32
+                  );
+            }
+
+            .adventure-project-archive-image-wrap {
+              position: relative;
+              overflow: hidden;
+
+              aspect-ratio: 16 / 9;
+
+              background:
+                rgba(
+                  255,
+                  255,
+                  255,
+                  0.04
+                );
+            }
+
+            .adventure-project-archive-image-wrap::after {
+              content: "";
+
+              position: absolute;
+              inset: 0;
+
+              background:
+                linear-gradient(
+                  180deg,
+                  transparent 58%,
+                  rgba(
+                    8,
+                    5,
+                    20,
+                    0.16
+                  ) 100%
+                );
+
+              pointer-events: none;
+            }
+
+            .adventure-project-archive-image {
+              width: 100%;
+              height: 100%;
+
+              object-fit: cover;
+              display: block;
+
+              transition:
+                transform 280ms
+                  ease;
+            }
+
+            .adventure-project-archive-card:hover
+              .adventure-project-archive-image {
+              transform: scale(
+                1.025
+              );
+            }
+
+            .adventure-project-archive-placeholder {
+              display: grid;
+              width: 100%;
+              height: 100%;
+
+              place-items: center;
+
+              background:
+                linear-gradient(
+                  135deg,
+                  rgba(
+                    154,
+                    92,
+                    255,
+                    0.18
+                  ),
+                  rgba(
+                    255,
+                    63,
+                    159,
+                    0.12
+                  )
+                );
+            }
+
+            .adventure-project-archive-placeholder
+              span {
+              color: #f4eeff;
+
+              font-size: 2rem;
+              font-weight: 900;
+              letter-spacing: -0.05em;
+            }
+
+            .adventure-project-archive-number {
+              position: absolute;
+              left: 16px;
+              bottom: 16px;
+              z-index: 1;
+
+              border:
+                1px solid
+                rgba(
+                  255,
+                  255,
+                  255,
+                  0.22
+                );
+              border-radius: 999px;
+
+              background: rgba(
+                13,
+                9,
+                31,
+                0.74
+              );
+
+              padding:
+                8px
+                12px;
+
+              color: #f4eeff;
+
+              font-size: 11px;
+              font-weight: 900;
+              letter-spacing: 0.08em;
+
+              backdrop-filter:
+                blur(10px);
+            }
+
+            .adventure-project-archive-copy {
+              display: flex;
+              flex-direction: column;
+              gap: 14px;
+
+              padding:
+                22px
+                22px
+                24px;
+            }
+
+            .adventure-project-archive-meta {
+              display: flex;
+              flex-wrap: wrap;
+              justify-content: space-between;
+              gap: 10px;
+
+              color: rgba(
+                244,
+                238,
+                255,
+                0.55
+              );
+
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 0.07em;
+              text-transform: uppercase;
+            }
+
+            .adventure-project-archive-meta
+              strong {
+              color: #ff9ed0;
+              font-weight: 800;
+            }
+
+            .adventure-project-archive-type {
+              margin: 0;
+
+              color: #ff7ebf;
+
+              font-size: 11px;
+              font-weight: 900;
+              letter-spacing: 0.1em;
+              text-transform: uppercase;
+            }
+
+            .adventure-project-archive-copy
+              h3 {
+              margin: 0;
+
+              color: #f4eeff;
+
+              font-family:
+                var(
+                  --font-display
+                ),
+                Arial,
+                sans-serif;
+              font-size: clamp(
+                1.55rem,
+                2.2vw,
+                2.15rem
+              );
+              line-height: 1.08;
+              letter-spacing: -0.04em;
+            }
+
+            .adventure-project-archive-summary {
+              margin: 0;
+
+              color: rgba(
+                244,
+                238,
+                255,
+                0.78
+              );
+
+              font-size: 14px;
+              line-height: 1.8;
+
+              display: -webkit-box;
+              -webkit-line-clamp: 4;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+            }
+
+            .adventure-project-archive-tags {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 8px;
+
+              margin-top: 2px;
+            }
+
+            .adventure-project-archive-tags
+              span {
               border:
                 1px solid
                 rgba(
@@ -614,354 +1401,197 @@ export default function ProjectsOverviewModal({
                   255,
                   0.2
                 );
-
-              border-radius: 24px;
-              outline: none;
-
-              background:
-                linear-gradient(
-                  145deg,
-                  rgba(
-                    37,
-                    15,
-                    57,
-                    0.92
-                  ),
-                  rgba(
-                    13,
-                    9,
-                    31,
-                    0.94
-                  )
-                );
-
-              box-shadow:
-                0 22px 60px
-                rgba(
-                  0,
-                  0,
-                  0,
-                  0.34
-                );
-
-              padding: 0;
-
-              color: #fff7fd;
-              cursor: pointer;
-              text-align: left;
-
-              transition:
-                border-color
-                  180ms ease,
-                box-shadow
-                  180ms ease;
-            }
-
-            .adventure-project-index-card:hover {
-              border-color:
-                rgba(
-                  255,
-                  112,
-                  194,
-                  0.56
-                );
-
-              box-shadow:
-                0 0 30px
-                  rgba(
-                    255,
-                    75,
-                    174,
-                    0.16
-                  ),
-                0 28px 70px
-                  rgba(
-                    0,
-                    0,
-                    0,
-                    0.46
-                  );
-            }
-
-            .adventure-project-index-card:focus-visible {
-              outline: 3px solid
-                #69dfff;
-
-              outline-offset: 4px;
-            }
-
-            .adventure-project-index-image-wrap {
-              position: relative;
-
-              aspect-ratio: 16 / 10;
-              overflow: hidden;
-
-              background: #100b1e;
-            }
-
-            .adventure-project-index-image {
-              display: block;
-
-              width: 100%;
-              height: 100%;
-
-              object-fit: cover;
-
-              transition:
-                filter 380ms ease,
-                transform 380ms ease;
-            }
-
-            .adventure-project-index-card:hover
-              .adventure-project-index-image {
-              filter:
-                saturate(1.12)
-                brightness(1.05);
-
-              transform: scale(1.045);
-            }
-
-            .adventure-project-index-placeholder {
-              display: grid;
-
-              width: 100%;
-              height: 100%;
-
-              background:
-                radial-gradient(
-                  circle,
-                  rgba(
-                    255,
-                    102,
-                    188,
-                    0.24
-                  ),
-                  transparent 65%
-                );
-
-              color: #ff78c1;
-              font-size: 35px;
-
-              place-items: center;
-            }
-
-            .adventure-project-index-number {
-              position: absolute;
-              top: 14px;
-              left: 14px;
-
-              display: inline-flex;
-
-              min-width: 38px;
-              min-height: 27px;
-
-              align-items: center;
-              justify-content: center;
-
-              border:
-                1px solid
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.18
-                );
-
               border-radius: 999px;
 
               background:
-                rgba(
-                  14,
-                  8,
-                  28,
-                  0.74
+                linear-gradient(
+                  120deg,
+                  rgba(
+                    154,
+                    92,
+                    255,
+                    0.12
+                  ),
+                  rgba(
+                    255,
+                    63,
+                    159,
+                    0.06
+                  )
                 );
 
-              color: #ff8acb;
+              padding:
+                7px
+                11px;
 
-              font-size: 9px;
-              font-weight: 900;
-
-              backdrop-filter: blur(10px);
-            }
-
-            .adventure-project-index-copy {
-              display: flex;
-
-              min-height: 260px;
-              flex: 1;
-              flex-direction: column;
-
-              padding: 24px;
-            }
-
-            .adventure-project-index-copy
-              > p {
-              margin: 0 0 8px;
-
-              color: #ff79bf;
-
-              font-size: 8px;
-              font-weight: 900;
-
-              letter-spacing: 0.11em;
-              text-transform: uppercase;
-            }
-
-            .adventure-project-index-copy
-              h3 {
-              margin: 0;
-
-              font-family:
-                var(
-                  --font-display
-                ),
-                Arial,
-                sans-serif;
-
-              font-size: clamp(
-                1.25rem,
-                2vw,
-                1.65rem
+              color: rgba(
+                244,
+                238,
+                255,
+                0.84
               );
 
-              line-height: 1.08;
+              font-size: 11px;
+              font-weight: 700;
             }
 
-            .adventure-project-index-summary {
-              display: -webkit-box;
+            .adventure-project-archive-open {
+              display: inline-flex;
+              align-items: center;
+              gap: 8px;
 
-              margin-top: 14px;
-              overflow: hidden;
+              margin-top: 4px;
 
-              color:
-                rgba(
-                  244,
-                  238,
-                  255,
-                  0.68
-                );
+              color: #f4eeff;
 
-              font-size: 12px;
-              line-height: 1.65;
-
-              -webkit-box-orient:
-                vertical;
-
-              -webkit-line-clamp: 4;
+              font-size: 13px;
+              font-weight: 900;
+              letter-spacing: 0.03em;
             }
 
-            .adventure-project-index-tags {
-              display: flex;
-              flex-wrap: wrap;
-
-              gap: 6px;
-              margin-top: 18px;
-            }
-
-            .adventure-project-index-tags
+            .adventure-project-archive-open
               span {
+              color: #69dfff;
+            }
+
+            .adventure-project-empty-state {
+              grid-column: 1 / -1;
+
               border:
                 1px solid
                 rgba(
                   232,
                   144,
                   255,
-                  0.18
+                  0.16
                 );
-
-              border-radius: 999px;
+              border-radius: 24px;
 
               background:
                 rgba(
-                  154,
-                  92,
-                  255,
-                  0.08
-                );
-
-              padding: 5px 8px;
-
-              color:
-                rgba(
-                  255,
-                  241,
-                  251,
+                  18,
+                  12,
+                  40,
                   0.72
                 );
 
-              font-size: 8px;
-              font-weight: 800;
+              padding: 32px;
+
+              text-align: center;
+              color: rgba(
+                244,
+                238,
+                255,
+                0.72
+              );
             }
 
-            .adventure-project-index-open {
-              display: inline-flex;
-
-              align-items: center;
-              justify-content:
-                space-between;
-
-              gap: 12px;
-
-              margin-top: auto;
-              padding-top: 22px;
-
-              color: #ff86c8;
-
-              font-size: 10px;
-              letter-spacing: 0.08em;
-              text-transform: uppercase;
+            .adventure-project-index-modal--archive
+              ::selection {
+              background: rgba(
+                255,
+                104,
+                183,
+                0.34
+              );
+              color: #ffffff;
             }
 
-            .adventure-project-index-open
-              span {
-              font-size: 17px;
-
-              transition:
-                transform
-                  180ms ease;
+            .adventure-project-index-modal--archive
+              button:focus-visible {
+              outline:
+                2px solid
+                #69dfff;
+              outline-offset: 4px;
             }
 
-            .adventure-project-index-card:hover
-              .adventure-project-index-open
-              span {
-              transform:
-                translateX(4px);
-            }
-
-            @media (
-              max-width: 980px
-            ) {
-              .adventure-project-index-grid {
-                grid-template-columns:
-                  repeat(
-                    2,
-                    minmax(
-                      0,
-                      1fr
-                    )
-                  );
+            @media (max-width: 1100px) {
+              .adventure-project-archive-grid {
+                gap:
+                  28px
+                  28px;
               }
             }
 
-            @media (
-              max-width: 620px
-            ) {
+            @media (max-width: 900px) {
+              .adventure-project-archive-grid {
+                grid-template-columns: 1fr;
+              }
+            }
+
+            @media (max-width: 767px) {
               .adventure-project-index-body {
                 padding:
-                  92px
-                  14px
-                  54px;
+                  88px
+                  18px
+                  calc(
+                    74px +
+                      env(
+                        safe-area-inset-bottom
+                      )
+                  );
               }
 
-              .adventure-project-index-grid {
-                grid-template-columns:
-                  1fr;
+              .adventure-project-index-header--archive {
+                margin-bottom: 42px;
+                text-align: left;
               }
 
-              .adventure-project-index-copy {
-                min-height: 235px;
-                padding: 20px;
+              .adventure-project-index-header--archive
+                h2 {
+                margin-top: 42px;
+                font-size: clamp(
+                  3rem,
+                  16vw,
+                  4.9rem
+                );
+              }
+
+              .adventure-project-index-intro {
+                margin-left: 0;
+                margin-right: 0;
+              }
+
+              .adventure-project-filter-bar {
+                align-items: stretch;
+                margin-bottom: 34px;
+              }
+
+              .adventure-project-filter-row {
+                justify-content: flex-start;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 4px;
+              }
+
+              .adventure-project-filter-status {
+                text-align: left;
+              }
+
+              .adventure-project-archive-copy {
+                padding:
+                  18px
+                  18px
+                  22px;
+              }
+
+              .adventure-project-archive-copy
+                h3 {
+                font-size: 1.5rem;
+              }
+
+              .adventure-project-archive-summary {
+                -webkit-line-clamp: 5;
+              }
+            }
+
+            @media (
+              prefers-reduced-motion: reduce
+            ) {
+              .adventure-project-archive-card,
+              .adventure-project-archive-image,
+              .adventure-project-filter-tab {
+                transition: none;
               }
             }
           `}</style>

@@ -645,6 +645,7 @@ function AboutDetail({
               <div className="haruni-profile-tags">
                 <span>Fullstack</span>
                 <span>Frontend</span>
+                <span>Backend</span>
                 <span>Embedded</span>
                 <span>AI</span>
 
