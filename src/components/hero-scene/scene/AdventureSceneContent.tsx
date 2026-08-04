@@ -1672,11 +1672,7 @@ export default function AdventureSceneContent({
       <ExistingStreetSignOverlay />
 
       <SakuraAtmosphere />
-
-      {/*
-       * Lowering the heart places it inside the fixed
-       * camera frame without lifting the camera target.
-       */}
+      
       <FloatingHeart
         position={[
           0,
