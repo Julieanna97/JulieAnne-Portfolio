@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -41,8 +42,35 @@ const ABOUT_NAV_ITEMS = [
   },
 ] as const;
 
+const CREDIT_NAV_ITEMS = [
+  {
+    id: "credits-overview",
+    label: "Overview",
+  },
+  {
+    id: "credits-attribution",
+    label: "Attribution",
+  },
+  {
+    id: "credits-production",
+    label: "Production",
+  },
+  {
+    id: "credits-direction",
+    label: "Direction",
+  },
+] as const;
+
 type AboutSectionId =
   (typeof ABOUT_NAV_ITEMS)[number]["id"];
+
+type CreditSectionId =
+  (typeof CREDIT_NAV_ITEMS)[number]["id"];
+
+type NavigationItem<T extends string> = {
+  id: T;
+  label: string;
+};
 
 const aboutExperienceItems = Array.isArray(
   ABOUT_EXPERIENCE,
@@ -66,6 +94,218 @@ type SectionDetailModalProps = {
   detailId: "about" | "credits" | null;
   onClose: () => void;
 };
+
+function useSectionNavigation<
+  T extends string,
+>(
+  items: readonly NavigationItem<T>[],
+  initialSection: T,
+) {
+  const reduceMotion = useReducedMotion();
+
+  const layoutRef =
+    useRef<HTMLDivElement | null>(null);
+
+  const [
+    activeSection,
+    setActiveSection,
+  ] = useState<T>(initialSection);
+
+  useEffect(() => {
+    const layout = layoutRef.current;
+
+    const scrollRoot =
+      layout?.closest<HTMLElement>(
+        ".adventure-section-detail-modal",
+      );
+
+    if (!layout || !scrollRoot) {
+      return;
+    }
+
+    const sections = items.flatMap(
+      ({ id }) => {
+        const element =
+          layout.querySelector<HTMLElement>(
+            `#${id}`,
+          );
+
+        return element
+          ? [
+              {
+                id,
+                element,
+              },
+            ]
+          : [];
+      },
+    );
+
+    if (sections.length === 0) {
+      return;
+    }
+
+    let animationFrame = 0;
+
+    const updateActiveSection = () => {
+      window.cancelAnimationFrame(
+        animationFrame,
+      );
+
+      animationFrame =
+        window.requestAnimationFrame(() => {
+          const rootRect =
+            scrollRoot.getBoundingClientRect();
+
+          const activationLine =
+            rootRect.top +
+            Math.min(
+              rootRect.height * 0.34,
+              260,
+            );
+
+          let nextSection:
+            | T
+            | undefined =
+            sections[0]?.id;
+
+          for (const section of sections) {
+            const sectionRect =
+              section.element.getBoundingClientRect();
+
+            if (
+              sectionRect.top <=
+              activationLine
+            ) {
+              nextSection = section.id;
+            } else {
+              break;
+            }
+          }
+
+          const isAtBottom =
+            scrollRoot.scrollTop +
+              scrollRoot.clientHeight >=
+            scrollRoot.scrollHeight - 8;
+
+          if (isAtBottom) {
+            nextSection =
+              sections[
+                sections.length - 1
+              ]?.id;
+          }
+
+          if (nextSection) {
+            setActiveSection(
+              (currentSection) =>
+                currentSection ===
+                nextSection
+                  ? currentSection
+                  : nextSection,
+            );
+          }
+        });
+    };
+
+    updateActiveSection();
+
+    scrollRoot.addEventListener(
+      "scroll",
+      updateActiveSection,
+      {
+        passive: true,
+      },
+    );
+
+    window.addEventListener(
+      "resize",
+      updateActiveSection,
+    );
+
+    const resizeObserver =
+      typeof ResizeObserver !==
+      "undefined"
+        ? new ResizeObserver(
+            updateActiveSection,
+          )
+        : null;
+
+    resizeObserver?.observe(layout);
+
+    return () => {
+      window.cancelAnimationFrame(
+        animationFrame,
+      );
+
+      scrollRoot.removeEventListener(
+        "scroll",
+        updateActiveSection,
+      );
+
+      window.removeEventListener(
+        "resize",
+        updateActiveSection,
+      );
+
+      resizeObserver?.disconnect();
+    };
+  }, [items]);
+
+  const scrollToSection = useCallback(
+    (sectionId: T) => {
+      const layout = layoutRef.current;
+
+      const scrollRoot =
+        layout?.closest<HTMLElement>(
+          ".adventure-section-detail-modal",
+        );
+
+      const section =
+        layout?.querySelector<HTMLElement>(
+          `#${sectionId}`,
+        );
+
+      if (
+        !layout ||
+        !scrollRoot ||
+        !section
+      ) {
+        return;
+      }
+
+      const rootRect =
+        scrollRoot.getBoundingClientRect();
+
+      const sectionRect =
+        section.getBoundingClientRect();
+
+      const nextScrollTop =
+        scrollRoot.scrollTop +
+        sectionRect.top -
+        rootRect.top -
+        36;
+
+      setActiveSection(sectionId);
+
+      scrollRoot.scrollTo({
+        top: Math.max(
+          0,
+          nextScrollTop,
+        ),
+        behavior: reduceMotion
+          ? "auto"
+          : "smooth",
+      });
+    },
+    [reduceMotion],
+  );
+
+  return {
+    layoutRef,
+    activeSection,
+    scrollToSection,
+  };
+}
 
 export default function SectionDetailModal({
   detailId,
@@ -121,6 +361,9 @@ export default function SectionDetailModal({
   const isAbout =
     detailId === "about";
 
+  const isCredits =
+    detailId === "credits";
+
   const titleId = detailId
     ? `section-detail-title-${detailId}`
     : undefined;
@@ -160,6 +403,18 @@ export default function SectionDetailModal({
           "inset(6% 6% 6% 6% round 36px)",
       };
 
+  const modalClassName = [
+    "adventure-section-detail-modal",
+    isAbout
+      ? "adventure-section-detail-modal--about"
+      : "",
+    isCredits
+      ? "adventure-section-detail-modal--credits"
+      : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <AnimatePresence mode="wait">
       {detailId && (
@@ -189,14 +444,7 @@ export default function SectionDetailModal({
           <motion.article
             ref={modalRef}
             tabIndex={-1}
-            className={[
-              "adventure-section-detail-modal",
-              isAbout
-                ? "adventure-section-detail-modal--about"
-                : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
+            className={modalClassName}
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
@@ -305,230 +553,22 @@ function AboutDetail({
 }: {
   titleId?: string;
 }) {
-  const reduceMotion = useReducedMotion();
-
-  const aboutLayoutRef =
-    useRef<HTMLDivElement | null>(null);
-
-  const [
+  const {
+    layoutRef,
     activeSection,
-    setActiveSection,
-  ] =
-    useState<AboutSectionId>(
+    scrollToSection,
+  } =
+    useSectionNavigation<AboutSectionId>(
+      ABOUT_NAV_ITEMS,
       "about-profile",
     );
-
-  useEffect(() => {
-    const layout =
-      aboutLayoutRef.current;
-
-    const scrollRoot =
-      layout?.closest<HTMLElement>(
-        ".adventure-section-detail-modal",
-      );
-
-    if (!layout || !scrollRoot) {
-      return;
-    }
-
-    const sections =
-      ABOUT_NAV_ITEMS.flatMap(
-        ({ id }) => {
-          const element =
-            layout.querySelector<HTMLElement>(
-              `#${id}`,
-            );
-
-          return element
-            ? [
-                {
-                  id,
-                  element,
-                },
-              ]
-            : [];
-        },
-      );
-
-    if (sections.length === 0) {
-      return;
-    }
-
-    let animationFrame = 0;
-
-    const updateActiveSection = () => {
-      window.cancelAnimationFrame(
-        animationFrame,
-      );
-
-      animationFrame =
-        window.requestAnimationFrame(
-          () => {
-            const rootRect =
-              scrollRoot.getBoundingClientRect();
-
-            /*
-             * A section becomes active after
-             * its heading reaches roughly the
-             * upper third of the modal.
-             */
-            const activationLine =
-              rootRect.top +
-              Math.min(
-                rootRect.height * 0.34,
-                260,
-              );
-
-            let nextSection:
-              | AboutSectionId
-              | undefined =
-              sections[0]?.id;
-
-            for (const section of sections) {
-              const sectionRect =
-                section.element.getBoundingClientRect();
-
-              if (
-                sectionRect.top <=
-                activationLine
-              ) {
-                nextSection =
-                  section.id;
-              } else {
-                break;
-              }
-            }
-
-            /*
-             * Contact should become active
-             * when the visitor reaches the
-             * very bottom of the modal.
-             */
-            const isAtBottom =
-              scrollRoot.scrollTop +
-                scrollRoot.clientHeight >=
-              scrollRoot.scrollHeight -
-                8;
-
-            if (isAtBottom) {
-              nextSection =
-                sections[
-                  sections.length - 1
-                ]?.id;
-            }
-
-            if (nextSection) {
-              setActiveSection(
-                (currentSection) =>
-                  currentSection ===
-                  nextSection
-                    ? currentSection
-                    : nextSection,
-              );
-            }
-          },
-        );
-    };
-
-    updateActiveSection();
-
-    scrollRoot.addEventListener(
-      "scroll",
-      updateActiveSection,
-      {
-        passive: true,
-      },
-    );
-
-    window.addEventListener(
-      "resize",
-      updateActiveSection,
-    );
-
-    const resizeObserver =
-      typeof ResizeObserver !==
-      "undefined"
-        ? new ResizeObserver(
-            updateActiveSection,
-          )
-        : null;
-
-    resizeObserver?.observe(layout);
-
-    return () => {
-      window.cancelAnimationFrame(
-        animationFrame,
-      );
-
-      scrollRoot.removeEventListener(
-        "scroll",
-        updateActiveSection,
-      );
-
-      window.removeEventListener(
-        "resize",
-        updateActiveSection,
-      );
-
-      resizeObserver?.disconnect();
-    };
-  }, []);
-
-  const scrollToAboutSection = (
-    sectionId: AboutSectionId,
-  ) => {
-    const layout =
-      aboutLayoutRef.current;
-
-    const scrollRoot =
-      layout?.closest<HTMLElement>(
-        ".adventure-section-detail-modal",
-      );
-
-    const section =
-      layout?.querySelector<HTMLElement>(
-        `#${sectionId}`,
-      );
-
-    if (
-      !layout ||
-      !scrollRoot ||
-      !section
-    ) {
-      return;
-    }
-
-    const rootRect =
-      scrollRoot.getBoundingClientRect();
-
-    const sectionRect =
-      section.getBoundingClientRect();
-
-    const nextScrollTop =
-      scrollRoot.scrollTop +
-      sectionRect.top -
-      rootRect.top -
-      36;
-
-    setActiveSection(sectionId);
-
-    scrollRoot.scrollTo({
-      top: Math.max(
-        0,
-        nextScrollTop,
-      ),
-      behavior: reduceMotion
-        ? "auto"
-        : "smooth",
-    });
-  };
 
   const firstEducationIndex =
     aboutExperienceItems.length + 1;
 
   return (
     <div
-      ref={aboutLayoutRef}
+      ref={layoutRef}
       className="haruni-about-layout"
     >
       <nav
@@ -557,7 +597,7 @@ function AboutDetail({
                 onClick={(event) => {
                   event.preventDefault();
 
-                  scrollToAboutSection(
+                  scrollToSection(
                     item.id,
                   );
                 }}
@@ -1063,201 +1103,439 @@ function CreditsDetail({
 }: {
   titleId?: string;
 }) {
+  const {
+    layoutRef,
+    activeSection,
+    scrollToSection,
+  } =
+    useSectionNavigation<CreditSectionId>(
+      CREDIT_NAV_ITEMS,
+      "credits-overview",
+    );
+
   return (
-    <>
-      <header className="adventure-section-detail-header">
-        <p>Credits</p>
+    <div
+      ref={layoutRef}
+      className="credits-editorial-layout"
+    >
+      <nav
+        className="credits-editorial-rail"
+        aria-label="Credits page sections"
+      >
+        {CREDIT_NAV_ITEMS.map(
+          (item) => {
+            const isActive =
+              activeSection === item.id;
 
-        <h2 id={titleId}>
-          Built with care
-        </h2>
+            return (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                className={
+                  isActive
+                    ? "is-active"
+                    : undefined
+                }
+                aria-current={
+                  isActive
+                    ? "location"
+                    : undefined
+                }
+                onClick={(event) => {
+                  event.preventDefault();
 
-        <p className="adventure-section-detail-intro">
-          I designed and built this
-          portfolio as a small interactive
-          world rather than a standard
-          page. It brings together 3D,
-          animation, sound, and the web
-          tools I enjoy working with.
-        </p>
-      </header>
+                  scrollToSection(
+                    item.id,
+                  );
+                }}
+              >
+                <span
+                  className="credits-editorial-rail-dot"
+                  aria-hidden="true"
+                />
 
-      <section className="adventure-section-block">
-        <div className="adventure-section-heading">
-          <p>Attribution</p>
+                {item.label}
+              </a>
+            );
+          },
+        )}
+      </nav>
 
-          <h3>
-            Scene, model &amp; music
-            credits
-          </h3>
-        </div>
+      <div className="credits-editorial-content">
+        <section
+          id="credits-overview"
+          className="credits-editorial-overview"
+        >
+          <header className="credits-editorial-page-heading">
+            <p>Credits</p>
 
-        <div className="adventure-detail-grid adventure-detail-grid--three">
-          <article className="adventure-detail-card adventure-credit-feature">
-            <p className="adventure-detail-kicker">
-              Original 3D environment
+            <h2 id={titleId}>
+              Built with love
+            </h2>
+
+            <span>
+              Portfolio production
+            </span>
+          </header>
+
+          <div className="credits-editorial-intro">
+            <p className="credits-editorial-eyebrow">
+              Interactive portfolio
             </p>
 
-            <h4>
-              A Mysterious Adventure — 3D
-              Editor Challenge
-            </h4>
+            <h3>
+              An interactive world shaped
+              by code, 3D, motion, sound,
+              and thoughtful details.
+            </h3>
 
             <p>
-              3D scene by Diosmel, used
-              under the Creative Commons
-              Attribution 4.0 license.
+              I designed and developed this
+              portfolio as a small place to
+              explore rather than a
+              standard page. It combines a
+              3D environment, animated
+              interfaces, sound,
+              accessible controls, and
+              responsive web development.
             </p>
-          </article>
-
-          <article className="adventure-detail-card adventure-credit-feature">
-            <p className="adventure-detail-kicker">
-              Background music
-            </p>
-
-            <h4>
-              Japanese Jazz 2
-            </h4>
 
             <p>
-              Music created by
-              PuyoPuyoMegaFan1234.
+              Some creative assets were
+              made by other artists and
+              are credited below. The
+              interface, development,
+              interaction design,
+              integration, and overall
+              portfolio direction were
+              created and assembled by me.
             </p>
-          </article>
+          </div>
 
-          <article className="adventure-detail-card adventure-credit-feature">
-            <p className="adventure-detail-kicker">
-              Additional 3D model
-            </p>
-
-            <h4>Sakura Tree</h4>
-
-            <p>
-              Sakura Tree model created
-              by dimal965 and published
-              on Sketchfab.
-            </p>
-          </article>
-        </div>
-      </section>
-
-      <section className="adventure-section-block">
-        <div className="adventure-section-heading">
-          <p>Production</p>
-
-          <h3>
-            Tools, technology &amp;
-            visual direction
-          </h3>
-        </div>
-
-        <div className="adventure-skill-grid">
-          {creditGroups.length > 0 ? (
-            creditGroups.map(
-              (group) => {
-                const groupItems =
-                  Array.isArray(
-                    group.items,
-                  )
-                    ? group.items
-                    : [];
-
-                return (
-                  <article
-                    key={group.title}
-                    className="adventure-skill-card"
-                  >
-                    <h4>
-                      {group.title}
-                    </h4>
-
-                    <ul>
-                      {groupItems.map(
-                        (item) => (
-                          <li key={item}>
-                            {item}
-                          </li>
-                        ),
-                      )}
-                    </ul>
-                  </article>
+          <div className="credits-editorial-jump-grid">
+            <button
+              type="button"
+              onClick={() => {
+                scrollToSection(
+                  "credits-attribution",
                 );
-              },
-            )
-          ) : (
-            <p className="adventure-section-empty-state">
-              Credit details are
-              currently being updated.
+              }}
+            >
+              <span className="credits-editorial-jump-symbol">
+                3D
+              </span>
+
+              <strong>
+                World &amp; sound
+              </strong>
+
+              <small>
+                Scene, models and music
+              </small>
+
+              <span
+                className="credits-editorial-jump-arrow"
+                aria-hidden="true"
+              >
+                ↓
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                scrollToSection(
+                  "credits-production",
+                );
+              }}
+            >
+              <span className="credits-editorial-jump-symbol">
+                UI
+              </span>
+
+              <strong>
+                Web production
+              </strong>
+
+              <small>
+                Technology and interaction
+              </small>
+
+              <span
+                className="credits-editorial-jump-arrow"
+                aria-hidden="true"
+              >
+                ↓
+              </span>
+            </button>
+          </div>
+        </section>
+
+        <section
+          id="credits-attribution"
+          className="credits-editorial-section"
+        >
+          <div className="credits-editorial-section-heading">
+            <p>
+              Creative attribution
             </p>
+
+            <h3>
+              Scene, model &amp; music
+            </h3>
+
+            <span>
+              Original creators
+            </span>
+          </div>
+
+          <div className="credits-attribution-grid">
+            <article>
+              <div className="credits-attribution-orb">
+                <span>01</span>
+              </div>
+
+              <p>
+                Original 3D environment
+              </p>
+
+              <h4>
+                A Mysterious Adventure —
+                3D Editor Challenge
+              </h4>
+
+              <strong>
+                Scene by Diosmel
+              </strong>
+
+              <span>
+                Used under the Creative
+                Commons Attribution 4.0
+                license.
+              </span>
+            </article>
+
+            <article>
+              <div className="credits-attribution-orb">
+                <span>02</span>
+              </div>
+
+              <p>
+                Additional 3D model
+              </p>
+
+              <h4>
+                Sakura Tree
+              </h4>
+
+              <strong>
+                Model by dimal965
+              </strong>
+
+              <span>
+                Sakura Tree model
+                published on Sketchfab and
+                integrated into the
+                portfolio scene.
+              </span>
+            </article>
+
+            <article>
+              <div className="credits-attribution-orb">
+                <span>03</span>
+              </div>
+
+              <p>
+                Background music
+              </p>
+
+              <h4>
+                Japanese Jazz 2
+              </h4>
+
+              <strong>
+                PuyoPuyoMegaFan1234
+              </strong>
+
+              <span>
+                Used as the ambient music
+                for the interactive 3D
+                experience.
+              </span>
+            </article>
+          </div>
+        </section>
+
+        <section
+          id="credits-production"
+          className="credits-editorial-section"
+        >
+          <div className="credits-editorial-section-heading">
+            <p>
+              Portfolio production
+            </p>
+
+            <h3>
+              Tools &amp; technology
+            </h3>
+
+            <span>
+              How the experience was built
+            </span>
+          </div>
+
+          {creditGroups.length > 0 && (
+            <div
+              className="credits-discipline-row"
+              aria-label="Portfolio production areas"
+            >
+              {creditGroups.map(
+                (group) => (
+                  <span key={group.title}>
+                    {group.title}
+                  </span>
+                ),
+              )}
+            </div>
           )}
-        </div>
-      </section>
 
-      <section className="adventure-section-block">
-        <div className="adventure-section-heading">
-          <p>Direction</p>
+          <div className="credits-production-grid">
+            {creditGroups.length > 0 ? (
+              creditGroups.map(
+                (group, index) => {
+                  const groupItems =
+                    Array.isArray(
+                      group.items,
+                    )
+                      ? group.items
+                      : [];
 
-          <h3>
-            What shaped this portfolio
-          </h3>
-        </div>
+                  return (
+                    <article
+                      key={group.title}
+                      className="credits-production-card"
+                    >
+                      <span className="credits-production-index">
+                        {String(
+                          index + 1,
+                        ).padStart(
+                          2,
+                          "0",
+                        )}
+                      </span>
 
-        <div className="adventure-detail-grid adventure-detail-grid--three">
-          <article className="adventure-detail-card">
-            <p className="adventure-detail-kicker">
-              01
-            </p>
+                      <div>
+                        <h4>
+                          {group.title}
+                        </h4>
 
-            <h4>Cozy spaces</h4>
+                        <ul>
+                          {groupItems.map(
+                            (item) => (
+                              <li key={item}>
+                                {item}
+                              </li>
+                            ),
+                          )}
+                        </ul>
+                      </div>
+                    </article>
+                  );
+                },
+              )
+            ) : (
+              <p className="adventure-section-empty-state">
+                Credit details are
+                currently being updated.
+              </p>
+            )}
+          </div>
+        </section>
 
+        <section
+          id="credits-direction"
+          className="credits-editorial-section credits-direction-section"
+        >
+          <div className="credits-editorial-section-heading">
             <p>
-              I wanted the portfolio to
-              feel like a place you can
-              look around, not just
-              another page to scroll
-              through.
-            </p>
-          </article>
-
-          <article className="adventure-detail-card">
-            <p className="adventure-detail-kicker">
-              02
+              Creative direction
             </p>
 
-            <h4>
-              Moody color palette
-            </h4>
+            <h3>
+              What shaped the portfolio
+            </h3>
 
+            <span>
+              Atmosphere and interaction
+            </span>
+          </div>
+
+          <div className="credits-direction-grid">
+            <article>
+              <span>01</span>
+
+              <h4>
+                Cozy spaces
+              </h4>
+
+              <p>
+                I wanted the portfolio to
+                feel like a place visitors
+                could explore, rather than
+                another conventional page
+                to scroll through.
+              </p>
+            </article>
+
+            <article>
+              <span>02</span>
+
+              <h4>
+                Moody color palette
+              </h4>
+
+              <p>
+                Dark city tones, warm
+                lights, violet shadows,
+                and pink reflections
+                connect the scene and
+                interface.
+              </p>
+            </article>
+
+            <article>
+              <span>03</span>
+
+              <h4>
+                Playful interactions
+              </h4>
+
+              <p>
+                Camera movement, scene
+                markers, ambient sound,
+                and small animations give
+                visitors details to
+                discover.
+              </p>
+            </article>
+          </div>
+
+          <div className="credits-editorial-closing">
             <p>
-              The dark city tones, warm
-              lights, and pink
-              reflections help the 3D
-              scene and interface feel
-              like they belong to the
-              same world.
-            </p>
-          </article>
-
-          <article className="adventure-detail-card">
-            <p className="adventure-detail-kicker">
-              03
+              Designed, developed, and
+              assembled by
             </p>
 
-            <h4>
-              Playful interactions
-            </h4>
+            <strong>
+              Julie Anne Cantillep
+            </strong>
 
-            <p>
-              Camera movement, scene
-              markers, sound, and small
-              animations give visitors
-              something to discover
-              without getting in the
-              way.
-            </p>
-          </article>
-        </div>
-      </section>
-    </>
+            <span>
+              Malmö, Sweden
+            </span>
+          </div>
+        </section>
+      </div>
+    </div>
   );
 }
