@@ -1824,7 +1824,13 @@ export default function AdventureSceneContent({
               activeId ===
               section.id
             }
-            showCard={false}
+            showCard={
+              idleRotationEnabled &&
+              activeId === section.id &&
+              !moving &&
+              !interactionPaused &&
+              focusedSectionId === null
+            }
             onSelect={
               selectSection
             }
