@@ -1,30 +1,43 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-import { type ThreeEvent } from "@react-three/fiber";
-import { useVideoTexture } from "@react-three/drei";
-import { Shape, ShapeGeometry } from "three";
+import {
+  useEffect,
+  useMemo,
+} from "react";
+
+import {
+  type ThreeEvent,
+} from "@react-three/fiber";
+
+import {
+  useVideoTexture,
+} from "@react-three/drei";
+
+import {
+  Shape,
+  ShapeGeometry,
+} from "three";
 
 const ROOFTOP_AD_VIDEO_SRC =
   "/videos/rooftop-ad.mp4";
 
 /*
-  Clicking the rounded rooftop advertisement opens the original YouTube page
-  in a new browser tab.
-*/
+ * Clicking the rounded rooftop advertisement opens
+ * the selected YouTube video in a new browser tab.
+ */
 const ROOFTOP_AD_YOUTUBE_URL =
-  "https://www.youtube.com/watch?v=RrKOH8h_3_g";
+  "https://www.youtube.com/watch?v=l08Zw-RY__Q";
 
 /*
-  The selected rooftop-screen position from the debugger was:
-  [0.624, 10.546, -3.747]
-
-  Its outward-facing normal was approximately:
-  [0, 0, -1]
-
-  Keep the z value slightly farther outward than the original surface to avoid
-  flickering against the built-in display housing.
-*/
+ * The selected rooftop-screen position from the debugger was:
+ * [0.624, 10.546, -3.747]
+ *
+ * Its outward-facing normal was approximately:
+ * [0, 0, -1]
+ *
+ * Keep the z value slightly farther outward than the original surface
+ * to avoid flickering against the built-in display housing.
+ */
 const ROOFTOP_AD_POSITION: [
   number,
   number,
@@ -36,9 +49,10 @@ const ROOFTOP_AD_POSITION: [
 ];
 
 /*
-  These values fit the rounded display housing already built into the 3D
-  model. Adjust width and height independently if you need a tiny visual tweak.
-*/
+ * These values fit the rounded display housing already built into
+ * the 3D model. Adjust width and height independently if you need
+ * a small visual adjustment.
+ */
 const ROOFTOP_AD_WIDTH =
   3.04;
 
@@ -49,40 +63,34 @@ const ROOFTOP_AD_CORNER_RADIUS =
   0.18;
 
 /*
-  Open an advertisement's original YouTube page without replacing the
-  portfolio tab.
-*/
+ * Open an advertisement's original YouTube page without replacing
+ * the portfolio tab.
+ */
 function openYoutubeAdvertisement(
-  url:
-    string
+  url: string,
 ) {
   window.open(
     url,
     "_blank",
-    "noopener,noreferrer"
+    "noopener,noreferrer",
   );
 }
 
 /*
-  Create a true rounded rectangle geometry and normalize its UV coordinates so
-  the MP4 preview fills the entire screen cleanly without stretching beyond the
-  rounded corners.
-*/
+ * Create a true rounded rectangle geometry and normalize its UV
+ * coordinates so the MP4 preview fills the entire screen cleanly
+ * without stretching beyond the rounded corners.
+ */
 function createRoundedVideoGeometry(
-  width:
-    number,
-
-  height:
-    number,
-
-  radius:
-    number
+  width: number,
+  height: number,
+  radius: number,
 ) {
   const safeRadius =
     Math.min(
       radius,
       width / 2,
-      height / 2
+      height / 2,
     );
 
   const left =
@@ -102,71 +110,71 @@ function createRoundedVideoGeometry(
 
   shape.moveTo(
     left + safeRadius,
-    bottom
+    bottom,
   );
 
   shape.lineTo(
     right - safeRadius,
-    bottom
+    bottom,
   );
 
   shape.quadraticCurveTo(
     right,
     bottom,
     right,
-    bottom + safeRadius
+    bottom + safeRadius,
   );
 
   shape.lineTo(
     right,
-    top - safeRadius
+    top - safeRadius,
   );
 
   shape.quadraticCurveTo(
     right,
     top,
     right - safeRadius,
-    top
+    top,
   );
 
   shape.lineTo(
     left + safeRadius,
-    top
+    top,
   );
 
   shape.quadraticCurveTo(
     left,
     top,
     left,
-    top - safeRadius
+    top - safeRadius,
   );
 
   shape.lineTo(
     left,
-    bottom + safeRadius
+    bottom + safeRadius,
   );
 
   shape.quadraticCurveTo(
     left,
     bottom,
     left + safeRadius,
-    bottom
+    bottom,
   );
 
   const geometry =
     new ShapeGeometry(
       shape,
-      18
+      18,
     );
 
   const positions =
     geometry.getAttribute(
-      "position"
+      "position",
     );
 
   const uvs =
     geometry.getAttribute(
-      "uv"
+      "uv",
     );
 
   for (
@@ -176,14 +184,16 @@ function createRoundedVideoGeometry(
   ) {
     uvs.setXY(
       index,
-      (positions.getX(
-        index
-      ) - left) /
+      (
+        positions.getX(index) -
+        left
+      ) /
         width,
-      (positions.getY(
-        index
-      ) - bottom) /
-        height
+      (
+        positions.getY(index) -
+        bottom
+      ) /
+        height,
     );
   }
 
@@ -198,21 +208,13 @@ export default function RooftopVideoAdvertisement() {
     useVideoTexture(
       ROOFTOP_AD_VIDEO_SRC,
       {
-        muted:
-          true,
-
-        loop:
-          true,
-
-        start:
-          true,
-
-        playsInline:
-          true,
-
+        muted: true,
+        loop: true,
+        start: true,
+        playsInline: true,
         crossOrigin:
           "anonymous",
-      }
+      },
     );
 
   const roundedGeometry =
@@ -221,9 +223,9 @@ export default function RooftopVideoAdvertisement() {
         createRoundedVideoGeometry(
           ROOFTOP_AD_WIDTH,
           ROOFTOP_AD_HEIGHT,
-          ROOFTOP_AD_CORNER_RADIUS
+          ROOFTOP_AD_CORNER_RADIUS,
         ),
-      []
+      [],
     );
 
   useEffect(() => {
@@ -235,13 +237,12 @@ export default function RooftopVideoAdvertisement() {
   ]);
 
   const openRooftopAdvertisement = (
-    event:
-      ThreeEvent<MouseEvent>
+    event: ThreeEvent<MouseEvent>,
   ) => {
     event.stopPropagation();
 
     openYoutubeAdvertisement(
-      ROOFTOP_AD_YOUTUBE_URL
+      ROOFTOP_AD_YOUTUBE_URL,
     );
   };
 

@@ -1,12 +1,7 @@
 "use client";
 
-import {
-  Html,
-} from "@react-three/drei";
-
-import {
-  motion,
-} from "framer-motion";
+import { Html } from "@react-three/drei";
+import { motion } from "framer-motion";
 
 import type {
   PortfolioSection,
@@ -20,8 +15,7 @@ export type NumberHotspotProps = {
   showCard: boolean;
 
   onSelect: (
-    section:
-      PortfolioSection,
+    section: PortfolioSection,
   ) => void;
 
   onClose: () => void;
@@ -31,9 +25,7 @@ export type NumberHotspotProps = {
   ) => void;
 
   onOpenSectionDetail: (
-    id:
-      | "about"
-      | "credits",
+    id: "about" | "credits",
   ) => void;
 };
 
@@ -45,29 +37,23 @@ export default function NumberHotspot({
 }: NumberHotspotProps) {
   return (
     <Html
-      position={
-        section.hotspot
-      }
+      position={section.hotspot}
       center
-      zIndexRange={[
-        40,
-        0,
-      ]}
+      zIndexRange={[40, 0]}
       style={{
-        pointerEvents:
-          "auto",
+        pointerEvents: "auto",
       }}
     >
       <div
-        className={`adventure-annotation-wrap adventure-hotspot-wrap is-${section.id} ${
-          selected
-            ? "is-open"
-            : ""
-        } ${
-          disabled
-            ? "is-disabled"
-            : ""
-        }`}
+        className={[
+          "adventure-annotation-wrap",
+          "adventure-hotspot-wrap",
+          `is-${section.id}`,
+          selected ? "is-open" : "",
+          disabled ? "is-disabled" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
       >
         <span
           className="adventure-hotspot-tooltip"
@@ -77,9 +63,7 @@ export default function NumberHotspot({
             ♥
           </span>
 
-          <span>
-            {section.title}
-          </span>
+          <span>{section.title}</span>
         </span>
 
         <span
@@ -91,101 +75,72 @@ export default function NumberHotspot({
 
         <motion.button
           type="button"
-          className={`adventure-number ${
-            selected
-              ? "is-selected"
-              : ""
-          }`}
-          disabled={
-            disabled
-          }
-          onPointerDown={(
-            event,
-          ) => {
-            /*
-             * Prevent this pointer action from beginning
-             * an OrbitControls drag.
-             */
+          className={[
+            "adventure-number",
+            selected ? "is-selected" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          disabled={disabled}
+          aria-label={`Focus ${section.title}`}
+          aria-pressed={selected}
+          aria-expanded={false}
+          onPointerDown={(event) => {
             event.stopPropagation();
           }}
-          onClick={(
-            event,
-          ) => {
+          onClick={(event) => {
             event.stopPropagation();
 
             if (!disabled) {
-              onSelect(
-                section,
-              );
+              onSelect(section);
             }
           }}
-          aria-label={`Focus ${section.title}`}
-          aria-pressed={
-            selected
-          }
-          aria-expanded={
-            false
-          }
           whileHover={
             disabled
               ? undefined
               : {
-                  scale:
-                    1.34,
-
-                  rotate:
-                    -4,
+                  scale: 1.05,
+                  rotate: -2,
                 }
           }
           whileTap={
             disabled
               ? undefined
               : {
-                  scale:
-                    0.88,
-
-                  rotate:
-                    4,
+                  scale: 0.96,
+                  rotate: 2,
                 }
           }
           animate={
             selected
               ? {
-                  scale:
-                    1.15,
-
-                  rotate:
-                    0,
+                  scale: 1.04,
+                  rotate: 0,
                 }
               : {
-                  scale:
-                    1,
-
-                  rotate:
-                    0,
+                  scale: 1,
+                  rotate: 0,
                 }
           }
           transition={{
-            type:
-              "spring",
-
-            stiffness:
-              440,
-
-            damping:
-              23,
-
-            mass:
-              0.68,
+            type: "spring",
+            stiffness: 420,
+            damping: 25,
+            mass: 0.65,
           }}
         >
-          <span className="adventure-number-ripple" />
+          <span
+            className="adventure-number-ripple"
+            aria-hidden="true"
+          />
 
-          <span className="adventure-number-ripple ripple-two" />
+          <span
+            className="adventure-number-ripple ripple-two"
+            aria-hidden="true"
+          />
 
           <span className="adventure-number-core">
-            {section.markerNumber ??
-              section.number}
+            {section.markerNumber ?? section.number}
           </span>
         </motion.button>
       </div>
@@ -193,377 +148,273 @@ export default function NumberHotspot({
       <style jsx global>{`
         .adventure-hotspot-wrap {
           position: relative;
-
           display: grid;
-
           place-items: center;
-
           overflow: visible;
         }
 
         /*
-         * Smaller resting marker.
-         *
-         * Framer Motion enlarges it when the mouse enters.
+         * Key fix:
+         * - overall hotspot stays small
+         * - white ring gets thicker
+         * - purple middle becomes smaller
          */
-        .adventure-hotspot-wrap
-          .adventure-number {
+        .adventure-hotspot-wrap .adventure-number {
+          position: relative;
+          display: grid;
           width: 34px;
           height: 34px;
+          box-sizing: border-box;
+          place-items: center;
 
-          border-width: 4px;
+          margin: 0;
+          padding: 0;
+
+          border: 7px solid rgba(255, 255, 255, 0.97);
+          border-radius: 50%;
+          outline: none;
+
+          appearance: none;
+          -webkit-appearance: none;
+
+          background: linear-gradient(
+            135deg,
+            #9a5cff 0%,
+            #ff4aa9 100%
+          );
+
+          box-shadow:
+            0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+            0 0 10px rgba(255, 75, 174, 0.28),
+            0 6px 14px rgba(0, 0, 0, 0.42);
+
+          color: #ffffff;
+          cursor: pointer;
 
           pointer-events: auto;
+          transform-origin: center;
+          will-change: transform;
 
-          will-change:
-            transform;
-        }
-
-        .adventure-hotspot-wrap
-          .adventure-number-core {
-          font-size: 9px;
-          line-height: 1;
-        }
-
-        .adventure-hotspot-wrap
-          .adventure-number:disabled {
-          pointer-events:
-            none;
-
-          cursor: wait;
+          transition:
+            border-color 180ms ease,
+            background 180ms ease,
+            box-shadow 180ms ease;
         }
 
         /*
-         * Section title pill inspired by the reference
-         * hotspot label.
+         * Smaller number so it fits the smaller purple center.
          */
+        .adventure-hotspot-wrap .adventure-number-core {
+          position: relative;
+          z-index: 4;
+          display: block;
+
+          font-size: 7px;
+          font-weight: 900;
+          line-height: 1;
+          letter-spacing: 0;
+          text-align: center;
+
+          pointer-events: none;
+        }
+
+        .adventure-hotspot-wrap .adventure-number-ripple {
+          position: absolute;
+          inset: -3px;
+          z-index: 1;
+
+          box-sizing: border-box;
+
+          border: 1px solid rgba(255, 104, 183, 0.5);
+          border-radius: 50%;
+
+          box-shadow: 0 0 8px rgba(255, 95, 183, 0.18);
+
+          pointer-events: none;
+
+          animation: editorial-hotspot-ripple 2.6s ease-out infinite;
+        }
+
+        .adventure-hotspot-wrap .adventure-number-ripple.ripple-two {
+          animation-delay: 1.3s;
+        }
+
+        .adventure-hotspot-wrap .adventure-number:hover,
+        .adventure-hotspot-wrap .adventure-number.is-selected {
+          border-color: #ffffff;
+          background: linear-gradient(
+            135deg,
+            #aa73ff 0%,
+            #ff53ae 100%
+          );
+          box-shadow:
+            0 0 0 1px rgba(255, 255, 255, 0.14) inset,
+            0 0 14px rgba(255, 75, 174, 0.42),
+            0 7px 16px rgba(0, 0, 0, 0.46);
+        }
+
+        .adventure-hotspot-wrap .adventure-number:focus-visible {
+          border-color: #ffffff;
+          box-shadow:
+            0 0 0 3px rgba(105, 223, 255, 0.82),
+            0 0 14px rgba(255, 75, 174, 0.42),
+            0 7px 16px rgba(0, 0, 0, 0.46);
+        }
+
+        .adventure-hotspot-wrap .adventure-number:disabled {
+          cursor: wait;
+          opacity: 0.68;
+          pointer-events: none;
+        }
+
         .adventure-hotspot-tooltip {
           position: absolute;
-
-          bottom:
-            calc(
-              100% + 27px
-            );
-
+          bottom: calc(100% + 22px);
           left: 50%;
           z-index: 12;
 
           display: inline-flex;
-
-          min-height: 31px;
-
+          min-height: 29px;
           align-items: center;
-          justify-content:
-            center;
+          justify-content: center;
+          gap: 6px;
 
-          gap: 7px;
+          box-sizing: border-box;
 
-          border:
-            1px solid
-            rgba(
-              255,
-              139,
-              211,
-              0.38
-            );
+          border: 1px solid rgba(255, 139, 211, 0.38);
+          border-radius: 999px;
 
-          border-radius:
-            999px;
-
-          background:
-            linear-gradient(
-              135deg,
-              rgba(
-                46,
-                15,
-                62,
-                0.97
-              ),
-              rgba(
-                21,
-                9,
-                38,
-                0.97
-              )
-            );
+          background: linear-gradient(
+            135deg,
+            rgba(46, 15, 62, 0.97),
+            rgba(21, 9, 38, 0.97)
+          );
 
           box-shadow:
-            0 0 20px
-              rgba(
-                255,
-                75,
-                174,
-                0.2
-              ),
-            0 10px 26px
-              rgba(
-                0,
-                0,
-                0,
-                0.44
-              );
+            0 0 17px rgba(255, 75, 174, 0.18),
+            0 9px 23px rgba(0, 0, 0, 0.42);
 
-          padding:
-            0 12px;
+          padding: 0 11px;
 
           color: #fff7fd;
 
-          font-family:
-            var(--font-body),
-            Arial,
-            sans-serif;
-
-          font-size: 9px;
+          font-family: var(--font-body), Arial, sans-serif;
+          font-size: 8px;
           font-weight: 900;
-          letter-spacing:
-            0.09em;
-
-          text-transform:
-            uppercase;
-
+          letter-spacing: 0.09em;
+          text-transform: uppercase;
           white-space: nowrap;
 
           opacity: 0;
+          pointer-events: none;
 
-          pointer-events:
-            none;
-
-          transform:
-            translateX(-50%)
-            translateY(8px)
-            scale(0.9);
-
-          transform-origin:
-            center bottom;
+          transform: translateX(-50%) translateY(7px) scale(0.92);
+          transform-origin: center bottom;
 
           transition:
             opacity 180ms ease,
-            transform 220ms
-              cubic-bezier(
-                0.22,
-                1,
-                0.36,
-                1
-              );
+            transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         .adventure-hotspot-tooltip::after {
           content: "";
 
           position: absolute;
-
           top: 100%;
           left: 50%;
 
           width: 0;
           height: 0;
 
-          border-right:
-            5px solid
-            transparent;
+          border-right: 5px solid transparent;
+          border-left: 5px solid transparent;
+          border-top: 6px solid rgba(30, 10, 46, 0.98);
 
-          border-left:
-            5px solid
-            transparent;
-
-          border-top:
-            6px solid
-            rgba(
-              30,
-              10,
-              46,
-              0.98
-            );
-
-          transform:
-            translateX(-50%);
+          transform: translateX(-50%);
         }
 
         .adventure-hotspot-tooltip__heart {
           color: #ff71bc;
-
-          font-size: 10px;
-
-          filter:
-            drop-shadow(
-              0 0 5px
-                rgba(
-                  255,
-                  104,
-                  183,
-                  0.7
-                )
-            );
+          font-size: 9px;
+          line-height: 1;
+          filter: drop-shadow(0 0 5px rgba(255, 104, 183, 0.7));
         }
 
-        /*
-         * A second heart floats upward directly above the
-         * circle.
-         */
         .adventure-hotspot-floating-heart {
           position: absolute;
-
-          bottom:
-            calc(
-              100% + 3px
-            );
-
+          bottom: calc(100% + 2px);
           left: 50%;
           z-index: 11;
 
           color: #ff75be;
 
-          font-size: 15px;
+          font-size: 13px;
           line-height: 1;
 
           opacity: 0;
+          pointer-events: none;
 
-          pointer-events:
-            none;
+          filter: drop-shadow(0 0 6px rgba(255, 104, 183, 0.7));
 
-          filter:
-            drop-shadow(
-              0 0 7px
-                rgba(
-                  255,
-                  104,
-                  183,
-                  0.72
-                )
-            );
-
-          transform:
-            translateX(-50%)
-            translateY(7px)
-            rotate(-12deg)
-            scale(0.35);
+          transform: translateX(-50%) translateY(6px) rotate(-12deg) scale(0.35);
 
           transition:
             opacity 170ms ease,
-            transform 260ms
-              cubic-bezier(
-                0.22,
-                1,
-                0.36,
-                1
-              );
+            transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
         }
 
-        .adventure-hotspot-wrap:not(
-            .is-disabled
-          ):hover
+        .adventure-hotspot-wrap:not(.is-disabled):hover
           .adventure-hotspot-tooltip,
-        .adventure-hotspot-wrap:not(
-            .is-disabled
-          ):focus-within
+        .adventure-hotspot-wrap:not(.is-disabled):focus-within
           .adventure-hotspot-tooltip {
           opacity: 1;
-
-          transform:
-            translateX(-50%)
-            translateY(0)
-            scale(1);
+          transform: translateX(-50%) translateY(0) scale(1);
         }
 
-        .adventure-hotspot-wrap:not(
-            .is-disabled
-          ):hover
+        .adventure-hotspot-wrap:not(.is-disabled):hover
           .adventure-hotspot-floating-heart,
-        .adventure-hotspot-wrap:not(
-            .is-disabled
-          ):focus-within
+        .adventure-hotspot-wrap:not(.is-disabled):focus-within
           .adventure-hotspot-floating-heart {
           opacity: 1;
-
-          transform:
-            translateX(-50%)
-            translateY(-5px)
-            rotate(8deg)
-            scale(1);
+          transform: translateX(-50%) translateY(-4px) rotate(7deg) scale(1);
         }
 
-        .adventure-hotspot-wrap:not(
-            .is-disabled
-          ):hover
-          .adventure-number {
-          border-color:
-            rgba(
-              255,
-              255,
-              255,
-              1
-            );
+        @media (max-width: 767px) {
+          .adventure-hotspot-wrap .adventure-number {
+            width: 32px;
+            height: 32px;
+            border-width: 7px;
+          }
 
-          box-shadow:
-            0 0 0 1px
-              rgba(
-                255,
-                255,
-                255,
-                0.2
-              )
-              inset,
-            0 0 33px
-              rgba(
-                255,
-                75,
-                174,
-                0.82
-              ),
-            0 0 56px
-              rgba(
-                154,
-                92,
-                255,
-                0.32
-              ),
-            0 15px 38px
-              rgba(
-                0,
-                0,
-                0,
-                0.64
-              );
-        }
+          .adventure-hotspot-wrap .adventure-number-core {
+            font-size: 7px;
+          }
 
-        @media (
-          max-width: 767px
-        ) {
-          .adventure-hotspot-wrap
-            .adventure-number {
-            width: 31px;
-            height: 31px;
-
-            border-width: 4px;
+          .adventure-hotspot-wrap .adventure-number-ripple {
+            inset: -3px;
           }
 
           .adventure-hotspot-tooltip {
-            bottom:
-              calc(
-                100% + 24px
-              );
-
-            min-height: 28px;
-
-            padding:
-              0 10px;
-
-            font-size: 8px;
+            bottom: calc(100% + 20px);
+            min-height: 27px;
+            padding: 0 9px;
+            font-size: 7px;
           }
 
           .adventure-hotspot-floating-heart {
-            font-size: 13px;
+            font-size: 12px;
           }
         }
 
-        @media (
-          prefers-reduced-motion:
-            reduce
-        ) {
+        @media (prefers-reduced-motion: reduce) {
           .adventure-hotspot-tooltip,
           .adventure-hotspot-floating-heart {
-            transition-duration:
-              0.01ms;
+            transition-duration: 0.01ms;
+          }
+
+          .adventure-hotspot-wrap .adventure-number-ripple {
+            animation: none;
+            opacity: 0.35;
           }
         }
       `}</style>
