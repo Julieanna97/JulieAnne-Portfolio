@@ -29,14 +29,12 @@ import AnnotationContent from "./AnnotationContent";
 
 export type AutoCardStackHandle = {
   updateHotspotPosition: (
-    projection:
-      HotspotProjection,
+    projection: HotspotProjection,
   ) => void;
 };
 
 type AutoCardStackProps = {
-  sections:
-    PortfolioSection[];
+  sections: PortfolioSection[];
 
   activeId:
     | SectionId
@@ -110,8 +108,7 @@ const AutoCardStack =
           !path ||
           !dot ||
           !projection.visible ||
-          window.innerWidth <
-            768
+          window.innerWidth < 768
         ) {
           if (path) {
             path.style.opacity =
@@ -150,7 +147,7 @@ const AutoCardStack =
         const startY =
           bounds.top +
           Math.min(
-            90,
+            96,
             bounds.height *
               0.22,
           );
@@ -284,16 +281,12 @@ const AutoCardStack =
           aria-hidden="true"
         >
           <path
-            ref={
-              connectorPathRef
-            }
+            ref={connectorPathRef}
             className="adventure-auto-card-connector-path"
           />
 
           <circle
-            ref={
-              connectorDotRef
-            }
+            ref={connectorDotRef}
             className="adventure-auto-card-connector-dot"
             r="5"
           />
@@ -443,24 +436,22 @@ const AutoCardStack =
                     }}
                   >
                     <div className="adventure-auto-card-inner">
+                      {/*
+                       * Updated hierarchy:
+                       *
+                       * eyebrow
+                       * title
+                       * body copy
+                       *
+                       * The old section number and
+                       * horizontal separator are gone.
+                       */}
                       <header className="adventure-auto-card-header">
-                        <div className="adventure-annotation-card-label">
-                          <p className="adventure-annotation-card-number">
-                            {
-                              section.number
-                            }
-                          </p>
-
-                          <span
-                            aria-hidden="true"
-                          />
-
-                          <p className="adventure-annotation-card-eyebrow">
-                            {
-                              section.eyebrow
-                            }
-                          </p>
-                        </div>
+                        <p className="adventure-annotation-card-eyebrow">
+                          {
+                            section.eyebrow
+                          }
+                        </p>
 
                         <h2>
                           {
@@ -493,6 +484,12 @@ const AutoCardStack =
         </div>
 
         <style jsx global>{`
+          /*
+           * =================================================
+           * LAYER
+           * =================================================
+           */
+
           .adventure-auto-card-layer {
             position: absolute;
             inset: 0;
@@ -501,6 +498,12 @@ const AutoCardStack =
             overflow: hidden;
             pointer-events: none;
           }
+
+          /*
+           * =================================================
+           * CONNECTOR LINE
+           * =================================================
+           */
 
           .adventure-auto-card-connector {
             position: fixed;
@@ -518,14 +521,16 @@ const AutoCardStack =
           .adventure-auto-card-connector-path {
             fill: none;
 
-            stroke: var(
-              --portfolio-orange,
-              #ff68b7
-            );
+            stroke:
+              var(
+                --portfolio-orange,
+                #ff68b7
+              );
 
             stroke-width: 4;
             stroke-linecap: round;
-            stroke-dasharray: 2 13;
+            stroke-dasharray:
+              2 13;
 
             opacity: 0;
 
@@ -541,21 +546,25 @@ const AutoCardStack =
               );
 
             transition:
-              opacity 140ms ease;
+              opacity
+              140ms ease;
           }
 
           .adventure-auto-card-connector-dot {
-            fill: var(
-              --portfolio-orange,
-              #ff68b7
-            );
+            fill:
+              var(
+                --portfolio-orange,
+                #ff68b7
+              );
 
-            stroke: var(
-              --portfolio-paper,
-              #100c25
-            );
+            stroke:
+              var(
+                --portfolio-paper,
+                #100c25
+              );
 
             stroke-width: 4;
+
             opacity: 0;
 
             filter:
@@ -570,54 +579,82 @@ const AutoCardStack =
               );
 
             transition:
-              opacity 140ms ease;
+              opacity
+              140ms ease;
           }
+
+          /*
+           * =================================================
+           * CARD STACK POSITION
+           * =================================================
+           */
 
           .adventure-auto-card-stack {
             position: absolute;
+
             top: 50%;
-            left: clamp(
-              22px,
-              3.2vw,
-              58px
-            );
+
+            left:
+              clamp(
+                22px,
+                3.2vw,
+                58px
+              );
+
             z-index: 2;
 
             display: grid;
 
-            width: min(
-              390px,
-              calc(
-                100vw - 44px
-              )
-            );
+            width:
+              min(
+                390px,
+                calc(
+                  100vw - 44px
+                )
+              );
 
             transform:
               translateY(-50%);
 
-            perspective: 1000px;
+            perspective:
+              1000px;
           }
 
+          /*
+           * =================================================
+           * CARD
+           * =================================================
+           */
+
           .adventure-auto-card {
-            grid-area: 1 / 1;
+            position: relative;
+
+            grid-area:
+              1 / 1;
 
             display: flex;
 
             width: 100%;
-            height: min(
-              560px,
-              72vh
-            );
 
-            min-height: 410px;
+            height:
+              min(
+                560px,
+                72vh
+              );
 
-            box-sizing: border-box;
+            min-height:
+              410px;
 
-            flex-direction: column;
+            box-sizing:
+              border-box;
+
+            flex-direction:
+              column;
 
             overflow: hidden;
 
-            border: 1px solid
+            border:
+              1px solid
               var(
                 --portfolio-line,
                 rgba(
@@ -652,10 +689,14 @@ const AutoCardStack =
                   )
               );
 
+            /*
+             * More generous inset like the
+             * reference card.
+             */
             padding:
-              30px
-              28px
-              27px;
+              42px
+              34px
+              32px;
 
             color:
               var(
@@ -674,6 +715,63 @@ const AutoCardStack =
               filter
                 180ms ease;
           }
+
+          /*
+           * Decorative corner dot from the reference.
+           */
+          .adventure-auto-card::before {
+            content: "";
+
+            position:
+              absolute;
+
+            top: 18px;
+            right: 18px;
+
+            z-index: 2;
+
+            width: 8px;
+            height: 8px;
+
+            border-radius:
+              50%;
+
+            background:
+              var(
+                --portfolio-orange,
+                #ff68b7
+              );
+
+            box-shadow:
+              0 0 8px
+                rgba(
+                  255,
+                  104,
+                  183,
+                  0.5
+                );
+
+            pointer-events:
+              none;
+          }
+
+          /*
+           * Remove the old number/line styling if another
+           * stylesheet still contains it.
+           */
+          .adventure-auto-card
+            .adventure-annotation-card-number,
+          .adventure-auto-card
+            .adventure-annotation-card-label {
+            display:
+              none !important;
+          }
+
+          /*
+           * =================================================
+           * ACTIVE CARD
+           * =================================================
+           */
 
           .adventure-auto-card.is-active:hover,
           .adventure-auto-card.is-active:has(
@@ -715,6 +813,12 @@ const AutoCardStack =
               );
           }
 
+          /*
+           * =================================================
+           * STACKED CARDS
+           * =================================================
+           */
+
           .adventure-auto-card.is-behind {
             filter:
               brightness(0.84)
@@ -723,25 +827,103 @@ const AutoCardStack =
 
           .adventure-auto-card-inner {
             display: flex;
+
+            min-width: 0;
             min-height: 0;
 
             flex: 1;
-            flex-direction: column;
+
+            flex-direction:
+              column;
+
+            align-items:
+              stretch;
           }
 
           .adventure-auto-card.is-behind
             .adventure-auto-card-inner {
-            visibility: hidden;
+            visibility:
+              hidden;
+
             opacity: 0;
           }
 
+          /*
+           * =================================================
+           * HEADER
+           * =================================================
+           */
+
           .adventure-auto-card-header {
-            flex: 0 0 auto;
+            display: flex;
+
+            min-width: 0;
+
+            flex:
+              0 0 auto;
+
+            flex-direction:
+              column;
+
+            align-items:
+              flex-start;
           }
 
+          /*
+           * Small category/eyebrow.
+           *
+           * This replaces the old:
+           *
+           * 03 — ATTRIBUTION AND TOOLS
+           *
+           * with:
+           *
+           * ATTRIBUTION AND TOOLS
+           */
+          .adventure-auto-card-header
+            .adventure-annotation-card-eyebrow {
+            margin: 0;
+
+            color:
+              var(
+                --portfolio-orange,
+                #ff68b7
+              );
+
+            font-family:
+              var(
+                --font-body
+              ),
+              Arial,
+              sans-serif;
+
+            font-size:
+              0.72rem;
+
+            font-weight:
+              850;
+
+            line-height:
+              1.25;
+
+            letter-spacing:
+              0.045em;
+
+            text-transform:
+              uppercase;
+          }
+
+          /*
+           * Main title directly underneath the eyebrow.
+           */
           .adventure-auto-card-header
             h2 {
-            margin: 22px 0 0;
+            max-width: 100%;
+
+            margin:
+              9px
+              0
+              0;
 
             color:
               var(
@@ -756,32 +938,64 @@ const AutoCardStack =
               Arial,
               sans-serif;
 
-            font-size: clamp(
-              1.75rem,
-              3vw,
-              2.35rem
-            );
+            font-size:
+              clamp(
+                1.85rem,
+                3vw,
+                2.4rem
+              );
 
-            font-weight: 850;
+            font-weight:
+              850;
+
             letter-spacing:
               -0.045em;
-            line-height: 1.03;
+
+            line-height:
+              1.05;
+
+            overflow-wrap:
+              anywhere;
           }
+
+          /*
+           * =================================================
+           * BODY CONTENT
+           * =================================================
+           */
 
           .adventure-auto-card-copy {
             display: grid;
+
+            min-width: 0;
             min-height: 0;
 
             flex: 1;
-            align-content: start;
 
-            gap: 14px;
+            align-content:
+              start;
 
-            margin-top: 21px;
-            padding-right: 6px;
+            /*
+             * Gives the individual blocks inside
+             * AnnotationContent breathing room.
+             */
+            gap: 17px;
 
-            overflow-x: hidden;
-            overflow-y: auto;
+            /*
+             * Larger gap between title and body,
+             * matching the reference composition.
+             */
+            margin-top:
+              30px;
+
+            padding-right:
+              5px;
+
+            overflow-x:
+              hidden;
+
+            overflow-y:
+              auto;
 
             overscroll-behavior:
               contain;
@@ -797,8 +1011,11 @@ const AutoCardStack =
                 )
               );
 
-            font-size: 13px;
-            line-height: 1.72;
+            font-size:
+              13px;
+
+            line-height:
+              1.75;
 
             scrollbar-color:
               var(
@@ -808,6 +1025,9 @@ const AutoCardStack =
               transparent;
           }
 
+          /*
+           * Remove unwanted inherited paragraph margins.
+           */
           .adventure-auto-card-copy
             p {
             margin: 0;
@@ -824,14 +1044,69 @@ const AutoCardStack =
               );
           }
 
+          /*
+           * First bold introduction, similar to the
+           * reference card's stronger first paragraph.
+           */
           .adventure-auto-card-copy
             .adventure-annotation-lead {
+            margin: 0;
+
             color:
               var(
                 --portfolio-ink,
                 #fff7fd
               );
+
+            font-size:
+              0.98rem;
+
+            font-weight:
+              760;
+
+            line-height:
+              1.58;
           }
+
+          /*
+           * Supporting text.
+           */
+          .adventure-auto-card-copy
+            .adventure-annotation-copy,
+          .adventure-auto-card-copy
+            .adventure-annotation-description {
+            color:
+              var(
+                --portfolio-ink-soft,
+                rgba(
+                  244,
+                  238,
+                  255,
+                  0.76
+                )
+              );
+
+            line-height:
+              1.75;
+          }
+
+          /*
+           * Give buttons and detail actions some breathing
+           * room from the paragraph above.
+           */
+          .adventure-auto-card-copy
+            button,
+          .adventure-auto-card-copy
+            a {
+            margin-top:
+              4px;
+          }
+
+          /*
+           * =================================================
+           * SCROLLBAR
+           * =================================================
+           */
 
           .adventure-auto-card-copy::-webkit-scrollbar {
             width: 7px;
@@ -843,7 +1118,8 @@ const AutoCardStack =
           }
 
           .adventure-auto-card-copy::-webkit-scrollbar-thumb {
-            border-radius: 999px;
+            border-radius:
+              999px;
 
             background:
               var(
@@ -851,6 +1127,12 @@ const AutoCardStack =
                 #ff68b7
               );
           }
+
+          /*
+           * =================================================
+           * MOBILE
+           * =================================================
+           */
 
           @media (
             max-width: 767px
@@ -880,25 +1162,30 @@ const AutoCardStack =
             }
 
             .adventure-auto-card-stack {
-              position: relative;
+              position:
+                relative;
+
               inset: auto;
 
-              width: min(
-                430px,
-                100%
-              );
+              width:
+                min(
+                  430px,
+                  100%
+                );
 
-              transform: none;
+              transform:
+                none;
             }
 
             .adventure-auto-card {
-              height: min(
-                540px,
-                calc(
-                  100dvh -
-                    100px
-                )
-              );
+              height:
+                min(
+                  540px,
+                  calc(
+                    100dvh -
+                      100px
+                  )
+                );
 
               min-height: 0;
 
@@ -909,21 +1196,65 @@ const AutoCardStack =
                 14px;
 
               padding:
-                25px
-                22px
-                23px;
+                40px
+                26px
+                28px;
+            }
+
+            .adventure-auto-card::before {
+              top: 16px;
+              right: 16px;
+
+              width: 7px;
+              height: 7px;
+            }
+
+            .adventure-auto-card-header
+              .adventure-annotation-card-eyebrow {
+              font-size:
+                0.68rem;
             }
 
             .adventure-auto-card-header
               h2 {
+              margin-top:
+                7px;
+
               font-size:
                 1.8rem;
+
+              line-height:
+                1.06;
             }
 
             .adventure-auto-card-copy {
-              font-size: 12px;
+              gap: 15px;
+
+              margin-top:
+                25px;
+
+              padding-right:
+                2px;
+
+              font-size:
+                12px;
+            }
+
+            .adventure-auto-card-copy
+              .adventure-annotation-lead {
+              font-size:
+                0.94rem;
+
+              line-height:
+                1.58;
             }
           }
+
+          /*
+           * =================================================
+           * REDUCED MOTION
+           * =================================================
+           */
 
           @media (
             prefers-reduced-motion:
