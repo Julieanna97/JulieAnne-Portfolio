@@ -24,6 +24,8 @@ import {
 
 import SceneReturnButton from "./SceneReturnButton";
 
+import ScrollToTopButton from "@/components/ScrollToTopButton";
+
 type ProjectsOverviewModalProps = {
   open: boolean;
   onClose: () => void;
@@ -192,6 +194,11 @@ export default function ProjectsOverviewModal({
 
   const returnButtonRef =
     useRef<HTMLButtonElement | null>(
+      null,
+    );
+
+  const scrollRef =
+    useRef<HTMLDivElement | null>(
       null,
     );
 
@@ -400,6 +407,7 @@ export default function ProjectsOverviewModal({
             />
 
             <motion.div
+            ref={scrollRef}
               className="adventure-project-index-body"
               initial={
                 reduceMotion
@@ -727,6 +735,9 @@ export default function ProjectsOverviewModal({
               </div>
             </motion.div>
           </motion.article>
+          <ScrollToTopButton
+            scrollRef={scrollRef}
+          />
 
           <style jsx global>{`
             .adventure-project-index-backdrop {

@@ -22,6 +22,8 @@ import {
 
 import SceneReturnButton from "./SceneReturnButton";
 
+import ScrollToTopButton from "@/components/ScrollToTopButton";
+
 type ProjectCaseStudyModalProps = {
   projectId: ProjectId | null;
   onClose: () => void;
@@ -38,6 +40,9 @@ export default function ProjectCaseStudyModal({
     useRef<HTMLButtonElement>(
       null,
     );
+
+  const scrollRef =
+    useRef<HTMLElement | null>(null);
 
   const [
     activeImageIndex,
@@ -187,6 +192,7 @@ export default function ProjectCaseStudyModal({
           onClick={onClose}
         >
           <motion.article
+          ref={scrollRef}
             className="adventure-case-study-modal"
             role="dialog"
             aria-modal="true"
@@ -621,6 +627,10 @@ export default function ProjectCaseStudyModal({
               </div>
             </motion.div>
           </motion.article>
+
+          <ScrollToTopButton
+            scrollRef={scrollRef}
+          />
         </motion.div>
       )}
     </AnimatePresence>

@@ -20,6 +20,8 @@ import {
   CREDIT_GROUPS,
 } from "@/components/hero-scene/portfolioData";
 
+import ScrollToTopButton from "@/components/ScrollToTopButton";
+
 const ABOUT_PORTRAIT_SRC =
   "/about/julie-anne.jpg";
 
@@ -542,6 +544,9 @@ export default function SectionDetailModal({
               )}
             </motion.div>
           </motion.article>
+          <ScrollToTopButton
+            scrollRef={modalRef}
+          />
         </motion.div>
       )}
     </AnimatePresence>
